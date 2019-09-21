@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Grid Flex Test</title>
+	<style>
+		*, *:before, *:after {
+			box-sizing: border-box;
+		}
+
+		html, body,
+		.container,
+		.container > *,
+		iframe {
+			display: block;
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			background-color: #000;
+			overflow: hidden;
+			border: none;
+		}
+		.s1 { grid-area: v1; }
+		.s2 { grid-area: v2; }
+		.s3 { grid-area: v3; }
+		.s4 { grid-area: v4; }
+		.s5 { grid-area: v5; }
+		.s6 { grid-area: v6; }
+		.s7 { grid-area: v7; }
+		.s8 { grid-area: v8; }
+		.s9 { grid-area: v9; }
+		.s10 { grid-area: v10; }
+		.s11 { grid-area: v11; }
+		.s12 { grid-area: v12; }
+		.s13 { grid-area: v13; }
+		.s14 { grid-area: v14; }
+		.s15 { grid-area: v15; }
+		.s16 { grid-area: v16; }
+
+		.container > * {
+			position: relative;
+			display: flex;
+			align-items: flex-start;
+			justify-content: center;
+		}
+		.container input {
+			margin-top: 20px;
+			font-size: 18px;
+		}
+		@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+			.container input {				
+				font-size: 45px;
+			}
+		}
+		.container input[type=text] {
+			width: 75%;
+		}
+		.container > .s1,
+		.container > .s5,
+		.container > .s9,
+		.container > .s13 {
+			background-color: red;
+		}
+		.container > .s2,
+		.container > .s6,
+		.container > .s10,
+		.container > .s14 {
+			background-color: blue;
+		}
+		.container > .s3,
+		.container > .s7,
+		.container > .s11,
+		.container > .s15 {
+			background-color: orange;
+		}
+		.container > .s4,
+		.container > .s8,
+		.container > .s12,
+		.container > .s16 {
+			background-color: green;
+		}
+		.container > *:before {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			font-size: 18px;
+			font-weight: bold;
+			color: white;
+		}
+		@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+			.container > *:before {
+				font-size: 35px;
+			}
+		}
+		.container > .s1:before { content: 'v1'; }
+		.container > .s2:before { content: 'v2'; }
+		.container > .s3:before { content: 'v3'; }
+		.container > .s4:before { content: 'v4'; }
+		.container > .s5:before { content: 'v5'; }
+		.container > .s6:before { content: 'v6'; }
+		.container > .s7:before { content: 'v7'; }
+		.container > .s8:before { content: 'v8'; }
+		.container > .s9:before { content: 'v9'; }
+		.container > .s10:before { content: 'v10'; }
+		.container > .s11:before { content: 'v11'; }
+		.container > .s12:before { content: 'v12'; }
+		.container > .s13:before { content: 'v13'; }
+		.container > .s14:before { content: 'v14'; }
+		.container > .s15:before { content: 'v15'; }
+		.container > .s16:before { content: 'v16'; }
+		.container > *.no-video { background-color: black; }
+		.container > *.no-video:before { content: ''; }
+
+		.container {
+			position: relative;
+		}
+		.container,
+		.container.normal {
+			display: grid;
+			grid-template-columns: 50% 50%;
+			grid-template-rows: 50% 50%;
+			grid-template-areas: 
+				"v1 v2"
+				"v3 v4";
+		}
+		.container.top {
+			grid-template-columns: 33.3333333333% 33.3333333333% 33.3333333333%;
+			grid-template-rows: 33.3333333333% 66.6666666666%;
+			grid-template-areas:
+				"v2 v3 v4"
+				"v1 v1 v1";
+		}
+		.container.right {
+			grid-template-columns: 66.6666666666% 33.3333333333%;
+			grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
+			grid-template-areas:
+				"v1 v2"
+				"v1 v3"
+				"v1 v4";
+		}
+		.container.bottom {
+			grid-template-columns: 33.3333333333% 33.3333333333% 33.3333333333%;
+			grid-template-rows: 66.6666666666% 33.3333333333%;
+			grid-template-areas:
+				"v1 v1 v1"
+				"v2 v3 v4";
+		}
+		.container.left {
+			grid-template-columns: 33.3333333333% 66.6666666666%;
+			grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
+			grid-template-areas:
+				"v2 v1"
+				"v3 v1"
+				"v4 v1";
+		}
+		.container.top4 {
+			grid-template-columns: 25% 25% 25% 25%;
+			grid-template-rows: 25% 75%;
+			grid-template-areas:
+				"v2 v3 v4 v5"
+				"v1 v1 v1 v1";
+		}
+		.container.extrem {
+			display: grid;
+			grid-template-columns: 25% 25% 25% 25%;
+			grid-template-rows: 25% 25% 25% 25%;
+			grid-template-areas: 
+				"v1 v2 v3 v4"
+				"v5 v6 v7 v8"
+				"v9 v10 v11 v12"
+				"v13 v14 v15 v16"
+		}
+
+		.container.full > *,
+		.container.over > * {
+			display: none;
+		}
+		.container.full,
+		.container.over {
+			display: block;
+		}
+		.container.full > .s1,
+		.container.over > .s1,
+		.container.over > .s2 {
+			display: flex;
+		}
+		.container.over > .s2 {
+			position: absolute;
+			left: 0.5%;
+			bottom: 1%;
+			width: 20%;
+			height: 20%;
+			z-index: 10;
+		}
+
+		/* OVERLAY START */
+			.overlay {
+				position: fixed;
+				left: 3vh;
+				bottom: 3vh;
+				color: #fff;
+				background-color: rgba(0,0,0,.8);
+				padding: 15px;
+				border-radius: 5px;
+				font-size: 18px;
+				z-index: 20;
+
+				opacity: 0;
+				transition: opacity 0.3s;
+			}
+			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+				.overlay {
+					padding: 30px;
+					font-size: 45px;
+				}
+			}
+			.overlay:hover {
+				opacity: 1;
+			}
+
+			.overlay > div + div {				
+				margin-top: 15px;
+			}
+
+			.overlay h1,
+			.overlay h2,
+			.overlay h3,
+			.overlay h4,
+			.overlay h5,
+			.overlay h6 {
+				flex-basis: 100%;
+				margin: 0 0 5px;
+			}
+
+			.overlay .mode,
+			.overlay .switcher {
+				display: flex;
+				flex-wrap: wrap;
+			}
+			.overlay .mode .container,
+			.overlay .switcher .container {
+				position: relative;
+				width: 100px;
+				height: 100px;
+				border: 1px solid #fff;
+				text-decoration: none;
+			}
+			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+				.overlay .mode .container,
+				.overlay .switcher .container {
+					width: 200px;
+					height: 200px;
+				}
+			}
+			.overlay .mode .container + .container,
+			.overlay .switcher .container + .container {
+				margin-left: 10px;
+			}
+			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+				.overlay .mode .container + .container,
+				.overlay .switcher .container + .container {
+					margin-left: 30px;
+				}
+			}
+			.overlay .mode .container:before,
+			.overlay .switcher .container a:after {
+				content: '';
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(255,255,255,.5);
+				z-index: 50;
+
+				opacity: 0;
+				transition: opacity 0.3s;
+			}			
+			.overlay .switcher .container.over a.s2:after {
+				z-index: 60;
+			}
+			.overlay .mode .container:hover:before,
+			.overlay .switcher .container a:hover:after {
+				opacity: 1;
+			}
+
+			.overlay .switcher .container { /* for overlay */
+				width: 300px;
+				height: 125px; /* 300px / 4 = 75px */
+			}
+			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+				.overlay .switcher .container { /* for overlay */
+					width: 500px;
+					height: 225px; /* 500 / 4 = 125px */
+				}
+			}
+
+			.overlay .input {
+				display: inline-block;
+			}
+			.overlay .input label {
+				display: flex;
+				justify-content: space-between;
+				font-weight: 700;
+			}
+			.overlay .input label + label {
+				margin-top: 5px;
+			}
+			.overlay .input label input {
+				margin-left: 10px;
+			}
+			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+				.overlay .input label input {
+					font-size: 45px;
+					margin-left: 30px;
+				}
+			}		
+		/* OVERLAY END */
+	</style>
+</head>
+<body>
+	<div class="main container normal">
+		<form class="s1">
+			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkh">-->
+			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkh">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s2">
+			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=xpandorya">-->
+			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=xbox">-->
+			<!--<input type="text" name="vurl" value="https://mixer.com/embed/player/XboxDACH?disableLowLatency=1">-->
+			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=pcgamer">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s3">
+			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=tobinatorlp">-->
+			<!--<input type="text" name="vurl" value="https://www.youtube-nocookie.com/embed/RC_xI_Js-Mc">-->
+			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkhcam">-->
+			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkhcam">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s4">
+			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=herr_currywurst">-->
+			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=twitch">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s5">
+			<input typ="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s6">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s7">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s8">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s9">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s10">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s11">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s12">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s13">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s14">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s15">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+		<form class="s16">
+			<input type="text" name="vurl" value="">
+			<input type="submit" name="vsubmit" value="Lets GO">
+		</form>
+	</div>
+	
+	<div class="overlay">
+		<div class="mode">
+			<h3>Mode</h3>
+			<a class="container normal" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s4"></span>
+			</a>
+			<a class="container top" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s4"></span>
+			</a>
+			<a class="container right" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s4"></span>
+			</a>
+			<a class="container bottom" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s4"></span>
+			</a>
+			<a class="container left" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s4"></span>
+			</a>
+			<a class="container full" href="#">
+				<span class="s1"></span>
+			</a>
+			<a class="container over" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+			</a>
+			<a class="container top4" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s4"></span>
+				<span class="s5"></span>
+			</a>
+			<a class="container extrem" href="#">
+				<span class="s1"></span>
+				<span class="s2"></span>
+				<span class="s3"></span>
+				<span class="s4"></span>
+				<span class="s5"></span>
+				<span class="s6"></span>
+				<span class="s7"></span>
+				<span class="s8"></span>
+				<span class="s9"></span>
+				<span class="s10"></span>
+				<span class="s11"></span>
+				<span class="s12"></span>
+				<span class="s13"></span>
+				<span class="s14"></span>
+				<span class="s15"></span>
+				<span class="s16"></span>
+			</a>
+		</div>
+		<div class="switcher reloader">
+			<h3>Switcher / IFRAME Reloader</h3>
+			<div class="container extrem js-switcher" href="#">
+				<a class="s1" href="#"></a>
+				<a class="s2" href="#"></a>
+				<a class="s3" href="#"></a>
+				<a class="s4" href="#"></a>
+				<a class="s5" href="#"></a>
+				<a class="s6" href="#"></a>
+				<a class="s7" href="#"></a>
+				<a class="s8" href="#"></a>
+				<a class="s9" href="#"></a>
+				<a class="s10" href="#"></a>
+				<a class="s11" href="#"></a>
+				<a class="s12" href="#"></a>
+				<a class="s13" href="#"></a>
+				<a class="s14" href="#"></a>
+				<a class="s15" href="#"></a>
+				<a class="s16" href="#"></a>
+			</div>
+			<div class="container extrem js-reloader" href="#">
+				<a class="s1" href="#"></a>
+				<a class="s2" href="#"></a>
+				<a class="s3" href="#"></a>
+				<a class="s4" href="#"></a>
+				<a class="s5" href="#"></a>
+				<a class="s6" href="#"></a>
+				<a class="s7" href="#"></a>
+				<a class="s8" href="#"></a>
+				<a class="s9" href="#"></a>
+				<a class="s10" href="#"></a>
+				<a class="s11" href="#"></a>
+				<a class="s12" href="#"></a>
+				<a class="s13" href="#"></a>
+				<a class="s14" href="#"></a>
+				<a class="s15" href="#"></a>
+				<a class="s16" href="#"></a>
+			</div>
+		</div>
+		<div class="input">
+			<h3>Position</h3>
+			<label><span>Left:</span><input type="number" name="left" placeholder="Prozent"></label>
+			<label style="display: none;"><span>Right:</span><input type="number" name="right" placeholder="Prozent"></label>
+			<label><span>Top:</span><input type="number" name="top" placeholder="Prozent"></label>
+			<label style="display: none;"><span>Bottom:</span><input type="number" name="bottom" placeholder="Prozent"></label>
+			<label><span>L/R:</span><input type="range" name="slider-lr" min="0" max="100"></label>
+			<label><span>T/B:</span><input type="range" name="slider-tb" min="0" max="100"></label>
+		</div>
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script>
+		$(document).ready(function() {
+			var intWidthMaxProzent = 85;
+			var intHeightMaxProzent = 65;
+
+			var intAniDurSec = 1500;
+			var intLeftCurentGlo = 50;
+			var intRightCurentGlo = 100-intLeftCurentGlo;
+			var intTopCurentGlo = 50;
+			var intBottomCurentGlo = 100-intTopCurentGlo;
+
+			var strOverlayClass = '.overlay';
+			var strOverlayClassInput = strOverlayClass+' input[type=number]';
+			var strOverlayClassRange = strOverlayClass+' input[type=range]';
+
+			var strOverlayClassLeft = strOverlayClass+' input[name=left]';
+			var strOverlayClassRight = strOverlayClass+' input[name=right]';
+			var strOverlayClassTop = strOverlayClass+' input[name=top]';
+			var strOverlayClassBottom = strOverlayClass+' input[name=bottom]';
+			var strOverlayClassSliderLR = strOverlayClass+' input[name=slider-lr]';
+			var strOverlayClassSliderTB = strOverlayClass+' input[name=slider-tb]';
+
+			$(strOverlayClassSliderLR).attr({
+				"max": intWidthMaxProzent,
+				"min": 100-intWidthMaxProzent
+			});
+			$(strOverlayClassSliderTB).attr({
+				"max": intHeightMaxProzent,
+				"min": 100-intHeightMaxProzent
+			});
+
+			var strContainerClass = '.container';
+			var strJsUseClass = strContainerClass+".normal"
+			var strColumnsProperty = "grid-template-columns";
+			var strRowsProperty = "grid-template-rows";
+
+			var strTransClassWD = 'trans';
+
+			var intLeftBeforeGlo = intLeftCurentGlo;
+			var intRightBeforeGlo = intRightCurentGlo;
+			var intTopBeforeGlo = intTopCurentGlo;
+			var intBottomBeforeGlo = intBottomCurentGlo;
+
+			setProzentValues();
+			$(strOverlayClassInput).on('input', function(e) { calcProzentValues(this, e) });
+			$(strOverlayClassInput).on('focusout', function(e) { calcProzentValues(this, e)	});
+			$(strOverlayClassRange).on('change', function(e) { calcProzentValues(this, e) });
+
+			// isNumber
+			$(strOverlayClassInput).on('keypress',function(e){
+				var charCode = (e.which) ? e.which : e.keyCode
+				if (charCode > 31 && (charCode < 48 || charCode > 57))
+					return false;
+				return true;
+			});
+
+			$('.overlay .mode a').on('click', function(e) {
+				e.preventDefault();
+				var strModeClass = $(this).attr('class');
+				var objContainer = $(strContainerClass+'.main');
+
+				objContainer.removeAttr('class');
+				objContainer.removeAttr('style');
+				objContainer.addClass(strModeClass+' main');
+
+				setProzentValues();
+			});
+
+			function calcProzentValues(thisTmp, e) {
+				var intInputValue = $(thisTmp).val();
+				var strAttrName = $(thisTmp).attr('name');
+
+				console.log(intInputValue);
+
+				intLeftCurentGlo = $(strOverlayClassSliderLR).val();
+				intRightCurentGlo = 100-intLeftCurentGlo;
+				intTopCurentGlo = $(strOverlayClassSliderTB).val();
+				intBottomCurentGlo = 100-intTopCurentGlo;
+
+				if (strAttrName == 'left') {
+					intLeftCurentGlo = intInputValue;
+					intRightCurentGlo = 100-intInputValue;
+				}
+				if (strAttrName == 'right') {
+					intLeftCurentGlo = 100-intInputValue;
+					intRightCurentGlo = intInputValue;
+				}
+				if (strAttrName == 'top') {
+					intTopCurentGlo = intInputValue;
+					intBottomCurentGlo = 100-intInputValue;
+				}
+				if (strAttrName == 'bottom') {
+					intTopCurentGlo = 100-intInputValue;
+					intBottomCurentGlo = intInputValue;
+				}
+
+				if (intLeftCurentGlo > intWidthMaxProzent) {
+					intLeftCurentGlo = intWidthMaxProzent;
+					intRightCurentGlo = 100-intWidthMaxProzent;
+				}
+				if (intRightCurentGlo > intWidthMaxProzent) {
+					intLeftCurentGlo = 100-intWidthMaxProzent;
+					intRightCurentGlo = intWidthMaxProzent;
+				}
+				if (intTopCurentGlo > intHeightMaxProzent) {
+					intTopCurentGlo = intHeightMaxProzent;
+					intBottomCurentGlo = 100-intHeightMaxProzent;
+				}
+				if (intBottomCurentGlo > intHeightMaxProzent) {
+					intTopCurentGlo = 100-intHeightMaxProzent;
+					intBottomCurentGlo = intHeightMaxProzent;
+				}
+
+				setProzentValues();
+
+				intLeftBeforeGlo = intLeftCurentGlo; 
+				intRightBeforeGlo = intRightCurentGlo;
+				intTopBeforeGlo = intTopCurentGlo; 
+				intBottomBeforeGlo = intBottomCurentGlo;
+			}
+
+			function setProzentValues() {
+				$(strJsUseClass).css(strColumnsProperty, intLeftCurentGlo+'% '+intRightCurentGlo+'%');
+				$(strJsUseClass).css(strRowsProperty, intTopCurentGlo+'% '+intBottomCurentGlo+'%');
+
+				$(strOverlayClassLeft).val(intLeftCurentGlo);
+				$(strOverlayClassRight).val(intRightCurentGlo);
+				$(strOverlayClassTop).val(intTopCurentGlo);
+				$(strOverlayClassBottom).val(intBottomCurentGlo);
+				$(strOverlayClassSliderLR).val(intLeftCurentGlo);
+				$(strOverlayClassSliderTB).val(intTopCurentGlo);
+			}
+
+			$(strContainerClass+'.main form').on('submit', function(e) {
+				e.preventDefault();
+				var elm = $(this);
+				var videoClass = elm.attr("class");
+				var videoUrl = elm.find('input[name="vurl"]').val();
+				var objContainer = $(strContainerClass+".main");
+
+				//createCookie('vurl'+videoClass, videoUrl, 0);
+				//console.log(readCookie('vurl'+videoClass));
+				elm.remove();
+				if (videoUrl.length > 0) {
+					objContainer.append('<iframe class="'+videoClass+'" src="'+videoUrl+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+				} else {
+					objContainer.append('<div class="'+videoClass+' no-video"></div>');
+				}
+			});
+
+			var aVideoClass = '';
+			var bVideoClass = '';
+			$('.overlay .js-switcher a').on('click', function(e) {
+				e.preventDefault();
+				var elm = $(this);
+				var videoClass = elm.attr("class");
+				var tmpClass = 'tmpV';
+
+				if (aVideoClass.length <= 0) {
+					aVideoClass = videoClass;
+				} else {
+					bVideoClass = videoClass;
+				}
+				console.log(videoClass, aVideoClass, bVideoClass);
+
+				if (aVideoClass.length > 0 & bVideoClass.length > 0) {
+					$(strContainerClass+'.main .'+bVideoClass)
+						.removeClass(bVideoClass)
+						.addClass(tmpClass);
+					$(strContainerClass+'.main .'+aVideoClass)
+						.removeClass(aVideoClass)
+						.addClass(bVideoClass);
+					$(strContainerClass+'.main .'+tmpClass)
+						.removeClass(tmpClass)
+						.addClass(aVideoClass);
+
+					aVideoClass = '';
+					bVideoClass = '';
+				}
+			});
+			$('.overlay .js-reloader a').on('click', function(e) {
+				e.preventDefault();
+				var elm = $(this);
+				var videoClass = elm.attr("class");
+				var objIframe = $('iframe.'+videoClass);
+				objIframe.attr('src', objIframe.attr('src'));
+			});
+
+
+
+			function createCookie(name, value, days) {
+				var expires;
+
+				if (days) {
+					var date = new Date();
+					date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+					expires = "; expires=" + date.toGMTString();
+				} else {
+					expires = "";
+				}
+				document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+			}
+			function readCookie(name) {
+				var nameEQ = encodeURIComponent(name) + "=";
+				var ca = document.cookie.split(';');
+				for (var i = 0; i < ca.length; i++) {
+					var c = ca[i];
+					while (c.charAt(0) === ' ')
+						c = c.substring(1, c.length);
+					if (c.indexOf(nameEQ) === 0)
+						return decodeURIComponent(c.substring(nameEQ.length, c.length));
+				}
+				return null;
+			}
+			function eraseCookie(name) {
+				createCookie(name, "", -1);
+			}
+		});
+	</script>
+</body>
+</html>
+
+<!-- 
+https://stackoverflow.com/questions/1458724/how-do-i-set-unset-a-cookie-with-jquery
+https://stackoverflow.com/questions/2064850/how-to-refresh-an-iframe-using-javascript
+https://www.tutorials.de/threads/iframe-automatisch-aktualisieren-lassen.365897/
+https://css-tricks.com/snippets/jquery/force-iframe-to-reload/
+-->
