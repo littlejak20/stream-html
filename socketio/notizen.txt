@@ -1,0 +1,8 @@
+- Den Switcher so umstellen, sodass sich der iframe nicht neu lädt
+- Aktiven Mode auf Config markieren
+- Swicther Config 1 klick markieren, evtl. auch ein Abbruchbutton einbauen
+- Allgemein Button auf Config vergrößern
+- Aufräumen und doppelte Sachen auslagern
+- CSS MIME Type Problem lösen
+- Sass Prefixer einbauen
+- ...
