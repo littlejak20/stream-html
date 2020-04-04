@@ -7,6 +7,12 @@ var userCount = 0;
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/view.html');
 });
+app.get('/view', function(req, res) {
+	res.sendFile(__dirname + '/view.html');
+});
+app.get('/config', function(req, res) {
+	res.sendFile(__dirname + '/config.html');
+});
 
 http.listen(4000, function () {
 	console.log('listen on *:4000');
@@ -14,8 +20,25 @@ http.listen(4000, function () {
 
 
 var dictCurConfig = {
-	modeName: 'container top3-bottom2',
-	videos: [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, ],
+	modeName: 'container top',
+	videos: ['', // attention: not set 
+		'https://player.twitch.tv/?channel=gronkh', // 1
+		'https://player.twitch.tv/?channel=xpandorya', // 2
+		'https://player.twitch.tv/?channel=tobinatorlp', // 3
+		'https://player.twitch.tv/?channel=royalphunk', // 4
+		'', // 5
+		'', // 6
+		'', // 7
+		'', // 8
+		'', // 9
+		'', // 10
+		'', // 11
+		'', // 12
+		'', // 13
+		'', // 14
+		'', // 15
+		'', // 16
+	],
 };
 
 io.on('connection', function(socket) {
@@ -29,12 +52,10 @@ io.on('connection', function(socket) {
 
 	socket.emit('mode click', dictCurConfig.modeName);
 	dictCurConfig.videos.forEach(function(strVideoUrl, intVideoId) {
-		if (strVideoUrl!==undefined) {
-			socket.emit('videourl submit', {
-				videoId: intVideoId,
-				videoUrl: strVideoUrl,
-			});
-		}
+		socket.emit('videourl submit', {
+			videoId: intVideoId,
+			videoUrl: strVideoUrl,
+		});
 	});
 
 	socket.on('mode click', function(strModeName) {
