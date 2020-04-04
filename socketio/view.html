@@ -234,6 +234,8 @@
 
 				/* opacity: 0; */
 				/* transition: opacity 0.3s; */
+
+				overflow: auto;
 			}
 			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
 				.overlay {
@@ -241,9 +243,9 @@
 					font-size: 45px;
 				}
 			}
-			.overlay:hover {
+			/*.overlay:hover {
 				opacity: 1;
-			}
+			}*/
 
 			.overlay > div + div {				
 				margin-top: 15px;
@@ -307,7 +309,6 @@
 				position: absolute;
 				width: 100%;
 				height: 100%;
-				background-color: rgba(255,255,255,.5);
 				z-index: 50;
 
 				opacity: 0;
@@ -318,6 +319,13 @@
 			}
 			.overlay .mode .container:hover:before,
 			.overlay .switcher .container a:hover:after {
+				background-color: rgba(255,255,255,.5);
+				opacity: 1;
+			}
+
+			.overlay .mode .container.is-active:before,
+			.overlay .switcher .container a.is-active:after {
+				background-color: rgba(0,0,0,.7);
 				opacity: 1;
 			}
 
@@ -431,6 +439,10 @@
 				objContainer.addClass(strModeName+' main');
 
 				setProzentValues();
+
+				console.log(strModeName.split(' ')[1], $('.overlay .mode a.'+strModeName));
+				$('.overlay .mode a').removeClass('is-active');
+				$('.overlay .mode a.'+strModeName.split(' ')[1]).addClass('is-active');
 			});
 
 			function calcProzentValues(thisTmp, e) {
