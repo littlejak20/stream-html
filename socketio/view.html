@@ -6,8 +6,6 @@
 	<style type="text/css">
 		@charset "UTF-8";
 
-		.test {}
-
 		*, *:before, *:after {
 			box-sizing: border-box;
 		}
@@ -84,6 +82,7 @@
 		.container > [data-id="16"] {
 			background-color: green;
 		}
+		.container.main > * { background-color: transparent; }
 		.container > *:before {
 			position: absolute;
 			top: 50%;
@@ -259,6 +258,10 @@
 				margin: 0 0 5px;
 			}
 
+			.overlay .form form {
+				display: inline-block;
+			}
+
 			.overlay .mode,
 			.overlay .switcher {
 				display: flex;
@@ -345,81 +348,76 @@
 </head>
 <body>
 	<div class="main container normal">
-		<form data-id="1">
-			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkh">-->
-			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkh">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="2">
-			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=xpandorya">-->
-			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=xbox">-->
-			<!--<input type="text" name="vurl" value="https://mixer.com/embed/player/XboxDACH?disableLowLatency=1">-->
-			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=pcgamer">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="3">
-			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=tobinatorlp">-->
-			<!--<input type="text" name="vurl" value="https://www.youtube-nocookie.com/embed/RC_xI_Js-Mc">-->
-			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkhcam">-->
-			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkhcam">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="4">
-			<!--<input type="text" name="vurl" value="https://player.twitch.tv/?channel=herr_currywurst">-->
-			<input type="text" name="vurl" value="https://player.twitch.tv/?channel=twitch">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="5">
-			<input typ="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="6">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="7">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="8">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="9">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="10">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="11">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="12">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="13">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="14">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="15">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
-		<form data-id="16">
-			<input type="text" name="vurl" value="">
-			<input type="submit" name="vsubmit" value="Lets GO">
-		</form>
 	</div>
 	
 	<div class="overlay">
+		<div class="form">
+			<form data-id="1">
+				<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkh">
+				<input type="submit" name="vsubmit" value="01">
+			</form>
+			<form data-id="2">
+				<input type="text" name="vurl" value="https://player.twitch.tv/?channel=pcgamer">
+				<input type="submit" name="vsubmit" value="02">
+			</form>
+			<form data-id="3">
+				<input type="text" name="vurl" value="https://player.twitch.tv/?channel=gronkhcam">
+				<input type="submit" name="vsubmit" value="03">
+			</form>
+			<form data-id="4">
+				<input type="text" name="vurl" value="https://player.twitch.tv/?channel=twitch">
+				<input type="submit" name="vsubmit" value="04">
+			</form>
+			<form data-id="5">
+				<input typ="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="05">
+			</form>
+			<form data-id="6">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="06">
+			</form>
+			<form data-id="7">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="07">
+			</form>
+			<form data-id="8">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="08">
+			</form>
+			<form data-id="9">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="09">
+			</form>
+			<form data-id="10">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="10">
+			</form>
+			<form data-id="11">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="11">
+			</form>
+			<form data-id="12">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="12">
+			</form>
+			<form data-id="13">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="13">
+			</form>
+			<form data-id="14">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="14">
+			</form>
+			<form data-id="15">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="15">
+			</form>
+			<form data-id="16">
+				<input type="text" name="vurl" value="">
+				<input type="submit" name="vsubmit" value="16">
+			</form>
+		</div>
+
 		<div class="mode">
 			<h3>Mode</h3>
 			<a class="container normal" href="#">
@@ -696,7 +694,7 @@
 				$(strOverlayClassSliderTB).val(intTopCurentGlo);
 			}
 
-			$(strContainerClass+'.main form').on('submit', function(e) {
+			$('.overlay .form form').on('submit', function(e) {
 				e.preventDefault();
 				var elm = $(this);
 				socket.emit('videourl submit', {
@@ -737,7 +735,7 @@
 			});
 			$('.overlay .js-reloader a').on('click', function(e) {
 				e.preventDefault();
-				socket.emit('video switcher', $(this).data('id'));
+				socket.emit('video reloader', $(this).data('id'));
 			});
 		//});
 	</script>
