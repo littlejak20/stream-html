@@ -5,4 +5,16 @@
 - Aufräumen und doppelte Sachen auslagern
 - CSS MIME Type Problem lösen
 - Sass Prefixer einbauen
-- ...
+	--> CSS ins SCSS umschreiben
+- Unterschiedliche Profile speichern
+	--> Vielleicht mit Datenbak Anbindung
+- Url vereinfacher mit Dropdown Kategorieren
+	--> Twitch Stream
+	--> Twitch VOD
+	--> YouTube Video
+	--> YouTube Stream
+	--> YouTube Playlist
+- Dropdownlsite mit hinzugefügen URLs, auch vereinfacht durch Kategorieren
+
+Version 2:
+- API der jeweiligen Dienste ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können

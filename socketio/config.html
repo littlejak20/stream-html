@@ -707,7 +707,7 @@
 					videoId: elm.data('id'),
 					videoUrl: elm.find('input[name="vurl"]').val(),
 				});
-			});			
+			});
 			socket.on('videourl submit', function(dict) {
 				console.log('videourl submit', dict);
 				var objContainer = $(strContainerClass+".main");
@@ -722,29 +722,40 @@
 				$('.overlay .form form[data-id="'+dict.videoId+'"] input[type="text"]').val(dict.videoUrl);
 			});
 
-			var aVideoId = -1;
-			var bVideoId = -1;
+			var videoId0 = -1;
+			var videoId1 = -1;
 			$('.overlay .js-switcher a').on('click', function(e) {
 				e.preventDefault();
 				var videoId = $(this).data('id');
 
-				if (aVideoId <= -1) {
-					aVideoId = videoId;
+				if (videoId0 <= -1) {
+					videoId0 = videoId;
 				} else {
-					bVideoId = videoId;
+					videoId1 = videoId;
 				}
-				console.log(aVideoId, bVideoId);
+				console.log(videoId0, videoId1);
 
-				if (aVideoId > -1 & bVideoId > -1) {
-					socket.emit('video switcher', [aVideoId, bVideoId]);
-					aVideoId = -1;
-					bVideoId = -1;
+				if (videoId0 > -1 & videoId1 > -1) {
+					socket.emit('video switcher', [videoId0, videoId1]);
+					videoId0 = -1;
+					videoId1 = -1;
 				}
 			});
+			socket.on('video switcher', function(arrVideoIds) {
+				console.log('video switcher', arrVideoIds);
+				var videoContainer0 = $(strContainerClass+'.main [data-id="'+arrVideoIds[0]+'"]');
+				var videoContainer1 = $(strContainerClass+'.main [data-id="'+arrVideoIds[1]+'"]');
+				videoContainer0.attr('data-id', arrVideoIds[1]);
+				videoContainer1.attr('data-id', arrVideoIds[0]);
+			});
+
+
 			$('.overlay .js-reloader a').on('click', function(e) {
 				e.preventDefault();
 				socket.emit('video reloader', $(this).data('id'));
 			});
+			// use socket.on - videourl submit
+
 		//});
 	</script>
 </body>

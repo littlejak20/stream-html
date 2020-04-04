@@ -60,34 +60,27 @@ io.on('connection', function(socket) {
 
 	socket.on('mode click', function(strModeName) {
 		console.log('mode click', strModeName);
-		io.emit('mode click', strModeName);
 		dictCurConfig.modeName = strModeName;
+		io.emit('mode click', strModeName);
 	});
 
 	socket.on('videourl submit', function(dict) {
-		console.log('mode click', dict);
-		io.emit('videourl submit', dict);
+		console.log('videourl submit', dict);
 		dictCurConfig.videos[dict.videoId] = dict.videoUrl;
+		io.emit('videourl submit', dict);
 	});
 
 	socket.on('video switcher', function(arrVideoIds) {
-		var strVideoUrlA = dictCurConfig.videos[arrVideoIds[0]];
-		var strVideoUrlB = dictCurConfig.videos[arrVideoIds[1]];
-
-		dictCurConfig.videos[arrVideoIds[0]] = strVideoUrlB;
-		dictCurConfig.videos[arrVideoIds[1]] = strVideoUrlA;
-
-		io.emit('videourl submit', {
-			videoId: arrVideoIds[0],
-			videoUrl: dictCurConfig.videos[arrVideoIds[0]],
-		});
-		io.emit('videourl submit', {
-			videoId: arrVideoIds[1],
-			videoUrl: dictCurConfig.videos[arrVideoIds[1]],
-		});
+		console.log('video switcher', arrVideoIds);
+		var strVideoUrl0 = dictCurConfig.videos[arrVideoIds[0]];
+		var strVideoUrl1 = dictCurConfig.videos[arrVideoIds[1]];
+		dictCurConfig.videos[arrVideoIds[0]] = strVideoUrl1;
+		dictCurConfig.videos[arrVideoIds[1]] = strVideoUrl0;
+		io.emit('video switcher', arrVideoIds);
 	});
 
 	socket.on('video reloader', function(intVideoId) {
+		console.log('video reloader', intVideoId);
 		if (dictCurConfig.videos[intVideoId]!==undefined) {
 			io.emit('videourl submit', {
 				videoId: intVideoId,
