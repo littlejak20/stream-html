@@ -1,17 +1,22 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
-var userCount = 0;
+var publicPath = __dirname + '/public';
+var filePath = __dirname + '/files';
+
+app.use(express.static(publicPath));
+app.use(express.static(filePath));
 
 app.get('/', function(req, res) {
-	res.sendFile(__dirname + '/view.html');
+	res.sendFile(publicPath + '/view.html');
 });
 app.get('/view', function(req, res) {
-	res.sendFile(__dirname + '/view.html');
+	res.sendFile(publicPath + '/view.html');
 });
 app.get('/config', function(req, res) {
-	res.sendFile(__dirname + '/config.html');
+	res.sendFile(publicPath + '/config.html');
 });
 
 http.listen(4000, function () {
@@ -19,6 +24,7 @@ http.listen(4000, function () {
 });
 
 
+var userCount = 0;
 var dictCurConfig = {
 	modeName: 'container top',
 	videos: ['', // attention: not set 

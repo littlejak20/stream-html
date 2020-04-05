@@ -2,11 +2,11 @@ X - Den Switcher so umstellen, sodass sich der iframe nicht neu lädt
 X - Aktiven Mode auf Config markieren
 - Swicther Config 1 klick markieren, evtl. auch ein Abbruchbutton einbauen
 - Allgemein Button auf Config vergrößern
-- Aufräumen und doppelte Sachen auslagern
-- CSS MIME Type Problem lösen
+X Aufräumen und doppelte Sachen auslagern
+X CSS MIME Type Problem lösen
 - Sass Prefixer einbauen
 	--> CSS ins SCSS umschreiben
-- script Part in JS File auslagern
+X script Part in JS File auslagern
 - Unterschiedliche Profile speichern
 	--> Vielleicht mit Datenbak Anbindung
 - Url vereinfacher mit Dropdown Kategorieren
@@ -19,3 +19,12 @@ X - Aktiven Mode auf Config markieren
 
 Version 2:
 - API der jeweiligen Dienste ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können
+
+
+
+https://stackoverflow.com/questions/1458724/how-do-i-set-unset-a-cookie-with-jquery
+https://stackoverflow.com/questions/2064850/how-to-refresh-an-iframe-using-javascript
+https://www.tutorials.de/threads/iframe-automatisch-aktualisieren-lassen.365897/
+https://css-tricks.com/snippets/jquery/force-iframe-to-reload/
+https://expressjs.com/en/starter/static-files.html
+https://stackoverflow.com/questions/11635845/serving-the-socket-io-javascript-file-to-a-client-via-node-js-express
