@@ -6,6 +6,7 @@ X Aufräumen und doppelte Sachen auslagern
 X CSS MIME Type Problem lösen
 - Sass Prefixer einbauen
 	--> CSS ins SCSS umschreiben
+- Template Engine???
 X script Part in JS File auslagern
 - Unterschiedliche Profile speichern
 	--> Vielleicht mit Datenbak Anbindung
@@ -27,4 +28,7 @@ https://stackoverflow.com/questions/2064850/how-to-refresh-an-iframe-using-javas
 https://www.tutorials.de/threads/iframe-automatisch-aktualisieren-lassen.365897/
 https://css-tricks.com/snippets/jquery/force-iframe-to-reload/
 https://expressjs.com/en/starter/static-files.html
+
 https://stackoverflow.com/questions/11635845/serving-the-socket-io-javascript-file-to-a-client-via-node-js-express
+http://zetcode.com/javascript/nodesass/
+https://medium.com/@kanokpit.skuberg/easy-sass-project-and-compile-with-npm-5861457195b5
