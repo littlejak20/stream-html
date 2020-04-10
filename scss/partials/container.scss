@@ -1,0 +1,160 @@
+.container {
+	@extend %defaultFullContainer;
+	position: relative;
+
+	> * {
+		@extend %defaultFullContainer;
+		position: relative;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+	}
+	input {
+		margin-top: 20px;
+		font-size: 18px;
+		@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+			font-size: 45px;
+		}
+
+		&[type=text] {
+			width: 75%;
+		}
+	}
+
+	%playerColorRed { background-color: red; }
+	%playerColorBlue { background-color: blue; }
+	%playerColorOrange { background-color: orange; }
+	%playerColorGreen { background-color: green; }
+	@each $id in $playerColorRedIds {
+		> [data-id="#{$id}"] { @extend %playerColorRed; }
+	}
+	@each $id in $playerColorBlueIds {
+		> [data-id="#{$id}"] { @extend %playerColorBlue; }
+	}
+	@each $id in $playerColorOrangeIds {
+		> [data-id="#{$id}"] { @extend %playerColorOrange; }
+	}
+	@each $id in $playerColorGreenIds {
+		> [data-id="#{$id}"] { @extend %playerColorGreen; }
+	}
+
+	&.main > * { background-color: transparent; }
+
+	> *:before {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%,-50%);
+		font-size: 18px;
+		font-weight: bold;
+		color: white;
+		@media screen and (min-width: 1921px), print and (min-width: 1921px) {
+			font-size: 35px;
+		}
+	}
+
+	@for $id from 1 to ($playerCount + 1) {
+		> [data-id="#{$id}"]:before { content: 'v#{$id}'; }
+	}
+	> *.no-video {
+		background-color: black;
+		&:before {
+			content: '';
+		}
+	}
+
+	&, &.normal {
+		display: grid;
+		grid-template-columns: 50% 50%;
+		grid-template-rows: 50% 50%;
+		grid-template-areas: 
+			"v1 v2"
+			"v3 v4";
+	}
+	&.top {
+		grid-template-columns: 33.3333333333% 33.3333333333% 33.3333333333%;
+		grid-template-rows: 33.3333333333% 66.6666666666%;
+		grid-template-areas:
+			"v2 v3 v4"
+			"v1 v1 v1";
+	}
+	&.top3-bottom2 {
+		grid-template-columns: 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666%;
+		grid-template-rows:    33.3333333333% 66.6666666666%;
+		grid-template-areas:
+			"v3 v3 v4 v4 v5 v5"
+			"v1 v1 v1 v2 v2 v2";
+	}
+	&.bottom {
+		grid-template-columns: 33.3333333333% 33.3333333333% 33.3333333333%;
+		grid-template-rows: 66.6666666666% 33.3333333333%;
+		grid-template-areas:
+			"v1 v1 v1"
+			"v2 v3 v4";
+	}
+	&.bottom3-top2 {
+		grid-template-columns: 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666%;
+		grid-template-rows: 66.6666666666% 33.3333333333%;
+		grid-template-areas:
+			"v1 v1 v1 v2 v2 v2"
+			"v3 v3 v4 v4 v5 v5";
+	}
+	&.left {
+		grid-template-columns: 33.3333333333% 66.6666666666%;
+		grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
+		grid-template-areas:
+			"v2 v1"
+			"v3 v1"
+			"v4 v1";
+	}
+	&.right {
+		grid-template-columns: 66.6666666666% 33.3333333333%;
+		grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
+		grid-template-areas:
+			"v1 v2"
+			"v1 v3"
+			"v1 v4";
+	}
+	&.top4 {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 75%;
+		grid-template-areas:
+			"v2 v3 v4 v5"
+			"v1 v1 v1 v1";
+	}
+	&.top4-bottom-2 {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 75%;
+		grid-template-areas:
+			"v3 v4 v5 v6"
+			"v1 v1 v2 v2";
+	}
+	&.extrem {
+		display: grid;
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 25% 25% 25%;
+		grid-template-areas: 
+			"v1 v2 v3 v4"
+			"v5 v6 v7 v8"
+			"v9 v10 v11 v12"
+			"v13 v14 v15 v16"
+	}
+
+	&.full, &.over {
+		display: block;
+		> * { display: none; }
+	}
+	&.full > [data-id="1"],
+	&.over > [data-id="1"],
+	&.over > [data-id="2"] {
+		display: flex;
+	}
+	&.over > [data-id="2"] {
+		position: absolute;
+		left: 0.5%;
+		bottom: 1%;
+		width: 20%;
+		height: 20%;
+		z-index: 10;
+	}
+}

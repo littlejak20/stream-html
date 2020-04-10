@@ -37,3 +37,5 @@ https://expressjs.com/en/starter/static-files.html
 https://stackoverflow.com/questions/11635845/serving-the-socket-io-javascript-file-to-a-client-via-node-js-express
 http://zetcode.com/javascript/nodesass/
 https://medium.com/@kanokpit.skuberg/easy-sass-project-and-compile-with-npm-5861457195b5
+
+https://sass-lang.com/documentation/syntax
