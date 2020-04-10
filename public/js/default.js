@@ -86,7 +86,7 @@
 		objContainer.removeAttr('style');
 		objContainer.addClass(strModeName+' main');
 
-		setProzentValues();
+		//setProzentValues();
 
 		console.log(strModeName.split(' ')[1], $('.overlay .mode a.'+strModeName));
 		$('.overlay .mode a').removeClass('is-active');
@@ -158,20 +158,22 @@
 		$(strOverlayClassSliderTB).val(intTopCurentGlo);
 	}
 
-	$('.overlay .form form').on('submit', function(e) {
+	function overlayFormEmit(e, form, strEmitName) {
 		e.preventDefault();
-		var form = $(this);
-		socket.emit('videourl submit', {
+		socket.emit(strEmitName, {
 			videoId: form.data('id'),
 			videoUrl: form.find('input[name="vurl"]').val(),
 			videoVolume: parseFloat(form.find('input[name="vvolume"]').val()),
 		});
+	}
+
+	$('.overlay .form form').on('submit', function(e) {
+		overlayFormEmit(e, $(this), 'videourl submit');
 	});
 	socket.on('videourl submit', function(dict) {
 		console.log('videourl submit', dict);
 		var playerContainer = $(strContainerClass+'.main [data-id="'+dict.videoId+'"]');
 
-		console.log(dict, playerContainer.length > 0);
 		if (dict.videoUrl.length > 0 && playerContainer.length > 0) {
 			playerContainer.html('');
 			players['player'+dict.videoId] = '';
@@ -180,21 +182,35 @@
 				players['player'+dict.videoId] = dict.videoUrl;
 				playerContainer.html('<iframe data-id="'+dict.videoId+'" src="'+dict.videoUrl+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
 			} else {
-				console.log('twitch add', dict);
 				players['player'+dict.videoId] = new Twitch.Player('player'+dict.videoId, { channel: dict.videoUrl});
 
 				setTimeout(function() {
 					var videoVolume = 0.0;
 					if (dict.videoVolume > 0) videoVolume = dict.videoVolume;
-					console.log('skfjhskdfhskdfhsk', videoVolume);
-
 					players['player'+dict.videoId].setVolume(videoVolume);
 				}, 1000);
-				console.log(players);
 			}
 		}
 
 		$('.overlay .form form[data-id="'+dict.videoId+'"] input[type="text"]').val(dict.videoUrl);
+	});
+
+	$('.overlay .form form').on('change.playerVolume', function(e) {
+		overlayFormEmit(e, $(this), 'player volumeChange');
+	});
+	socket.on('player volumeChange', function(dict) {
+		console.log('player volumeChange', dict);
+		var playerContainer = $(strContainerClass+'.main [data-id="'+dict.videoId+'"]');
+
+		if (dict.videoUrl.length > 0 && playerContainer.length > 0) {
+			if (dict.videoUrl.indexOf('http') > 0 || dict.videoUrl.indexOf('https') > 0) {
+				// do nothing
+			} else {
+				var videoVolume = 0.0;
+				if (dict.videoVolume > 0) videoVolume = dict.videoVolume;
+				players['player'+dict.videoId].setVolume(videoVolume);
+			}
+		}
 	});
 
 	var videoId0 = -1;
@@ -224,11 +240,9 @@
 		videoContainer1.attr('data-id', arrVideoIds[0]);
 	});
 
-
+	// use socket.on - videourl submit
 	$('.overlay .js-reloader a').on('click', function(e) {
 		e.preventDefault();
 		socket.emit('video reloader', $(this).data('id'));
 	});
-	// use socket.on - videourl submit
-
 //});

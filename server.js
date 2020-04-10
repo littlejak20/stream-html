@@ -75,6 +75,10 @@ io.on('connection', function(socket) {
 		dictCurConfig.videos[dict.videoId] = dict.videoUrl;
 		io.emit('videourl submit', dict);
 	});
+	socket.on('player volumeChange', function(dict) {
+		console.log('player volumeChange', dict);
+		io.emit('player volumeChange', dict);
+	});
 
 	socket.on('video switcher', function(arrVideoIds) {
 		console.log('video switcher', arrVideoIds);
