@@ -4,9 +4,8 @@ X - Aktiven Mode auf Config markieren
 - Allgemein Button auf Config vergrößern
 X Aufräumen und doppelte Sachen auslagern
 X CSS MIME Type Problem lösen
-- Sass Prefixer einbauen
+X Sass Prefixer einbauen
 	--> CSS ins SCSS umschreiben
-- Template Engine???
 X script Part in JS File auslagern
 - Unterschiedliche Profile speichern
 	--> Vielleicht mit Datenbak Anbindung
@@ -17,6 +16,12 @@ X script Part in JS File auslagern
 	--> YouTube Stream
 	--> YouTube Playlist
 - Dropdownlsite mit hinzugefügen URLs, auch vereinfacht durch Kategorieren
+- Template Engine???
+- Nur Stream Iframes aktiv halten, die aktuell auch eingezeigt werden
+	--> evtl. Funktion aktivieren oder deaktivieren 
+- Bei Switcher Benutzung werden die Textfelder nicht aktuallisiert
+	--> hier vielleicht das gesamtes video array mit schicken
+- Bei Seitenaufruf evtl. gesamtes video array schicken
 
 Version 2:
 - API der jeweiligen Dienste ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können
