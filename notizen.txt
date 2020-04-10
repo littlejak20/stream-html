@@ -23,6 +23,8 @@ X script Part in JS File auslagern
 	--> hier vielleicht das gesamtes video array mit schicken
 - Bei Seitenaufruf evtl. gesamtes video array schicken
 
+- Twicth vloume in array dict speicher
+
 Version 2:
 - API der jeweiligen Dienste ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können
 
