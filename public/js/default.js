@@ -1,6 +1,26 @@
 //$(document).ready(function() {
 	var socket = io();
 
+	var players = {
+		player1: '',
+		player2: '',
+		player3: '',
+		player4: '',
+		player5: '',
+		player6: '',
+		player7: '',
+		player8: '',
+		player9: '',
+		player10: '',
+		player11: '',
+		player12: '',
+		player13: '',
+		player14: '',
+		player15: '',
+		player16: '',
+	}
+	console.log(players);
+
 	var intWidthMaxProzent = 85;
 	var intHeightMaxProzent = 65;
 
@@ -42,10 +62,10 @@
 	var intTopBeforeGlo = intTopCurentGlo;
 	var intBottomBeforeGlo = intBottomCurentGlo;
 
-	setProzentValues();
-	$(strOverlayClassInput).on('input', function(e) { calcProzentValues(this, e) });
-	$(strOverlayClassInput).on('focusout', function(e) { calcProzentValues(this, e)	});
-	$(strOverlayClassRange).on('change', function(e) { calcProzentValues(this, e) });
+	//setProzentValues();
+	//$(strOverlayClassInput).on('input', function(e) { calcProzentValues(this, e) });
+	//$(strOverlayClassInput).on('focusout', function(e) { calcProzentValues(this, e)	});
+	//$(strOverlayClassRange).on('change', function(e) { calcProzentValues(this, e) });
 
 	// isNumber
 	$(strOverlayClassInput).on('keypress',function(e){
@@ -140,22 +160,39 @@
 
 	$('.overlay .form form').on('submit', function(e) {
 		e.preventDefault();
-		var elm = $(this);
+		var form = $(this);
 		socket.emit('videourl submit', {
-			videoId: elm.data('id'),
-			videoUrl: elm.find('input[name="vurl"]').val(),
+			videoId: form.data('id'),
+			videoUrl: form.find('input[name="vurl"]').val(),
+			videoVolume: parseFloat(form.find('input[name="vvolume"]').val()),
 		});
 	});
 	socket.on('videourl submit', function(dict) {
 		console.log('videourl submit', dict);
-		var objContainer = $(strContainerClass+".main");
+		var playerContainer = $(strContainerClass+'.main [data-id="'+dict.videoId+'"]');
 
-		$(strContainerClass+'.main [data-id="'+dict.videoId+'"]').remove();
-		if (dict.videoUrl.length > 0) {
-			objContainer.append('<iframe data-id="'+dict.videoId+'" src="'+dict.videoUrl+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
-		}/* else {
-			objContainer.append('<div data-id="'+dict.videoId+'" class="no-video"></div>');
-		}*/
+		console.log(dict, playerContainer.length > 0);
+		if (dict.videoUrl.length > 0 && playerContainer.length > 0) {
+			playerContainer.html('');
+			players['player'+dict.videoId] = '';
+
+			if (dict.videoUrl.indexOf('http') > 0 || dict.videoUrl.indexOf('https') > 0) {
+				players['player'+dict.videoId] = dict.videoUrl;
+				playerContainer.html('<iframe data-id="'+dict.videoId+'" src="'+dict.videoUrl+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+			} else {
+				console.log('twitch add', dict);
+				players['player'+dict.videoId] = new Twitch.Player('player'+dict.videoId, { channel: dict.videoUrl});
+
+				setTimeout(function() {
+					var videoVolume = 0.0;
+					if (dict.videoVolume > 0) videoVolume = dict.videoVolume;
+					console.log('skfjhskdfhskdfhsk', videoVolume);
+
+					players['player'+dict.videoId].setVolume(videoVolume);
+				}, 1000);
+				console.log(players);
+			}
+		}
 
 		$('.overlay .form form[data-id="'+dict.videoId+'"] input[type="text"]').val(dict.videoUrl);
 	});

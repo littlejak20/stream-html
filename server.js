@@ -28,10 +28,10 @@ var userCount = 0;
 var dictCurConfig = {
 	modeName: 'container top',
 	videos: ['', // attention: not set 
-		'https://player.twitch.tv/?channel=gronkh', // 1
-		'https://player.twitch.tv/?channel=xpandorya', // 2
-		'https://player.twitch.tv/?channel=tobinatorlp', // 3
-		'https://player.twitch.tv/?channel=royalphunk', // 4
+		'gronkh', // 1
+		'xpandorya', // 2
+		'tobinatorlp', // 3
+		'royalphunk', // 4
 		'', // 5
 		'', // 6
 		'', // 7

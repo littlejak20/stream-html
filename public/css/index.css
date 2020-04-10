@@ -206,8 +206,12 @@ html, body, iframe, .container, .container > *, .overlay {
   .overlay .form form {
     display: flex; }
     .overlay .form form + form {
-      margin-top: 5px; }
+      margin-top: 10px; }
+    .overlay .form form > * + * {
+      margin-left: 10px; }
     .overlay .form form input[type="text"] {
+      flex-grow: 2; }
+    .overlay .form form input[type="range"] {
       flex-grow: 1; }
   .overlay .mode, .overlay .switcher {
     display: flex;
