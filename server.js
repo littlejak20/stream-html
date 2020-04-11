@@ -23,6 +23,20 @@ http.listen(4000, function () {
 	console.log('listen on *:4000');
 });
 
+// Helpers - START
+	function objectsAreEqual(obj1, obj2) {
+		return (JSON.stringify(obj1) === JSON.stringify(obj2));
+	}
+	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
+	function dictCheck(object, strObjectName) {
+		if (object!==undefined && object!==null && typeof object==='object' && !(object instanceof Array) && !(object instanceof Date)) return true;
+		return false;
+	}
+	function arrayCheck(object, strObjectName) {
+		if (object!==undefined && object!==null && typeof object==='object' && object instanceof Array) return true;
+		return false;
+	}
+// Helpers - END
 
 var userCount = 0;
 var dictCurConfig = {
@@ -45,6 +59,60 @@ var dictCurConfig = {
 		'', // 15
 		'', // 16
 	],
+	sources: [ 
+		{ // 0 attention: not set 
+			name: '',
+			volume: 0.0,
+		},
+		{ // 1
+			name: 'gronkh',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.5,
+		},
+		{ // 2
+			name: 'xpandorya',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{ // 3
+			name: 'tobinatorlp',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{ // 4
+			name: 'royalphunk',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{ // 5
+			name: '',
+			volume: 0.0,
+		},
+		{ // 6
+			name: '',
+			volume: 0.0,
+		},
+		{ // 7
+			name: '',
+			volume: 0.0,
+		},
+		{ // 8
+			name: '',
+			volume: 0.0,
+		},
+		{ // 9
+			name: '',
+			volume: 0.0,
+		},
+		{ // 10
+			name: '',
+			volume: 0.0,
+		},
+	]
 };
 
 io.on('connection', function(socket) {
@@ -56,46 +124,41 @@ io.on('connection', function(socket) {
 		console.log('disconnected', socket.id, userCount);
 	});
 
-	socket.emit('mode click', dictCurConfig.modeName);
-	dictCurConfig.videos.forEach(function(strVideoUrl, intVideoId) {
-		socket.emit('videourl submit', {
-			videoId: intVideoId,
-			videoUrl: strVideoUrl,
-		});
-	});
+	socket.emit('config reload', dictCurConfig);
 
 	socket.on('mode click', function(strModeName) {
 		console.log('mode click', strModeName);
 		dictCurConfig.modeName = strModeName;
-		io.emit('mode click', strModeName);
+		io.emit('config reload', dictCurConfig);
 	});
 
-	socket.on('videourl submit', function(dict) {
-		console.log('videourl submit', dict);
-		dictCurConfig.videos[dict.videoId] = dict.videoUrl;
-		io.emit('videourl submit', dict);
+	socket.on('videourl submit', function(arrayTmpSources) {
+		console.log('videourl submit', arrayTmpSources);
+		if (arrayCheck(arrayTmpSources)) dictCurConfig.sources = arrayTmpSources;
+		io.emit('config reload', dictCurConfig);
 	});
-	socket.on('player volumeChange', function(dict) {
+
+	/*socket.on('player volumeChange', function(dict) {
 		console.log('player volumeChange', dict);
-		io.emit('player volumeChange', dict);
-	});
+		io.emit('config reload', dictCurConfig);
+	});*/
 
 	socket.on('video switcher', function(arrVideoIds) {
 		console.log('video switcher', arrVideoIds);
-		var strVideoUrl0 = dictCurConfig.videos[arrVideoIds[0]];
-		var strVideoUrl1 = dictCurConfig.videos[arrVideoIds[1]];
-		dictCurConfig.videos[arrVideoIds[0]] = strVideoUrl1;
-		dictCurConfig.videos[arrVideoIds[1]] = strVideoUrl0;
+
+		var dictSource0 = dictCurConfig.sources[arrVideoIds[0]];
+		var dictSource1 = dictCurConfig.sources[arrVideoIds[1]];
+		dictCurConfig.sources[arrVideoIds[0]] = dictSource1;
+		dictCurConfig.sources[arrVideoIds[1]] = dictSource0;
+
 		io.emit('video switcher', arrVideoIds);
+	});
+	socket.on('video switcher finish', function(arrVideoIds) {
+		io.emit('config reload', dictCurConfig);
 	});
 
 	socket.on('video reloader', function(intVideoId) {
 		console.log('video reloader', intVideoId);
-		if (dictCurConfig.videos[intVideoId]!==undefined) {
-			io.emit('videourl submit', {
-				videoId: intVideoId,
-				videoUrl: dictCurConfig.videos[intVideoId],
-			});
-		}
+		io.emit('config reload', dictCurConfig);
 	});
 });
