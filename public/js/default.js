@@ -84,56 +84,39 @@ function overlayFormEmit(e, form, strEmitName) {
 $(strOverlayClass+' .form form').on('submit', function(e) {
 	overlayFormEmit(e, $(this), 'videourl submit');
 });
+$(strOverlayClass+' .form form').on('change.playerVolume', function(e) {
+	overlayFormEmit(e, $(this), 'player volumeChange');
+});
 function setPlayerContainer(indexServerSource, dictServerSource) {
 	console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
-
 	var dictClientSource = [];
 	if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
 	if (objectsAreEqual(dictServerSource, dictClientSource)) return false;
 	var playerContainer = $(strContainerClass+'.main [data-id="'+(indexServerSource+1)+'"]');
 
 	if (dictServerSource.name.length > 0 && playerContainer.length > 0) {
-
 		if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
 			if (dictServerSource.name === dictClientSource.name) {
-				playerContainer.html('');
 				playerContainer.html('<iframe data-id="'+(indexServerSource+1)+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
 			}
 		} else {
+			var waitTimeMsec = 0;
 			if (dictServerSource.name != dictClientSource.name) {
 				playerContainer.html('');
 				players['player'+(indexServerSource+1)] = '';
 				players['player'+(indexServerSource+1)] = new Twitch.Player('player'+(indexServerSource+1), { channel: dictServerSource.name});
+				waitTimeMsec = 1000;
 			}
-
 			if (dictServerSource.volume != dictClientSource.volume) {
 				setTimeout(function() {
 					var videoVolume = 0.0;
 					if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
 					players['player'+(indexServerSource+1)].setVolume(videoVolume);
-				}, 1000);
+				}, waitTimeMsec);
 			}
 		}
 	}
 }
-
-$(strOverlayClass+' .form form').on('change.playerVolume', function(e) {
-	overlayFormEmit(e, $(this), 'player volumeChange');
-});
-socket.on('player volumeChange', function(dict) {
-	console.log('player volumeChange', dict);
-	var playerContainer = $(strContainerClass+'.main [data-id="'+dict.videoId+'"]');
-
-	if (dict.videoUrl.length > 0 && playerContainer.length > 0) {
-		if (dict.videoUrl.indexOf('http') > 0 || dict.videoUrl.indexOf('https') > 0) {
-			// do nothing
-		} else {
-			var videoVolume = 0.0;
-			if (dict.videoVolume > 0) videoVolume = dict.videoVolume;
-			players['player'+dict.videoId].setVolume(videoVolume);
-		}
-	}
-});
 
 var videoId0 = -1;
 var videoId1 = -1;
