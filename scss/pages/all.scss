@@ -15,5 +15,27 @@
 html, body, iframe { @extend %defaultFullContainer; }
 
 @for $id from 1 to ($playerCount + 1) {
-	[data-id="#{$id}"] { grid-area: v#{$id}; }
+	[data-id="#{$id}"] {
+		grid-area: v#{$id};
+		&:before {
+			content: 'v#{$id}';
+		}
+	}
+}
+
+%playerColorRed { background-color: red; }
+%playerColorBlue { background-color: blue; }
+%playerColorOrange { background-color: orange; }
+%playerColorGreen { background-color: green; }
+@each $id in $playerColorRedIds {
+	[data-id="#{$id}"] { @extend %playerColorRed; }
+}
+@each $id in $playerColorBlueIds {
+	[data-id="#{$id}"] { @extend %playerColorBlue; }
+}
+@each $id in $playerColorOrangeIds {
+	[data-id="#{$id}"] { @extend %playerColorOrange; }
+}
+@each $id in $playerColorGreenIds {
+	[data-id="#{$id}"] { @extend %playerColorGreen; }
 }
