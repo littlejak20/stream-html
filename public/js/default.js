@@ -55,6 +55,35 @@ socket.on('config all', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
 });
 
+
+$(strOverlayClass+' .mode a').on('click', function(e) {
+	e.preventDefault();
+	socket.emit('mode click', $(this).attr('class'));
+});
+function setModeName(strModeName) {
+	console.log('setModeName ==>', strModeName);
+	var objContainer = $(strContainerClass+'.main');
+	objContainer.removeAttr('class');
+	objContainer.removeAttr('style');
+	objContainer.addClass(strModeName+' main');
+
+	console.log(strModeName.split(' ')[1], $(strOverlayClass+' .mode a.'+strModeName));
+	$(strOverlayClass+' .mode a').removeClass('is-active');
+	$(strOverlayClass+' .mode a.'+strModeName.split(' ')[1]).addClass('is-active');
+};
+
+function overlayFormEmit(e, form, strEmitName) {
+	e.preventDefault();
+	socket.emit(strEmitName, {
+		videoId: form.data('id'),
+		videoUrl: form.find('input[name="vurl"]').val(),
+		videoVolume: parseFloat(form.find('input[name="vvolume"]').val()),
+	});
+}
+
+$(strOverlayClass+' .form form').on('submit', function(e) {
+	overlayFormEmit(e, $(this), 'videourl submit');
+});
 function setPlayerContainer(indexServerSource, dictServerSource) {
 	console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
 
@@ -87,59 +116,6 @@ function setPlayerContainer(indexServerSource, dictServerSource) {
 		}
 	}
 }
-
-$(strOverlayClass+' .mode a').on('click', function(e) {
-	e.preventDefault();
-	socket.emit('mode click', $(this).attr('class'));
-});
-function setModeName(strModeName) {
-	console.log('setModeName ==>', strModeName);
-	var objContainer = $(strContainerClass+'.main');
-	objContainer.removeAttr('class');
-	objContainer.removeAttr('style');
-	objContainer.addClass(strModeName+' main');
-
-	console.log(strModeName.split(' ')[1], $(strOverlayClass+' .mode a.'+strModeName));
-	$(strOverlayClass+' .mode a').removeClass('is-active');
-	$(strOverlayClass+' .mode a.'+strModeName.split(' ')[1]).addClass('is-active');
-};
-
-function overlayFormEmit(e, form, strEmitName) {
-	e.preventDefault();
-	socket.emit(strEmitName, {
-		videoId: form.data('id'),
-		videoUrl: form.find('input[name="vurl"]').val(),
-		videoVolume: parseFloat(form.find('input[name="vvolume"]').val()),
-	});
-}
-
-$(strOverlayClass+' .form form').on('submit', function(e) {
-	overlayFormEmit(e, $(this), 'videourl submit');
-});
-socket.on('videourl submit', function(dict) {
-	console.log('videourl submit', dict);
-	var playerContainer = $(strContainerClass+'.main [data-id="'+dict.videoId+'"]');
-
-	if (dict.videoUrl.length > 0 && playerContainer.length > 0) {
-		playerContainer.html('');
-		players['player'+dict.videoId] = '';
-
-		if (dict.videoUrl.indexOf('http') > 0 || dict.videoUrl.indexOf('https') > 0) {
-			players['player'+dict.videoId] = dict.videoUrl;
-			playerContainer.html('<iframe data-id="'+dict.videoId+'" src="'+dict.videoUrl+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
-		} else {
-			players['player'+dict.videoId] = new Twitch.Player('player'+dict.videoId, { channel: dict.videoUrl});
-
-			setTimeout(function() {
-				var videoVolume = 0.0;
-				if (dict.videoVolume > 0) videoVolume = dict.videoVolume;
-				players['player'+dict.videoId].setVolume(videoVolume);
-			}, 1000);
-		}
-	}
-
-	$(strOverlayClass+' .form form[data-id="'+dict.videoId+'"] input[type="text"]').val(dict.videoUrl);
-});
 
 $(strOverlayClass+' .form form').on('change.playerVolume', function(e) {
 	overlayFormEmit(e, $(this), 'player volumeChange');
