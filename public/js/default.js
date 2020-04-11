@@ -234,10 +234,20 @@
 	});
 	socket.on('video switcher', function(arrVideoIds) {
 		console.log('video switcher', arrVideoIds);
+
 		var videoContainer0 = $(strContainerClass+'.main [data-id="'+arrVideoIds[0]+'"]');
 		var videoContainer1 = $(strContainerClass+'.main [data-id="'+arrVideoIds[1]+'"]');
+		var idName0 = videoContainer0.attr('id');
+		var idName1 = videoContainer1.attr('id');
+		var player0 = players['player'+arrVideoIds[0]];
+		var player1 = players['player'+arrVideoIds[1]];
+
 		videoContainer0.attr('data-id', arrVideoIds[1]);
 		videoContainer1.attr('data-id', arrVideoIds[0]);
+		videoContainer0.attr('id', idName1);
+		videoContainer1.attr('id', idName0);
+		players['player'+arrVideoIds[0]] = player1;
+		players['player'+arrVideoIds[1]] = player0;
 	});
 
 	// use socket.on - videourl submit
