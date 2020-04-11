@@ -21,7 +21,7 @@ X script Part in JS File auslagern
 	--> evtl. Funktion aktivieren oder deaktivieren 
 - Bei Seitenaufruf evtl. gesamtes video array schicken
 
-- Twitch volume in array dict speicher
+- Twitch volume in array dict speichern
 - Bei Switcher Benutzung werden die Textfelder und volume nicht aktuallisiert
 	--> hier vielleicht das gesamtes video array mit schicken
 - server und client Datenstruktur umbauen

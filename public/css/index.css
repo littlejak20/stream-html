@@ -13,51 +13,95 @@ html, body, iframe, .container, .container > *, .overlay {
 
 [data-id="1"] {
   grid-area: v1; }
+  [data-id="1"]:before {
+    content: "v1"; }
 
 [data-id="2"] {
   grid-area: v2; }
+  [data-id="2"]:before {
+    content: "v2"; }
 
 [data-id="3"] {
   grid-area: v3; }
+  [data-id="3"]:before {
+    content: "v3"; }
 
 [data-id="4"] {
   grid-area: v4; }
+  [data-id="4"]:before {
+    content: "v4"; }
 
 [data-id="5"] {
   grid-area: v5; }
+  [data-id="5"]:before {
+    content: "v5"; }
 
 [data-id="6"] {
   grid-area: v6; }
+  [data-id="6"]:before {
+    content: "v6"; }
 
 [data-id="7"] {
   grid-area: v7; }
+  [data-id="7"]:before {
+    content: "v7"; }
 
 [data-id="8"] {
   grid-area: v8; }
+  [data-id="8"]:before {
+    content: "v8"; }
 
 [data-id="9"] {
   grid-area: v9; }
+  [data-id="9"]:before {
+    content: "v9"; }
 
 [data-id="10"] {
   grid-area: v10; }
+  [data-id="10"]:before {
+    content: "v10"; }
 
 [data-id="11"] {
   grid-area: v11; }
+  [data-id="11"]:before {
+    content: "v11"; }
 
 [data-id="12"] {
   grid-area: v12; }
+  [data-id="12"]:before {
+    content: "v12"; }
 
 [data-id="13"] {
   grid-area: v13; }
+  [data-id="13"]:before {
+    content: "v13"; }
 
 [data-id="14"] {
   grid-area: v14; }
+  [data-id="14"]:before {
+    content: "v14"; }
 
 [data-id="15"] {
   grid-area: v15; }
+  [data-id="15"]:before {
+    content: "v15"; }
 
 [data-id="16"] {
   grid-area: v16; }
+  [data-id="16"]:before {
+    content: "v16"; }
+
+[data-id="1"], [data-id="5"], [data-id="9"], [data-id="13"] {
+  background-color: red; }
+
+[data-id="2"], [data-id="6"], [data-id="10"], [data-id="14"] {
+  background-color: blue; }
+
+[data-id="3"], [data-id="7"], [data-id="11"], [data-id="15"] {
+  background-color: orange; }
+
+[data-id="4"], [data-id="8"], [data-id="12"], [data-id="16"] {
+  background-color: green; }
 
 .container {
   position: relative; }
@@ -74,16 +118,6 @@ html, body, iframe, .container, .container > *, .overlay {
         font-size: 45px; } }
     .container input[type=text] {
       width: 75%; }
-  .container > [data-id="1"], .container > [data-id="5"], .container > [data-id="9"], .container > [data-id="13"] {
-    background-color: red; }
-  .container > [data-id="2"], .container > [data-id="6"], .container > [data-id="10"], .container > [data-id="14"] {
-    background-color: blue; }
-  .container > [data-id="3"], .container > [data-id="7"], .container > [data-id="11"], .container > [data-id="15"] {
-    background-color: orange; }
-  .container > [data-id="4"], .container > [data-id="8"], .container > [data-id="12"], .container > [data-id="16"] {
-    background-color: green; }
-  .container.main > * {
-    background-color: transparent; }
   .container > *:before {
     position: absolute;
     top: 50%;
@@ -95,42 +129,10 @@ html, body, iframe, .container, .container > *, .overlay {
     @media screen and (min-width: 1921px), print and (min-width: 1921px) {
       .container > *:before {
         font-size: 35px; } }
-  .container > [data-id="1"]:before {
-    content: "v1"; }
-  .container > [data-id="2"]:before {
-    content: "v2"; }
-  .container > [data-id="3"]:before {
-    content: "v3"; }
-  .container > [data-id="4"]:before {
-    content: "v4"; }
-  .container > [data-id="5"]:before {
-    content: "v5"; }
-  .container > [data-id="6"]:before {
-    content: "v6"; }
-  .container > [data-id="7"]:before {
-    content: "v7"; }
-  .container > [data-id="8"]:before {
-    content: "v8"; }
-  .container > [data-id="9"]:before {
-    content: "v9"; }
-  .container > [data-id="10"]:before {
-    content: "v10"; }
-  .container > [data-id="11"]:before {
-    content: "v11"; }
-  .container > [data-id="12"]:before {
-    content: "v12"; }
-  .container > [data-id="13"]:before {
-    content: "v13"; }
-  .container > [data-id="14"]:before {
-    content: "v14"; }
-  .container > [data-id="15"]:before {
-    content: "v15"; }
-  .container > [data-id="16"]:before {
-    content: "v16"; }
-  .container > *.no-video {
-    background-color: black; }
-    .container > *.no-video:before {
-      content: ''; }
+  .container.main > * {
+    background-color: transparent; }
+    .container.main > *:before {
+      display: none; }
   .container, .container.normal {
     display: grid;
     grid-template-columns: 50% 50%;
