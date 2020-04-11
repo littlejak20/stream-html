@@ -132,16 +132,16 @@ io.on('connection', function(socket) {
 		io.emit('config reload', dictCurConfig);
 	});
 
-	/*socket.on('videourl submit', function(dict) {
-		console.log('videourl submit', dict);
-		dictCurConfig.videos[dict.videoId] = dict.videoUrl;
-		io.emit('config reload', dictCurConfig);
-	});*/
-
-	socket.on('player volumeChange', function(dict) {
-		console.log('player volumeChange', dict);
+	socket.on('videourl submit', function(arrayTmpSources) {
+		console.log('videourl submit', arrayTmpSources);
+		if (arrayCheck(arrayTmpSources)) dictCurConfig.sources = arrayTmpSources;
 		io.emit('config reload', dictCurConfig);
 	});
+
+	/*socket.on('player volumeChange', function(dict) {
+		console.log('player volumeChange', dict);
+		io.emit('config reload', dictCurConfig);
+	});*/
 
 	socket.on('video switcher', function(arrVideoIds) {
 		console.log('video switcher', arrVideoIds);

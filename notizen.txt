@@ -27,7 +27,7 @@ X - Bei Switcher Benutzung werden die Textfelder und volume nicht aktuallisiert
 (X) - server und client Datenstruktur umbauen
 
 Für Version 2:
-- Formeingaben in new Struktur speicher und senden
+X - Formeingaben in new Struktur speicher und senden
 - Reloader Funktionen wieder versuchen einzubauen
 
 Version 3:

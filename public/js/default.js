@@ -2,7 +2,8 @@ var socket = io();
 
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
-var strFormSourcesClass = '#formSources';
+var strFormSourcesClass = '#formSources form';
+var strFormSaveButtonClass = strFormSourcesClass+' #allSourcesSave';
 var players = {
 	player1: '',
 	player2: '',
@@ -19,6 +20,7 @@ var dictClientConfig = {};
 
 // Helpers - START
 	function objectsAreEqual(obj1, obj2) {
+		//console.log('objectsAreEqual', (JSON.stringify(obj1) === JSON.stringify(obj2)), JSON.stringify(obj1), JSON.stringify(obj2));
 		return (JSON.stringify(obj1) === JSON.stringify(obj2));
 	}
 	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
@@ -38,8 +40,7 @@ socket.on('config reload', function(dictServerConfig) {
 	// for site config - source form
 	$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
 		console.log('setFormSource ==>', indexServerSource, dictServerSource);	
-		var formContainer = $(strFormSourcesClass+' [data-id="'+indexServerSource+'"]');
-		console.log('form reload');
+		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
 			formContainer.find('input[name="name"]').val(dictServerSource.name);
 			formContainer.find('input[name="platform"]').val(dictServerSource.platform);
@@ -73,21 +74,21 @@ socket.on('config reload', function(dictServerConfig) {
 			console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
 			var dictClientSource = [];
 			if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
-			if (objectsAreEqual(dictServerSource, dictClientSource)) return false;
+			//if (objectsAreEqual(dictServerSource, dictClientSource)) return false; // error?
 			
 			var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
 			if (playerContainer.length > 0) {
 				if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
-					if (dictServerSource.name == dictClientSource.name) {						
+					if (dictServerSource.name === dictClientSource.name) {						
 						playerContainer.html('');
 						if (dictServerSource.name.length > 0) {
 							playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
 						}
 					}
-					
+
 				} else {
 					var waitTimeMsec = 0;
-					if (dictServerSource.name != dictClientSource.name) {
+					if (dictServerSource.name !== dictClientSource.name) {
 						playerContainer.html('');
 						players['player'+indexServerSource] = '';
 
@@ -95,13 +96,13 @@ socket.on('config reload', function(dictServerConfig) {
 							players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
 							waitTimeMsec = 1000;
 
-							setTimeout(function() {
+							/*setTimeout(function() {
 								players['player'+indexServerSource].pause();
-							}, waitTimeMsec);
+							}, waitTimeMsec);*/
 						}
 					}
 
-					if (dictServerSource.volume != dictClientSource.volume && dictServerSource.name.length > 0) {
+					if (dictServerSource.volume !== dictClientSource.volume && dictServerSource.name.length > 0) {
 						setTimeout(function() {
 							var videoVolume = 0.0;
 							if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
@@ -122,35 +123,41 @@ socket.on('config onlyset', function(dictServerConfig) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
 	socket.emit('mode click', $(this).attr('class'));
 });
 
-$(strFormSourcesClass).on('submit', function(e) {
-	overlayFormEmit(e, $(this), 'videourl submit');
+$(strFormSaveButtonClass).on('click', function(e) {
+	overlayFormEmit(e);
 });
 $(strFormSourcesClass).on('change.playerVolume', function(e) {
-	overlayFormEmit(e, $(this), 'player volumeChange');
+	overlayFormEmit(e);
 });
-function overlayFormEmit(e, form, strEmitName) {
+function overlayFormEmit(e) {
+	console.log('overlayFormEmit ==>', e);
 	e.preventDefault();
-	socket.emit(strEmitName, {
-		videoId: form.data('id'),
-		videoUrl: form.find('input[name="vurl"]').val(),
-		videoVolume: parseFloat(form.find('input[name="vvolume"]').val()),
+
+	var arrayTmpSources = [
+		{ // 0 attention: not set 
+			name: '',
+			volume: 0.0,
+		},
+	];
+
+	$(strFormSourcesClass).each(function(index, form) {
+		formContainer = $(form);
+		arrayTmpSources.push({
+			name: formContainer.find('input[name="name"]').val(),
+			platform: 'twitch',
+			type: 'stream',
+			volume: parseFloat(formContainer.find('input[name="volume"]').val()),
+		});
+
+		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
 	});
+
+	socket.emit('videourl submit', arrayTmpSources);
 }
 
 var videoId0 = -1;
