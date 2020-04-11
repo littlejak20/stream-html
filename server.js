@@ -68,7 +68,7 @@ var dictCurConfig = {
 			name: 'gronkh',
 			platform: 'twitch',
 			type: 'stream',
-			volume: 1.0,
+			volume: 0.5,
 		},
 		{ // 2
 			name: 'xpandorya',
@@ -86,7 +86,7 @@ var dictCurConfig = {
 			name: 'royalphunk',
 			platform: 'twitch',
 			type: 'stream',
-			volume: 1.0,
+			volume: 0.0,
 		},
 		{ // 5
 			name: '',
@@ -132,11 +132,12 @@ io.on('connection', function(socket) {
 		io.emit('config reload', dictCurConfig);
 	});
 
-	socket.on('videourl submit', function(dict) {
+	/*socket.on('videourl submit', function(dict) {
 		console.log('videourl submit', dict);
 		dictCurConfig.videos[dict.videoId] = dict.videoUrl;
 		io.emit('config reload', dictCurConfig);
-	});
+	});*/
+
 	socket.on('player volumeChange', function(dict) {
 		console.log('player volumeChange', dict);
 		io.emit('config reload', dictCurConfig);
@@ -145,13 +146,15 @@ io.on('connection', function(socket) {
 	socket.on('video switcher', function(arrVideoIds) {
 		console.log('video switcher', arrVideoIds);
 
-		var dictTmpSource0 = dictCurConfig.sources[arrVideoIds[0]];
-		var dictTmpSource1 = dictCurConfig.sources[arrVideoIds[1]];
-		dictCurConfig.sources[arrVideoIds[0]] = dictTmpSource1;
-		dictCurConfig.sources[arrVideoIds[1]] = dictTmpSource0;
+		var dictSource0 = dictCurConfig.sources[arrVideoIds[0]];
+		var dictSource1 = dictCurConfig.sources[arrVideoIds[1]];
+		dictCurConfig.sources[arrVideoIds[0]] = dictSource1;
+		dictCurConfig.sources[arrVideoIds[1]] = dictSource0;
 
 		io.emit('video switcher', arrVideoIds);
-		io.emit('config onlyset', dictCurConfig);
+	});
+	socket.on('video switcher finish', function(arrVideoIds) {
+		io.emit('config reload', dictCurConfig);
 	});
 
 	socket.on('video reloader', function(intVideoId) {

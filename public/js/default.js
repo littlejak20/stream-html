@@ -1,10 +1,8 @@
 var socket = io();
 
-//console.log('same', (JSON.stringify({ test1: '' }) === JSON.stringify({ test1: '' })));
-//console.log('other', (JSON.stringify({ test1: '' }) === JSON.stringify({ test2: '' })));
-
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
+var strFormSourcesClass = '#formSources';
 var players = {
 	player1: '',
 	player2: '',
@@ -15,13 +13,7 @@ var players = {
 	player7: '',
 	player8: '',
 	player9: '',
-	player10: '',
-	player11: '',
-	player12: '',
-	player13: '',
-	player14: '',
-	player15: '',
-	player16: '',
+	player10: ''
 }
 var dictClientConfig = {};
 
@@ -42,13 +34,82 @@ var dictClientConfig = {};
 
 socket.on('config reload', function(dictServerConfig) {
 	console.log('config reload', dictServerConfig);
+
+	// for site config - source form
+	$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
+		console.log('setFormSource ==>', indexServerSource, dictServerSource);	
+		var formContainer = $(strFormSourcesClass+' [data-id="'+indexServerSource+'"]');
+		console.log('form reload');
+		if (formContainer.length > 0) {
+			formContainer.find('input[name="name"]').val(dictServerSource.name);
+			formContainer.find('input[name="platform"]').val(dictServerSource.platform);
+			formContainer.find('input[name="type"]').val(dictServerSource.type);
+			formContainer.find('input[name="volume"]').val(dictServerSource.volume);
+		}
+	});
+
+	/*
+	 * At this position it is checked whether config dict from the server and client are the same.
+	 * If yes, then end the function here.
+	 */
 	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
 
-	if (dictServerConfig.modeName != dictClientConfig.modeName) setModeName(dictServerConfig.modeName);
+	// for site view/config - mode
+	if (dictServerConfig.modeName != dictClientConfig.modeName) {
+		console.log('setModeName ==>', dictServerConfig.modeName);
+		var objContainer = $(strContainerClass+'.main');
+		objContainer.removeAttr('class');
+		objContainer.removeAttr('style');
+		objContainer.addClass(dictServerConfig.modeName+' main');
 
+		console.log(dictServerConfig.modeName.split(' ')[1], $(strOverlayClass+' .mode a.'+dictServerConfig.modeName));
+		$(strOverlayClass+' .mode a').removeClass('is-active');
+		$(strOverlayClass+' .mode a.'+dictServerConfig.modeName.split(' ')[1]).addClass('is-active');
+	}
+
+	// for site view - player
 	if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) {
 		$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
-			setPlayerContainer(indexServerSource, dictServerSource);
+			console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
+			var dictClientSource = [];
+			if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
+			if (objectsAreEqual(dictServerSource, dictClientSource)) return false;
+			
+			var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
+			if (playerContainer.length > 0) {
+				if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
+					if (dictServerSource.name == dictClientSource.name) {						
+						playerContainer.html('');
+						if (dictServerSource.name.length > 0) {
+							playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+						}
+					}
+					
+				} else {
+					var waitTimeMsec = 0;
+					if (dictServerSource.name != dictClientSource.name) {
+						playerContainer.html('');
+						players['player'+indexServerSource] = '';
+
+						if (dictServerSource.name.length > 0) {
+							players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
+							waitTimeMsec = 1000;
+
+							setTimeout(function() {
+								players['player'+indexServerSource].pause();
+							}, waitTimeMsec);
+						}
+					}
+
+					if (dictServerSource.volume != dictClientSource.volume && dictServerSource.name.length > 0) {
+						setTimeout(function() {
+							var videoVolume = 0.0;
+							if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+							players['player'+indexServerSource].setVolume(videoVolume);
+						}, waitTimeMsec);
+					}
+				}
+			}
 		});
 	}
 
@@ -58,26 +119,29 @@ socket.on('config onlyset', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
 	socket.emit('mode click', $(this).attr('class'));
 });
-function setModeName(strModeName) {
-	console.log('setModeName ==>', strModeName);
-	var objContainer = $(strContainerClass+'.main');
-	objContainer.removeAttr('class');
-	objContainer.removeAttr('style');
-	objContainer.addClass(strModeName+' main');
 
-	console.log(strModeName.split(' ')[1], $(strOverlayClass+' .mode a.'+strModeName));
-	$(strOverlayClass+' .mode a').removeClass('is-active');
-	$(strOverlayClass+' .mode a.'+strModeName.split(' ')[1]).addClass('is-active');
-};
-
-$(strOverlayClass+' .form form').on('submit', function(e) {
+$(strFormSourcesClass).on('submit', function(e) {
 	overlayFormEmit(e, $(this), 'videourl submit');
 });
-$(strOverlayClass+' .form form').on('change.playerVolume', function(e) {
+$(strFormSourcesClass).on('change.playerVolume', function(e) {
 	overlayFormEmit(e, $(this), 'player volumeChange');
 });
 function overlayFormEmit(e, form, strEmitName) {
@@ -87,40 +151,6 @@ function overlayFormEmit(e, form, strEmitName) {
 		videoUrl: form.find('input[name="vurl"]').val(),
 		videoVolume: parseFloat(form.find('input[name="vvolume"]').val()),
 	});
-}
-$(strOverlayClass+' .js-reloader a').on('click', function(e) {
-	e.preventDefault();
-	socket.emit('video reloader', $(this).data('id'));
-});
-function setPlayerContainer(indexServerSource, dictServerSource) {
-	console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
-	var dictClientSource = [];
-	if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
-	if (objectsAreEqual(dictServerSource, dictClientSource)) return false;
-	var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
-
-	if (dictServerSource.name.length > 0 && playerContainer.length > 0) {
-		if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
-			if (dictServerSource.name === dictClientSource.name) {
-				playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
-			}
-		} else {
-			var waitTimeMsec = 0;
-			if (dictServerSource.name != dictClientSource.name) {
-				playerContainer.html('');
-				players['player'+indexServerSource] = '';
-				players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
-				waitTimeMsec = 1000;
-			}
-			if (dictServerSource.volume != dictClientSource.volume) {
-				setTimeout(function() {
-					var videoVolume = 0.0;
-					if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-					players['player'+indexServerSource].setVolume(videoVolume);
-				}, waitTimeMsec);
-			}
-		}
-	}
 }
 
 var videoId0 = -1;
@@ -151,6 +181,8 @@ socket.on('video switcher', function(arrVideoIds) {
 	var idName1 = videoContainer1.attr('id');
 	var player0 = players['player'+arrVideoIds[0]];
 	var player1 = players['player'+arrVideoIds[1]];
+	var dictSource0 = dictClientConfig.sources[arrVideoIds[0]];
+	var dictSource1 = dictClientConfig.sources[arrVideoIds[1]];
 
 	videoContainer0.attr('data-id', arrVideoIds[1]);
 	videoContainer1.attr('data-id', arrVideoIds[0]);
@@ -158,4 +190,13 @@ socket.on('video switcher', function(arrVideoIds) {
 	videoContainer1.attr('id', idName0);
 	players['player'+arrVideoIds[0]] = player1;
 	players['player'+arrVideoIds[1]] = player0;
+	dictClientConfig.sources[arrVideoIds[0]] = dictSource1;
+	dictClientConfig.sources[arrVideoIds[1]] = dictSource0;
+
+	socket.emit('video switcher finish');
+});
+
+$(strOverlayClass+' .js-reloader a').on('click', function(e) {
+	e.preventDefault();
+	socket.emit('video reloader', $(this).data('id'));
 });
