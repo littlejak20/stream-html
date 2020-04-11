@@ -21,26 +21,8 @@
 		}
 	}
 
-	%playerColorRed { background-color: red; }
-	%playerColorBlue { background-color: blue; }
-	%playerColorOrange { background-color: orange; }
-	%playerColorGreen { background-color: green; }
-	@each $id in $playerColorRedIds {
-		> [data-id="#{$id}"] { @extend %playerColorRed; }
-	}
-	@each $id in $playerColorBlueIds {
-		> [data-id="#{$id}"] { @extend %playerColorBlue; }
-	}
-	@each $id in $playerColorOrangeIds {
-		> [data-id="#{$id}"] { @extend %playerColorOrange; }
-	}
-	@each $id in $playerColorGreenIds {
-		> [data-id="#{$id}"] { @extend %playerColorGreen; }
-	}
 
-	&.main > * { background-color: transparent; }
-
-	> *:before {
+	> *:before { // * = data-id
 		position: absolute;
 		top: 50%;
 		left: 50%;
@@ -53,14 +35,9 @@
 		}
 	}
 
-	@for $id from 1 to ($playerCount + 1) {
-		> [data-id="#{$id}"]:before { content: 'v#{$id}'; }
-	}
-	> *.no-video {
-		background-color: black;
-		&:before {
-			content: '';
-		}
+	&.main > * { // * = data-id
+		background-color: transparent;
+		&:before { display: none; }
 	}
 
 	&, &.normal {
