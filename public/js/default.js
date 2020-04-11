@@ -1,5 +1,10 @@
 var socket = io();
 
+//console.log('same', (JSON.stringify({ test1: '' }) === JSON.stringify({ test1: '' })));
+//console.log('other', (JSON.stringify({ test1: '' }) === JSON.stringify({ test2: '' })));
+
+var strOverlayClass = '.overlay';
+var strContainerClass = '.container';
 var players = {
 	player1: '',
 	player2: '',
@@ -18,17 +23,77 @@ var players = {
 	player15: '',
 	player16: '',
 }
-console.log(players);
+var dictClientConfig = {};
 
-var strOverlayClass = '.overlay';
-var strContainerClass = '.container';
+// Helpers - START
+	function objectsAreEqual(obj1, obj2) {
+		return (JSON.stringify(obj1) === JSON.stringify(obj2));
+	}
+	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
+	function dictCheck(object, strObjectName) {
+		if (object!==undefined && object!==null && typeof object==='object' && !(object instanceof Array) && !(object instanceof Date)) return true;
+		return false;
+	}
+	function arrayCheck(object, strObjectName) {
+		if (object!==undefined && object!==null && typeof object==='object' && object instanceof Array) return true;
+		return false;
+	}
+// Helpers - END
+
+socket.on('config all', function(dictServerConfig) {
+	console.log('config all', dictServerConfig);
+	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
+
+	if (dictServerConfig.modeName != dictClientConfig.modeName) setModeName(dictServerConfig.modeName);
+
+	if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) {
+		$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
+			setPlayerContainer(indexServerSource, dictServerSource);
+		});
+	}
+
+	dictClientConfig = dictServerConfig;
+});
+
+function setPlayerContainer(indexServerSource, dictServerSource) {
+	console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
+
+	var dictClientSource = [];
+	if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
+	if (objectsAreEqual(dictServerSource, dictClientSource)) return false;
+	var playerContainer = $(strContainerClass+'.main [data-id="'+(indexServerSource+1)+'"]');
+
+	if (dictServerSource.name.length > 0 && playerContainer.length > 0) {
+
+		if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
+			if (dictServerSource.name === dictClientSource.name) {
+				playerContainer.html('');
+				playerContainer.html('<iframe data-id="'+(indexServerSource+1)+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+			}
+		} else {
+			if (dictServerSource.name != dictClientSource.name) {
+				playerContainer.html('');
+				players['player'+(indexServerSource+1)] = '';
+				players['player'+(indexServerSource+1)] = new Twitch.Player('player'+(indexServerSource+1), { channel: dictServerSource.name});
+			}
+
+			if (dictServerSource.volume != dictClientSource.volume) {
+				setTimeout(function() {
+					var videoVolume = 0.0;
+					if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+					players['player'+(indexServerSource+1)].setVolume(videoVolume);
+				}, 1000);
+			}
+		}
+	}
+}
 
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
 	socket.emit('mode click', $(this).attr('class'));
 });
-socket.on('mode click', function(strModeName) {
-	console.log('mode click', strModeName);
+function setModeName(strModeName) {
+	console.log('setModeName ==>', strModeName);
 	var objContainer = $(strContainerClass+'.main');
 	objContainer.removeAttr('class');
 	objContainer.removeAttr('style');
@@ -37,7 +102,7 @@ socket.on('mode click', function(strModeName) {
 	console.log(strModeName.split(' ')[1], $(strOverlayClass+' .mode a.'+strModeName));
 	$(strOverlayClass+' .mode a').removeClass('is-active');
 	$(strOverlayClass+' .mode a.'+strModeName.split(' ')[1]).addClass('is-active');
-});
+};
 
 function overlayFormEmit(e, form, strEmitName) {
 	e.preventDefault();

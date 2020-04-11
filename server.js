@@ -45,6 +45,36 @@ var dictCurConfig = {
 		'', // 15
 		'', // 16
 	],
+	sources: [
+		{
+			name: 'gronkh',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 1.0,
+		},
+		{
+			name: 'xpandorya',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'tobinatorlp',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'royalphunk',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 1.0,
+		},
+		{
+			name: 'https://blabla.de',
+			volume: 0.0,
+		},
+	]
 };
 
 io.on('connection', function(socket) {
@@ -57,27 +87,22 @@ io.on('connection', function(socket) {
 	});
 
 	socket.emit('mode click', dictCurConfig.modeName);
-	dictCurConfig.videos.forEach(function(strVideoUrl, intVideoId) {
-		socket.emit('videourl submit', {
-			videoId: intVideoId,
-			videoUrl: strVideoUrl,
-		});
-	});
+	socket.emit('config all', dictCurConfig);
 
 	socket.on('mode click', function(strModeName) {
 		console.log('mode click', strModeName);
 		dictCurConfig.modeName = strModeName;
-		io.emit('mode click', strModeName);
+		socket.emit('config all', dictCurConfig);
 	});
 
 	socket.on('videourl submit', function(dict) {
 		console.log('videourl submit', dict);
 		dictCurConfig.videos[dict.videoId] = dict.videoUrl;
-		io.emit('videourl submit', dict);
+		socket.emit('config all', dictCurConfig);
 	});
 	socket.on('player volumeChange', function(dict) {
 		console.log('player volumeChange', dict);
-		io.emit('player volumeChange', dict);
+		socket.emit('config all', dictCurConfig);
 	});
 
 	socket.on('video switcher', function(arrVideoIds) {
@@ -86,16 +111,11 @@ io.on('connection', function(socket) {
 		var strVideoUrl1 = dictCurConfig.videos[arrVideoIds[1]];
 		dictCurConfig.videos[arrVideoIds[0]] = strVideoUrl1;
 		dictCurConfig.videos[arrVideoIds[1]] = strVideoUrl0;
-		io.emit('video switcher', arrVideoIds);
+		socket.emit('config all', dictCurConfig);
 	});
 
 	socket.on('video reloader', function(intVideoId) {
 		console.log('video reloader', intVideoId);
-		if (dictCurConfig.videos[intVideoId]!==undefined) {
-			io.emit('videourl submit', {
-				videoId: intVideoId,
-				videoUrl: dictCurConfig.videos[intVideoId],
-			});
-		}
+		socket.emit('config all', dictCurConfig);
 	});
 });
