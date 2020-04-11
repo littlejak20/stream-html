@@ -21,30 +21,7 @@ var players = {
 console.log(players);
 
 var strOverlayClass = '.overlay';
-
-$(strOverlayClassSliderLR).attr({
-	"max": intWidthMaxProzent,
-	"min": 100-intWidthMaxProzent
-});
-$(strOverlayClassSliderTB).attr({
-	"max": intHeightMaxProzent,
-	"min": 100-intHeightMaxProzent
-});
-
 var strContainerClass = '.container';
-
-var intLeftBeforeGlo = intLeftCurentGlo;
-var intRightBeforeGlo = intRightCurentGlo;
-var intTopBeforeGlo = intTopCurentGlo;
-var intBottomBeforeGlo = intBottomCurentGlo;
-
-// isNumber
-$(strOverlayClassInput).on('keypress',function(e){
-	var charCode = (e.which) ? e.which : e.keyCode
-	if (charCode > 31 && (charCode < 48 || charCode > 57))
-		return false;
-	return true;
-});
 
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
