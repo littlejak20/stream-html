@@ -40,8 +40,8 @@ var dictClientConfig = {};
 	}
 // Helpers - END
 
-socket.on('config all', function(dictServerConfig) {
-	console.log('config all', dictServerConfig);
+socket.on('config reload', function(dictServerConfig) {
+	console.log('config reload', dictServerConfig);
 	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
 
 	if (dictServerConfig.modeName != dictClientConfig.modeName) setModeName(dictServerConfig.modeName);
@@ -54,7 +54,9 @@ socket.on('config all', function(dictServerConfig) {
 
 	dictClientConfig = dictServerConfig;
 });
-
+socket.on('config onlyset', function(dictServerConfig) {
+	dictClientConfig = dictServerConfig;
+});
 
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
@@ -72,6 +74,12 @@ function setModeName(strModeName) {
 	$(strOverlayClass+' .mode a.'+strModeName.split(' ')[1]).addClass('is-active');
 };
 
+$(strOverlayClass+' .form form').on('submit', function(e) {
+	overlayFormEmit(e, $(this), 'videourl submit');
+});
+$(strOverlayClass+' .form form').on('change.playerVolume', function(e) {
+	overlayFormEmit(e, $(this), 'player volumeChange');
+});
 function overlayFormEmit(e, form, strEmitName) {
 	e.preventDefault();
 	socket.emit(strEmitName, {
@@ -80,38 +88,35 @@ function overlayFormEmit(e, form, strEmitName) {
 		videoVolume: parseFloat(form.find('input[name="vvolume"]').val()),
 	});
 }
-
-$(strOverlayClass+' .form form').on('submit', function(e) {
-	overlayFormEmit(e, $(this), 'videourl submit');
-});
-$(strOverlayClass+' .form form').on('change.playerVolume', function(e) {
-	overlayFormEmit(e, $(this), 'player volumeChange');
+$(strOverlayClass+' .js-reloader a').on('click', function(e) {
+	e.preventDefault();
+	socket.emit('video reloader', $(this).data('id'));
 });
 function setPlayerContainer(indexServerSource, dictServerSource) {
 	console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
 	var dictClientSource = [];
 	if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
 	if (objectsAreEqual(dictServerSource, dictClientSource)) return false;
-	var playerContainer = $(strContainerClass+'.main [data-id="'+(indexServerSource+1)+'"]');
+	var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
 
 	if (dictServerSource.name.length > 0 && playerContainer.length > 0) {
 		if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
 			if (dictServerSource.name === dictClientSource.name) {
-				playerContainer.html('<iframe data-id="'+(indexServerSource+1)+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+				playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
 			}
 		} else {
 			var waitTimeMsec = 0;
 			if (dictServerSource.name != dictClientSource.name) {
 				playerContainer.html('');
-				players['player'+(indexServerSource+1)] = '';
-				players['player'+(indexServerSource+1)] = new Twitch.Player('player'+(indexServerSource+1), { channel: dictServerSource.name});
+				players['player'+indexServerSource] = '';
+				players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
 				waitTimeMsec = 1000;
 			}
 			if (dictServerSource.volume != dictClientSource.volume) {
 				setTimeout(function() {
 					var videoVolume = 0.0;
 					if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-					players['player'+(indexServerSource+1)].setVolume(videoVolume);
+					players['player'+indexServerSource].setVolume(videoVolume);
 				}, waitTimeMsec);
 			}
 		}
@@ -153,10 +158,4 @@ socket.on('video switcher', function(arrVideoIds) {
 	videoContainer1.attr('id', idName0);
 	players['player'+arrVideoIds[0]] = player1;
 	players['player'+arrVideoIds[1]] = player0;
-});
-
-// use socket.on - videourl submit
-$(strOverlayClass+' .js-reloader a').on('click', function(e) {
-	e.preventDefault();
-	socket.emit('video reloader', $(this).data('id'));
 });
