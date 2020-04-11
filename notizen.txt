@@ -19,15 +19,19 @@ X script Part in JS File auslagern
 - Template Engine???
 - Nur Stream Iframes aktiv halten, die aktuell auch eingezeigt werden
 	--> evtl. Funktion aktivieren oder deaktivieren 
-- Bei Seitenaufruf evtl. gesamtes video array schicken
+(X) - Bei Seitenaufruf evtl. gesamtes video array schicken
 
-- Twitch volume in array dict speichern
-- Bei Switcher Benutzung werden die Textfelder und volume nicht aktuallisiert
-	--> hier vielleicht das gesamtes video array mit schicken
-- server und client Datenstruktur umbauen
+X - Twitch volume in array dict speichern
+X - Bei Switcher Benutzung werden die Textfelder und volume nicht aktuallisiert
+	X --> hier vielleicht das gesamtes video array mit schicken
+(X) - server und client Datenstruktur umbauen
 
-Version 2:
-- API der jeweiligen Dienste ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können
+Für Version 2:
+- Formeingaben in new Struktur speicher und senden
+- Reloader Funktionen wieder versuchen einzubauen
+
+Version 3:
+- API der jeweiligen Dienste ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können (außer Twitch)
 
 
 
