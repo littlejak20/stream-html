@@ -4,7 +4,7 @@ var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
 var strFormSourcesClass = '#formSources form';
 var strFormSaveButtonClass = '#allSourcesSave';
-var arraySourceItems = ['name', 'platform', 'type', 'volume'];
+var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 
 var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' }
 var dictClientConfig = {};
@@ -34,7 +34,13 @@ socket.on('config reload', function(dictServerConfig) {
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
 			$.each(arraySourceItems, function(index, fieldname) {
-				formContainer.find('[name="'+fieldname+'"]').val(dictServerSource[fieldname]);
+				var inputElement = formContainer.find('[name="'+fieldname+'"]');
+				var inputType = $(inputElement).attr('type');
+				if (inputType == 'checkbox') {
+					inputElement.prop('checked', dictServerSource[fieldname]);
+				} else {
+					inputElement.val(dictServerSource[fieldname]);
+				}
 			});
 		}
 	});
@@ -136,7 +142,16 @@ function emitFormSourcesSubmit(e) {
 		var dictTmpSource = {};
 
 		$.each(arraySourceItems, function(index, fieldname) {
-			dictTmpSource[fieldname] = formContainer.find('[name="'+fieldname+'"]').val();
+		});
+		$.each(arraySourceItems, function(index, fieldname) {
+			var inputElement = formContainer.find('[name="'+fieldname+'"]');
+			var inputType = inputElement.attr('type');
+
+			if (inputType == 'checkbox') {
+				dictTmpSource[fieldname] = inputElement.is(':checked');
+			} else {
+				dictTmpSource[fieldname] = inputElement.val();
+			}
 		});
 		arrayTmpSources.push(dictTmpSource);
 

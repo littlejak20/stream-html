@@ -44,6 +44,8 @@ var dictCurConfig = {
 	sources: [ 
 		{ // 0 attention: not set 
 			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 1
