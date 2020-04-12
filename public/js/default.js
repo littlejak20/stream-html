@@ -85,6 +85,7 @@ socket.on('config reload', function(dictServerConfig) {
 				dictServerSource.volume !== dictClientSource.volume &&
 				boolHasName
 			);
+			var boolOnlyUseIframe = false;
 			
 			var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
 			if (playerContainer.length > 0) {
@@ -94,70 +95,64 @@ socket.on('config reload', function(dictServerConfig) {
 					players['player'+indexServerSource] = '';
 				}
 
-				if (dictServerSource.platform == 'twitch') {
-					// later move to if type stream 
-					if (boolChangeVideoPlayer) {
-						if (boolHasName) {
-							players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
-							waitTimeMsec = 1000;
+				if (dictServerSource.name.indexOf('http') <= 0 && dictServerSource.name.indexOf('https') <= 0) {
+					if (dictServerSource.platform == 'twitch') {
+						// later move to if type stream 
+						if (boolChangeVideoPlayer) {
+							if (boolHasName) {
+								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
+								waitTimeMsec = 1000;
+							}
 						}
-					}
-					if (boolChangeVolume) {
-						setTimeout(function() {
-							var videoVolume = 0.0;
-							if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-							players['player'+indexServerSource].setVolume(videoVolume);
-						}, waitTimeMsec);
-					}
-
-					if (dictServerSource.type == 'stream') {
-					} else if (dictServerSource.type == 'video') {
-					} else if (dictServerSource.type == 'playlist') {
-					}
-
-				} else if (dictServerSource.platform == 'youtube') {
-					// later move to if type video
-					if (boolChangeVideoPlayer) {
-						playerContainer.html('');
-						playerContainer.append('<div id="youtubetmp"></div>');
-						players['player'+indexServerSource] = '';
-
-						if (boolHasName) {
-							players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
-							waitTimeMsec = 1000;
-
+						if (boolChangeVolume) {
 							setTimeout(function() {
-								players['player'+indexServerSource].playVideo();
+								var videoVolume = 0.0;
+								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+								players['player'+indexServerSource].setVolume(videoVolume);
 							}, waitTimeMsec);
 						}
-					}
-					if (boolChangeVolume) {
-						setTimeout(function() {
-							var videoVolume = 0;
-							if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
-							players['player'+indexServerSource].setVolume(videoVolume);
-						}, waitTimeMsec);
-					}
 
-					if (dictServerSource.type == 'stream') {
-					} else if (dictServerSource.type == 'video') {
-					} else if (dictServerSource.type == 'playlist') {
-					}
+						if (dictServerSource.type == 'stream') {
+						} else if (dictServerSource.type == 'video') {
+						} else if (dictServerSource.type == 'playlist') {
+						} else { boolOnlyUseIframe = true }
+					} else if (dictServerSource.platform == 'youtube') {
+						// later move to if type video
+						if (boolChangeVideoPlayer) {
+							playerContainer.html('');
+							playerContainer.append('<div id="youtubetmp"></div>');
+							players['player'+indexServerSource] = '';
 
-				} else if (dictServerSource.platform == 'other') {					
-					if (dictServerSource.name !== dictClientSource.name) {
-						if (boolHasName) {
-							playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+							if (boolHasName) {
+								players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
+								waitTimeMsec = 1000;
+
+								setTimeout(function() {
+									players['player'+indexServerSource].playVideo();
+								}, waitTimeMsec);
+							}
 						}
-					}
+						if (boolChangeVolume) {
+							setTimeout(function() {
+								var videoVolume = 0;
+								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
+								players['player'+indexServerSource].setVolume(videoVolume);
+							}, waitTimeMsec);
+						}
 
-					if (dictServerSource.type == 'stream') {
-					} else if (dictServerSource.type == 'video') {
-					} else if (dictServerSource.type == 'playlist') {
-					}
-				}
+						if (dictServerSource.type == 'stream') {
+						} else if (dictServerSource.type == 'video') {
+						} else if (dictServerSource.type == 'playlist') {
+						} else { boolOnlyUseIframe = true }
+					} else { boolOnlyUseIframe = true }
+				} else { boolOnlyUseIframe = true }
+			}
 
-				if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
+			if (boolOnlyUseIframe) {
+				if (dictServerSource.name !== dictClientSource.name) {
+					if (boolHasName) {
+						playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+					}
 				}
 			}
 		});
