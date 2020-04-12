@@ -95,48 +95,52 @@ socket.on('config reload', function(dictServerConfig) {
 				}
 
 				if (dictServerSource.platform == 'twitch') {
+					// later move to if type stream 
+					if (boolChangeVideoPlayer) {
+						if (boolHasName) {
+							players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
+							waitTimeMsec = 1000;
+						}
+					}
+					if (boolChangeVolume) {
+						setTimeout(function() {
+							var videoVolume = 0.0;
+							if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+							players['player'+indexServerSource].setVolume(videoVolume);
+						}, waitTimeMsec);
+					}
+
 					if (dictServerSource.type == 'stream') {
-						if (boolChangeVideoPlayer) {
-							if (boolHasName) {
-								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
-								waitTimeMsec = 1000;
-							}
-						}
-						if (boolChangeVolume) {
-							setTimeout(function() {
-								var videoVolume = 0.0;
-								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-								players['player'+indexServerSource].setVolume(videoVolume);
-							}, waitTimeMsec);
-						}
 					} else if (dictServerSource.type == 'video') {
 					} else if (dictServerSource.type == 'playlist') {
 					}
 
 				} else if (dictServerSource.platform == 'youtube') {
-					if (dictServerSource.type == 'stream') {
-					} else if (dictServerSource.type == 'video') {
-						if (boolChangeVideoPlayer) {
-							playerContainer.html('');
-							playerContainer.append('<div id="youtubetmp"></div>');
-							players['player'+indexServerSource] = '';
+					// later move to if type video
+					if (boolChangeVideoPlayer) {
+						playerContainer.html('');
+						playerContainer.append('<div id="youtubetmp"></div>');
+						players['player'+indexServerSource] = '';
 
-							if (boolHasName) {
-								players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
-								waitTimeMsec = 1000;
+						if (boolHasName) {
+							players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
+							waitTimeMsec = 1000;
 
-								setTimeout(function() {
-									players['player'+indexServerSource].playVideo();
-								}, waitTimeMsec);
-							}
-						}
-						if (boolChangeVolume) {
 							setTimeout(function() {
-								var videoVolume = 0;
-								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
-								players['player'+indexServerSource].setVolume(videoVolume);
+								players['player'+indexServerSource].playVideo();
 							}, waitTimeMsec);
 						}
+					}
+					if (boolChangeVolume) {
+						setTimeout(function() {
+							var videoVolume = 0;
+							if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
+							players['player'+indexServerSource].setVolume(videoVolume);
+						}, waitTimeMsec);
+					}
+
+					if (dictServerSource.type == 'stream') {
+					} else if (dictServerSource.type == 'video') {
 					} else if (dictServerSource.type == 'playlist') {
 					}
 
@@ -154,7 +158,6 @@ socket.on('config reload', function(dictServerConfig) {
 				}
 
 				if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
-				} else {
 				}
 			}
 		});
