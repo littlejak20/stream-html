@@ -102,6 +102,7 @@ socket.on('config reload', function(dictServerConfig) {
 							if (boolHasName) {
 								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
 								waitTimeMsec = 1000;
+								boolChangeVolume = true;
 							}
 						}
 						if (boolChangeVolume) {
@@ -119,14 +120,11 @@ socket.on('config reload', function(dictServerConfig) {
 					} else if (dictServerSource.platform == 'youtube') {
 						// later move to if type video
 						if (boolChangeVideoPlayer) {
-							playerContainer.html('');
 							playerContainer.append('<div id="youtubetmp"></div>');
-							players['player'+indexServerSource] = '';
-
 							if (boolHasName) {
 								players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
 								waitTimeMsec = 1000;
-
+								boolChangeVolume = true;
 								setTimeout(function() {
 									players['player'+indexServerSource].playVideo();
 								}, waitTimeMsec);

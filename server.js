@@ -49,15 +49,15 @@ var dictCurConfig = {
 			volume: 0.0,
 		},
 		{ // 1
-			name: 'gronkh',
+			name: 'debitorlp',
 			platform: 'twitch',
 			type: 'stream',
-			volume: 0.5,
+			volume: 1.0,
 		},
 		{ // 2
-			name: 'xpandorya',
-			platform: 'twitch',
-			type: 'stream',
+			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 3
@@ -73,8 +73,8 @@ var dictCurConfig = {
 			volume: 0.0,
 		},
 		{ // 5
-			name: 'hv31vOJzpps',
-			platform: 'youtube',
+			name: '',
+			platform: 'other',
 			type: 'video',
 			volume: 0.0,
 		},
