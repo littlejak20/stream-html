@@ -3,19 +3,10 @@ var socket = io();
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
 var strFormSourcesClass = '#formSources form';
-var strFormSaveButtonClass = strFormSourcesClass+' #allSourcesSave';
-var players = {
-	player1: '',
-	player2: '',
-	player3: '',
-	player4: '',
-	player5: '',
-	player6: '',
-	player7: '',
-	player8: '',
-	player9: '',
-	player10: ''
-}
+var strFormSaveButtonClass = '#allSourcesSave';
+var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
+
+var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' }
 var dictClientConfig = {};
 
 // Helpers - START
@@ -42,10 +33,15 @@ socket.on('config reload', function(dictServerConfig) {
 		console.log('setFormSource ==>', indexServerSource, dictServerSource);	
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
-			formContainer.find('input[name="name"]').val(dictServerSource.name);
-			formContainer.find('input[name="platform"]').val(dictServerSource.platform);
-			formContainer.find('input[name="type"]').val(dictServerSource.type);
-			formContainer.find('input[name="volume"]').val(dictServerSource.volume);
+			$.each(arraySourceItems, function(index, fieldname) {
+				var inputElement = formContainer.find('[name="'+fieldname+'"]');
+				var inputType = $(inputElement).attr('type');
+				if (inputType == 'checkbox') {
+					inputElement.prop('checked', dictServerSource[fieldname]);
+				} else {
+					inputElement.val(dictServerSource[fieldname]);
+				}
+			});
 		}
 	});
 
@@ -128,15 +124,11 @@ $(strOverlayClass+' .mode a').on('click', function(e) {
 	socket.emit('mode click', $(this).attr('class'));
 });
 
-$(strFormSaveButtonClass).on('click', function(e) {
-	overlayFormEmit(e);
-});
-$(strFormSourcesClass).on('change.playerVolume', function(e) {
-	overlayFormEmit(e);
-});
-function overlayFormEmit(e) {
-	console.log('overlayFormEmit ==>', e);
-	e.preventDefault();
+$(strFormSaveButtonClass).on('click', function(e) { emitFormSourcesSubmit(e); });
+$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
+function emitFormSourcesSubmit(e) {
+	console.log('formSources submit ==>', e);
+	//e.preventDefault();
 
 	var arrayTmpSources = [
 		{ // 0 attention: not set 
@@ -146,18 +138,27 @@ function overlayFormEmit(e) {
 	];
 
 	$(strFormSourcesClass).each(function(index, form) {
-		formContainer = $(form);
-		arrayTmpSources.push({
-			name: formContainer.find('input[name="name"]').val(),
-			platform: 'twitch',
-			type: 'stream',
-			volume: parseFloat(formContainer.find('input[name="volume"]').val()),
+		var formContainer = $(form);
+		var dictTmpSource = {};
+
+		$.each(arraySourceItems, function(index, fieldname) {
 		});
+		$.each(arraySourceItems, function(index, fieldname) {
+			var inputElement = formContainer.find('[name="'+fieldname+'"]');
+			var inputType = inputElement.attr('type');
+
+			if (inputType == 'checkbox') {
+				dictTmpSource[fieldname] = inputElement.is(':checked');
+			} else {
+				dictTmpSource[fieldname] = inputElement.val();
+			}
+		});
+		arrayTmpSources.push(dictTmpSource);
 
 		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
 	});
 
-	socket.emit('videourl submit', arrayTmpSources);
+	socket.emit('formSources submit', arrayTmpSources);
 }
 
 var videoId0 = -1;
