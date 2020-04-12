@@ -15,24 +15,29 @@ X script Part in JS File auslagern
 	--> YouTube Video
 	--> YouTube Stream
 	--> YouTube Playlist
-- Dropdownlsite mit hinzugefügen URLs, auch vereinfacht durch Kategorieren
-- Template Engine???
+- Dropdownlsite mit hinzugefügen URLs
+X - vereinfacht durch Kategorieren
+- HTML Template Engine???
 - Nur Stream Iframes aktiv halten, die aktuell auch eingezeigt werden
 	--> evtl. Funktion aktivieren oder deaktivieren 
-(X) - Bei Seitenaufruf evtl. gesamtes video array schicken
+X - Bei Seitenaufruf evtl. gesamtes video array schicken
 
 X - Twitch volume in array dict speichern
 X - Bei Switcher Benutzung werden die Textfelder und volume nicht aktuallisiert
 	X --> hier vielleicht das gesamtes video array mit schicken
-(X) - server und client Datenstruktur umbauen
+X - server und client Datenstruktur umbauen
 
 Für Version 2:
 X - Formeingaben in new Struktur speicher und senden
 - Reloader Funktionen wieder versuchen einzubauen
+- API der jeweiligen Dienste (Twitch, YouTube) ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können
+- YouTube Player Auto untersuchen, da nicht richtig reagiert
 
 Version 3:
-- API der jeweiligen Dienste ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können (außer Twitch)
-
+- Datenbank einbauen
+- Aktuelle Config/Ansicht in ein Profil (mit Namentextfield oder Dropdownliste) in der Datenbank speichern können
+- Profil aus DB laden können
+- Auflistung aller Profile in einem Dropdown
 
 
 https://stackoverflow.com/questions/1458724/how-do-i-set-unset-a-cookie-with-jquery
