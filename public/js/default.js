@@ -1,21 +1,14 @@
+function startRenderView(strPageName) {
+
 var socket = io();
 
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
 var strFormSourcesClass = '#formSources form';
-var strFormSaveButtonClass = strFormSourcesClass+' #allSourcesSave';
-var players = {
-	player1: '',
-	player2: '',
-	player3: '',
-	player4: '',
-	player5: '',
-	player6: '',
-	player7: '',
-	player8: '',
-	player9: '',
-	player10: ''
-}
+var strFormSaveButtonClass = '#allSourcesSave';
+var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
+
+var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' }
 var dictClientConfig = {};
 
 // Helpers - START
@@ -42,10 +35,15 @@ socket.on('config reload', function(dictServerConfig) {
 		console.log('setFormSource ==>', indexServerSource, dictServerSource);	
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
-			formContainer.find('input[name="name"]').val(dictServerSource.name);
-			formContainer.find('input[name="platform"]').val(dictServerSource.platform);
-			formContainer.find('input[name="type"]').val(dictServerSource.type);
-			formContainer.find('input[name="volume"]').val(dictServerSource.volume);
+			$.each(arraySourceItems, function(index, fieldname) {
+				var inputElement = formContainer.find('[name="'+fieldname+'"]');
+				var inputType = $(inputElement).attr('type');
+				if (inputType == 'checkbox') {
+					inputElement.prop('checked', dictServerSource[fieldname]);
+				} else {
+					inputElement.val(dictServerSource[fieldname]);
+				}
+			});
 		}
 	});
 
@@ -73,41 +71,87 @@ socket.on('config reload', function(dictServerConfig) {
 		$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
 			console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
 			var dictClientSource = [];
+			var waitTimeMsec = 0;
 			if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
 			//if (objectsAreEqual(dictServerSource, dictClientSource)) return false; // error?
+
+			var boolHasName = (dictServerSource.name.length > 0);
+			var boolChangeVideoPlayer = (
+				dictServerSource.name !== dictClientSource.name ||
+				dictServerSource.platform !== dictClientSource.platform ||
+				dictServerSource.type !== dictClientSource.type
+			);
+			var boolChangeVolume = (
+				dictServerSource.volume !== dictClientSource.volume &&
+				boolHasName
+			);
+			var boolOnlyUseIframe = false;
 			
 			var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
 			if (playerContainer.length > 0) {
-				if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {
-					if (dictServerSource.name === dictClientSource.name) {						
-						playerContainer.html('');
-						if (dictServerSource.name.length > 0) {
-							playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
+
+				if (boolChangeVideoPlayer) {
+					playerContainer.html('');
+					players['player'+indexServerSource] = '';
+				}
+
+				if (dictServerSource.name.indexOf('http') <= 0 && dictServerSource.name.indexOf('https') <= 0) {
+					if (dictServerSource.platform == 'twitch') {
+						// later move to if type stream 
+						if (boolChangeVideoPlayer) {
+							if (boolHasName) {
+								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
+								waitTimeMsec = 1000;
+							}
 						}
-					}
-
-				} else {
-					var waitTimeMsec = 0;
-					if (dictServerSource.name !== dictClientSource.name) {
-						playerContainer.html('');
-						players['player'+indexServerSource] = '';
-
-						if (dictServerSource.name.length > 0) {
-							players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
-							waitTimeMsec = 1000;
-
-							/*setTimeout(function() {
-								players['player'+indexServerSource].pause();
-							}, waitTimeMsec);*/
+						if (boolChangeVolume) {
+							setTimeout(function() {
+								var videoVolume = 0.0;
+								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+								players['player'+indexServerSource].setVolume(videoVolume);
+							}, waitTimeMsec);
 						}
-					}
 
-					if (dictServerSource.volume !== dictClientSource.volume && dictServerSource.name.length > 0) {
-						setTimeout(function() {
-							var videoVolume = 0.0;
-							if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-							players['player'+indexServerSource].setVolume(videoVolume);
-						}, waitTimeMsec);
+						if (dictServerSource.type == 'stream') {
+						} else if (dictServerSource.type == 'video') {
+						} else if (dictServerSource.type == 'playlist') {
+						} else { boolOnlyUseIframe = true }
+					} else if (dictServerSource.platform == 'youtube') {
+						// later move to if type video
+						if (boolChangeVideoPlayer) {
+							playerContainer.html('');
+							playerContainer.append('<div id="youtubetmp"></div>');
+							players['player'+indexServerSource] = '';
+
+							if (boolHasName) {
+								players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
+								waitTimeMsec = 1000;
+
+								setTimeout(function() {
+									players['player'+indexServerSource].playVideo();
+								}, waitTimeMsec);
+							}
+						}
+						if (boolChangeVolume) {
+							setTimeout(function() {
+								var videoVolume = 0;
+								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
+								players['player'+indexServerSource].setVolume(videoVolume);
+							}, waitTimeMsec);
+						}
+
+						if (dictServerSource.type == 'stream') {
+						} else if (dictServerSource.type == 'video') {
+						} else if (dictServerSource.type == 'playlist') {
+						} else { boolOnlyUseIframe = true }
+					} else { boolOnlyUseIframe = true }
+				} else { boolOnlyUseIframe = true }
+			}
+
+			if (boolOnlyUseIframe) {
+				if (dictServerSource.name !== dictClientSource.name) {
+					if (boolHasName) {
+						playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
 					}
 				}
 			}
@@ -120,23 +164,16 @@ socket.on('config onlyset', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
 });
 
-
-
-
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
 	socket.emit('mode click', $(this).attr('class'));
 });
 
-$(strFormSaveButtonClass).on('click', function(e) {
-	overlayFormEmit(e);
-});
-$(strFormSourcesClass).on('change.playerVolume', function(e) {
-	overlayFormEmit(e);
-});
-function overlayFormEmit(e) {
-	console.log('overlayFormEmit ==>', e);
-	e.preventDefault();
+$(strFormSaveButtonClass).on('click', function(e) { emitFormSourcesSubmit(e); });
+$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
+function emitFormSourcesSubmit(e) {
+	console.log('formSources submit ==>', e);
+	//e.preventDefault();
 
 	var arrayTmpSources = [
 		{ // 0 attention: not set 
@@ -146,18 +183,27 @@ function overlayFormEmit(e) {
 	];
 
 	$(strFormSourcesClass).each(function(index, form) {
-		formContainer = $(form);
-		arrayTmpSources.push({
-			name: formContainer.find('input[name="name"]').val(),
-			platform: 'twitch',
-			type: 'stream',
-			volume: parseFloat(formContainer.find('input[name="volume"]').val()),
+		var formContainer = $(form);
+		var dictTmpSource = {};
+
+		$.each(arraySourceItems, function(index, fieldname) {
 		});
+		$.each(arraySourceItems, function(index, fieldname) {
+			var inputElement = formContainer.find('[name="'+fieldname+'"]');
+			var inputType = inputElement.attr('type');
+
+			if (inputType == 'checkbox') {
+				dictTmpSource[fieldname] = inputElement.is(':checked');
+			} else {
+				dictTmpSource[fieldname] = inputElement.val();
+			}
+		});
+		arrayTmpSources.push(dictTmpSource);
 
 		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
 	});
 
-	socket.emit('videourl submit', arrayTmpSources);
+	socket.emit('formSources submit', arrayTmpSources);
 }
 
 var videoId0 = -1;
@@ -207,3 +253,5 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 	e.preventDefault();
 	socket.emit('video reloader', $(this).data('id'));
 });
+
+}

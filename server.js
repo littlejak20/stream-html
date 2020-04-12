@@ -41,27 +41,11 @@ http.listen(4000, function () {
 var userCount = 0;
 var dictCurConfig = {
 	modeName: 'container top',
-	videos: ['', // attention: not set 
-		'gronkh', // 1
-		'xpandorya', // 2
-		'tobinatorlp', // 3
-		'royalphunk', // 4
-		'', // 5
-		'', // 6
-		'', // 7
-		'', // 8
-		'', // 9
-		'', // 10
-		'', // 11
-		'', // 12
-		'', // 13
-		'', // 14
-		'', // 15
-		'', // 16
-	],
 	sources: [ 
 		{ // 0 attention: not set 
 			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 1
@@ -89,27 +73,39 @@ var dictCurConfig = {
 			volume: 0.0,
 		},
 		{ // 5
-			name: '',
+			name: 'hv31vOJzpps',
+			platform: 'youtube',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 6
 			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 7
 			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 8
 			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 9
 			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 		{ // 10
 			name: '',
+			platform: 'other',
+			type: 'video',
 			volume: 0.0,
 		},
 	]
@@ -132,16 +128,11 @@ io.on('connection', function(socket) {
 		io.emit('config reload', dictCurConfig);
 	});
 
-	socket.on('videourl submit', function(arrayTmpSources) {
-		console.log('videourl submit', arrayTmpSources);
+	socket.on('formSources submit', function(arrayTmpSources) {
+		console.log('formSources submit', arrayTmpSources);
 		if (arrayCheck(arrayTmpSources)) dictCurConfig.sources = arrayTmpSources;
 		io.emit('config reload', dictCurConfig);
 	});
-
-	/*socket.on('player volumeChange', function(dict) {
-		console.log('player volumeChange', dict);
-		io.emit('config reload', dictCurConfig);
-	});*/
 
 	socket.on('video switcher', function(arrVideoIds) {
 		console.log('video switcher', arrVideoIds);
