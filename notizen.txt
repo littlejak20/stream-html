@@ -46,3 +46,6 @@ http://zetcode.com/javascript/nodesass/
 https://medium.com/@kanokpit.skuberg/easy-sass-project-and-compile-with-npm-5861457195b5
 
 https://sass-lang.com/documentation/syntax
+
+https://dev.twitch.tv/docs/embed/video-and-clips#interactive-frames-for-live-streams-and-vods
+https://developers.google.com/youtube/iframe_api_reference

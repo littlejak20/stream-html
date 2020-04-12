@@ -8,21 +8,43 @@
 </head>
 <body>
 	<div class="main container normal">
-		<div data-id="1" id="player1"></div>
-		<div data-id="2" id="player2"></div>
-		<div data-id="3" id="player3"></div>
-		<div data-id="4" id="player4"></div>
-		<div data-id="5" id="player5"></div>
-		<div data-id="6" id="player6"></div>
-		<div data-id="7" id="player7"></div>
-		<div data-id="8" id="player8"></div>
-		<div data-id="9" id="player9"></div>
-		<div data-id="10" id="player10"></div>
+		<div data-id="1" id="player1">
+			<div id="player1Tmp"></div>
+		</div>
+		<div data-id="2" id="player2">
+			<div id="player2Tmp"></div>
+		</div>
+		<div data-id="3" id="player3">
+			<div id="player3Tmp"></div>
+		</div>
+		<div data-id="4" id="player4">
+			<div id="player4Tmp"></div>
+		</div>
+		<div data-id="5" id="player5">
+			<div id="player5Tmp"></div>
+		</div>
+		<div data-id="6" id="player6">
+			<div id="player6Tmp"></div>
+		</div>
+		<div data-id="7" id="player7">
+			<div id="player7Tmp"></div>
+		</div>
+		<div data-id="8" id="player8">
+			<div id="player8Tmp"></div>
+		</div>
+		<div data-id="9" id="player9">
+			<div id="player9Tmp"></div>
+		</div>
+		<div data-id="10" id="player10">
+			<div id="player10Tmp"></div>
+		</div>
 	</div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="https://player.twitch.tv/js/embed/v1.js"></script>
+	<script src="https://www.youtube.com/iframe_api"></script>
 	<script src="/js/default.js"></script>
+	<script>function onYouTubeIframeAPIReady(){startRenderView('view');}</script>
 </body>
 </html>
