@@ -32,6 +32,7 @@ X - Formeingaben in new Struktur speicher und senden
 - Reloader Funktionen wieder versuchen einzubauen
 - API der jeweiligen Dienste (Twitch, YouTube) ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können
 - YouTube Player Auto untersuchen, da nicht richtig reagiert
+- Volume allgemein von 1.0 auf 100 umstellen (beachte Rechnung für Twicth und YouTube)
 
 Version 3:
 - Datenbank einbauen
