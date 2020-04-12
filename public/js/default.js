@@ -8,7 +8,8 @@ var strFormSourcesClass = '#formSources form';
 var strFormSaveButtonClass = '#allSourcesSave';
 var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 
-var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' }
+var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' };
+var youtubePlayerIndex = 0;
 var dictClientConfig = {};
 
 // Helpers - START
@@ -100,7 +101,10 @@ socket.on('config reload', function(dictServerConfig) {
 						// later move to if type stream 
 						if (boolChangeVideoPlayer) {
 							if (boolHasName) {
-								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
+								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, {
+									channel: dictServerSource.name,
+									parent: ["https://twicth.tv"],
+								});
 								waitTimeMsec = 1000;
 								boolChangeVolume = true;
 							}
@@ -120,14 +124,20 @@ socket.on('config reload', function(dictServerConfig) {
 					} else if (dictServerSource.platform == 'youtube') {
 						// later move to if type video
 						if (boolChangeVideoPlayer) {
-							playerContainer.append('<div id="youtubetmp"></div>');
+							var tmpContainerName = 'youtubeplayer'+(youtubePlayerIndex++);
+							playerContainer.append('<div id="'+tmpContainerName+'"></div>');
 							if (boolHasName) {
-								players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
+								players['player'+indexServerSource] = new YT.Player(tmpContainerName, {
+									videoId: dictServerSource.name,
+									playerVars: {
+										'autoplay': 1,
+										'controls': 1,
+										'playsinline': 1,
+										'origin': 'https://www.youtube.com',
+									},
+								});
 								waitTimeMsec = 1000;
 								boolChangeVolume = true;
-								setTimeout(function() {
-									players['player'+indexServerSource].playVideo();
-								}, waitTimeMsec);
 							}
 						}
 						if (boolChangeVolume) {
