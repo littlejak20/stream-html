@@ -74,25 +74,35 @@ socket.on('config reload', function(dictServerConfig) {
 			var waitTimeMsec = 0;
 			if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
 			//if (objectsAreEqual(dictServerSource, dictClientSource)) return false; // error?
+
+			var boolHasName = (dictServerSource.name.length > 0);
+			var boolChangeVideoPlayer = (
+				dictServerSource.name !== dictClientSource.name ||
+				dictServerSource.platform !== dictClientSource.platform ||
+				dictServerSource.type !== dictClientSource.type
+			);
+			var boolChangeVolume = (
+				dictServerSource.volume !== dictClientSource.volume &&
+				boolHasName
+			);
 			
 			var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
 			if (playerContainer.length > 0) {
 
-				if (dictServerSource.name !== dictClientSource.name) {
+				if (boolChangeVideoPlayer) {
 					playerContainer.html('');
 					players['player'+indexServerSource] = '';
 				}
 
 				if (dictServerSource.platform == 'twitch') {
 					if (dictServerSource.type == 'stream') {
-						if (dictServerSource.name !== dictClientSource.name) {
-							if (dictServerSource.name.length > 0) {
+						if (boolChangeVideoPlayer) {
+							if (boolHasName) {
 								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, { channel: dictServerSource.name});
 								waitTimeMsec = 1000;
 							}
 						}
-
-						if (dictServerSource.volume !== dictClientSource.volume && dictServerSource.name.length > 0) {
+						if (boolChangeVolume) {
 							setTimeout(function() {
 								var videoVolume = 0.0;
 								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
@@ -106,12 +116,12 @@ socket.on('config reload', function(dictServerConfig) {
 				} else if (dictServerSource.platform == 'youtube') {
 					if (dictServerSource.type == 'stream') {
 					} else if (dictServerSource.type == 'video') {
-						if (dictServerSource.name !== dictClientSource.name) {
+						if (boolChangeVideoPlayer) {
 							playerContainer.html('');
 							playerContainer.append('<div id="youtubetmp"></div>');
 							players['player'+indexServerSource] = '';
 
-							if (dictServerSource.name.length > 0) {
+							if (boolHasName) {
 								players['player'+indexServerSource] = new YT.Player('youtubetmp', { videoId: dictServerSource.name });
 								waitTimeMsec = 1000;
 
@@ -120,8 +130,7 @@ socket.on('config reload', function(dictServerConfig) {
 								}, waitTimeMsec);
 							}
 						}
-
-						if (dictServerSource.volume !== dictClientSource.volume && dictServerSource.name.length > 0) {
+						if (boolChangeVolume) {
 							setTimeout(function() {
 								var videoVolume = 0;
 								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
@@ -133,7 +142,7 @@ socket.on('config reload', function(dictServerConfig) {
 
 				} else if (dictServerSource.platform == 'other') {					
 					if (dictServerSource.name !== dictClientSource.name) {
-						if (dictServerSource.name.length > 0) {
+						if (boolHasName) {
 							playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
 						}
 					}
@@ -156,16 +165,6 @@ socket.on('config reload', function(dictServerConfig) {
 socket.on('config onlyset', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
 });
-
-		/*function onYouTubeIframeAPIReady() {
-			player = new YT.Player('youtubeVideo', { videoId: 'M7lc1UVf-VE' });
-			setTimeout(function() {
-				console.log('youtube play');
-				player.playVideo();
-			}, 5000);
-		}*/
-
-
 
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
