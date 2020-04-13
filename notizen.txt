@@ -81,6 +81,16 @@ https.createServer({
   console.log('Example app listening on port 3000! Go to https://localhost:3000/')
 })
 
+////
+
+https://letsencrypt.org/docs/certificates-for-localhost/
+openssl req -x509 -out localhost.crt -keyout localhost.key \
+  -newkey rsa:2048 -nodes -sha256 \
+  -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+
+openssl req -x509 -out 19216817848.crt -keyout 19216817848.key  -newkey rsa:2048 -nodes -sha256  -subj '/CN=192.168.178.48' -extensions EXT -config <(   printf "[dn]\nCN=192.168.178.48\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:192.168.178.48\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
