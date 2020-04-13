@@ -1,12 +1,15 @@
 var express = require('express');
 var fs = require('fs')
-var https = require('https');
+var http = require('http');
+//var https = require('https');
 var app = express();
 
-var server = https.createServer({
-  key: fs.readFileSync('server.key'),
-  cert: fs.readFileSync('server.cert')
-}, app);
+var server = http.createServer(app);
+/*var server = https.createServer({
+	key: fs.readFileSync('server.key'),
+	cert: fs.readFileSync('server.cert')
+}, app);*/
+
 var io = require('socket.io')(server);
 
 var publicPath = __dirname + '/public';
@@ -26,7 +29,7 @@ app.get('/config', function(req, res) {
 });
 
 server.listen(3000, function () {
-  console.log('Example app listening on port 3000! Go to https://localhost:3000/')
+  console.log('Listening port 3000')
 });
 
 // Helpers - START
@@ -55,15 +58,15 @@ var dictCurConfig = {
 			volume: 0.0,
 		},
 		{ // 1
-			name: 'debitorlp',
-			platform: 'twitch',
-			type: 'stream',
+			name: 'o1-SV0hBTFg',
+			platform: 'youtube',
+			type: 'video',
 			volume: 1.0,
 		},
 		{ // 2
-			name: '',
-			platform: 'other',
-			type: 'video',
+			name: 'debitorlp',
+			platform: 'twitch',
+			type: 'stream',
 			volume: 0.0,
 		},
 		{ // 3
