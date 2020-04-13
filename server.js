@@ -1,7 +1,13 @@
 var express = require('express');
+var fs = require('fs')
+var https = require('https');
 var app = express();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+
+var server = https.createServer({
+  key: fs.readFileSync('server.key'),
+  cert: fs.readFileSync('server.cert')
+}, app);
+var io = require('socket.io')(server);
 
 var publicPath = __dirname + '/public';
 var filePath = __dirname + '/files';
@@ -19,8 +25,8 @@ app.get('/config', function(req, res) {
 	res.sendFile(publicPath + '/config.html');
 });
 
-http.listen(4000, function () {
-	console.log('listen on *:4000');
+server.listen(3000, function () {
+  console.log('Example app listening on port 3000! Go to https://localhost:3000/')
 });
 
 // Helpers - START

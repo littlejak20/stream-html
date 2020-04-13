@@ -4,8 +4,8 @@
 	"description": "stream-html",
 	"dependencies": {
 		"express": "^4.17.1",
-		"socket.io": "^2.3.0",
-		"node-sass": "^4.13.1"
+		"node-sass": "^4.13.1",
+		"socket.io": "^2.3.0"
 	},
 	"scripts": {
 		"sass": "node-sass --watch scss -o public/css"
