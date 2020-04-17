@@ -167,6 +167,7 @@ socket.on('config reload', function(dictServerConfig) {
 	}
 
 	dictClientConfig = dictServerConfig;
+	console.log(JSON.stringify(dictClientConfig));
 });
 socket.on('config onlyset', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
@@ -263,3 +264,47 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 });
 
 }
+
+// Fullscreen Functions - START
+	var fullElem = document.documentElement;
+
+	/* View in fullscreen */
+	function openFullscreen() {
+		console.log('openFullscreen');
+		if (fullElem.requestFullscreen) {
+			fullElem.requestFullscreen();
+		} else if (fullElem.mozRequestFullScreen) { /* Firefox */
+			fullElem.mozRequestFullScreen();
+		} else if (fullElem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+			fullElem.webkitRequestFullscreen();
+		} else if (fullElem.msRequestFullscreen) { /* IE/Edge */
+			fullElem.msRequestFullscreen();
+		}
+	}
+
+	/* Close fullscreen */
+	function closeFullscreen() {
+		console.log('closeFullscreen');
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		} else if (document.mozCancelFullScreen) { /* Firefox */
+			document.mozCancelFullScreen();
+		} else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+			document.webkitExitFullscreen();
+		} else if (document.msExitFullscreen) { /* IE/Edge */
+			document.msExitFullscreen();
+		}
+	}
+// Fullscreen Functions - END
+
+var boolIsFullscreen = false;
+$('#fullscreenall').on('click', function(e) {
+	e.preventDefault();
+	console.log('click fullscreen');
+	if (!boolIsFullscreen) {
+		openFullscreen();
+	} else {
+		closeFullscreen();
+	}
+	boolIsFullscreen = !boolIsFullscreen;
+});
