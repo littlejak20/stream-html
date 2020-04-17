@@ -32,6 +32,44 @@ server.listen(3000, function () {
   console.log('Listening port 3000')
 });
 
+// database - START
+	const MongoClient = require('mongodb').MongoClient;
+	const assert = require('assert');
+	const url = 'mongodb://localhost:27017';
+	const dbName = 'stream-html';
+
+	const insertDocuments = function(collectionName, docs, options, callbackFunc) {
+		var client = new MongoClient(url, {useNewUrlParser: true});
+		client.connect(function(err) {
+			//console.log("Connected successfully to server");
+			const db = client.db(dbName);
+			const collection = db.collection(collectionName);
+
+			console.log('insertDocuments');
+			//console.log(docs);
+			collection.insertMany(docs, function(error, result) {
+				console.log('insertMany');
+				callbackFunc(result, error);
+				client.close();
+			});
+		});
+	}
+
+	const findDocuments = function(collectionName, query, options, callbackFunc) {
+		var client = new MongoClient(url, {useNewUrlParser: true});
+		client.connect(function(err) {
+			//console.log("Connected successfully to server");
+			const db = client.db(dbName);
+			const collection = db.collection(collectionName);
+
+			collection.find(query).toArray(function(error, docs) {
+				callbackFunc(docs, error);			
+				client.close();
+			});
+		});
+	}
+// database - END
+
 // Helpers - START
 	function objectsAreEqual(obj1, obj2) {
 		return (JSON.stringify(obj1) === JSON.stringify(obj2));
@@ -61,7 +99,7 @@ var dictCurConfig = {
 			name: 'gronkh',
 			platform: 'twitch',
 			type: 'stream',
-			volume: 0.0,
+			volume: 1.0,
 		},
 		{
 			name: 'xpandorya',
@@ -139,7 +177,21 @@ io.on('connection', function(socket) {
 
 	socket.on('formSources submit', function(arrayTmpSources) {
 		console.log('formSources submit', arrayTmpSources);
-		if (arrayCheck(arrayTmpSources)) dictCurConfig.sources = arrayTmpSources;
+		if (arrayCheck(arrayTmpSources)) {
+
+			dictCurConfig.sources = arrayTmpSources;
+
+			delete dictCurConfig['_id'];
+			insertDocuments('configs', [dictCurConfig], {}, function(data, error) {
+				//console.log(data);
+			});
+			/*findDocuments('configs', {}, {}, function(data, error) {
+				console.log('find');
+				console.log(data);
+			});*/
+
+		}
+
 		io.emit('config reload', dictCurConfig);
 	});
 
