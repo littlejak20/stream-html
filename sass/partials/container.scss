@@ -62,36 +62,36 @@
 			"v3 v3 v4 v4 v5 v5"
 			"v1 v1 v1 v2 v2 v2";
 	}
-	&.bottom {
+	/*&.bottom {
 		grid-template-columns: 33.3333333333% 33.3333333333% 33.3333333333%;
 		grid-template-rows: 66.6666666666% 33.3333333333%;
 		grid-template-areas:
 			"v1 v1 v1"
 			"v2 v3 v4";
-	}
-	&.bottom3-top2 {
+	}*/
+	/*&.bottom3-top2 {
 		grid-template-columns: 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666%;
 		grid-template-rows: 66.6666666666% 33.3333333333%;
 		grid-template-areas:
 			"v1 v1 v1 v2 v2 v2"
 			"v3 v3 v4 v4 v5 v5";
-	}
-	&.left {
+	}*/
+	/*&.left {
 		grid-template-columns: 33.3333333333% 66.6666666666%;
 		grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
 		grid-template-areas:
 			"v2 v1"
 			"v3 v1"
 			"v4 v1";
-	}
-	&.right {
+	}*/
+	/*&.right {
 		grid-template-columns: 66.6666666666% 33.3333333333%;
 		grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
 		grid-template-areas:
 			"v1 v2"
 			"v1 v3"
 			"v1 v4";
-	}
+	}*/
 	&.top4 {
 		grid-template-columns: 25% 25% 25% 25%;
 		grid-template-rows: 25% 75%;
@@ -106,7 +106,33 @@
 			"v3 v4 v5 v6"
 			"v1 v1 v2 v2";
 	}
-	&.extrem {
+	&.top2x4-bottom-1 {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 25% 50%;
+		grid-template-areas:
+			"v6 v7 v8 v9"
+			"v2 v3 v4 v5"
+			"v1 v1 v1 v1";
+	}
+	&.top2x4-bottom-2 {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 25% 50%;
+		grid-template-areas:
+			"v7 v8 v9 v10"
+			"v3 v4 v5 v6"
+			"v1 v1 v2 v2";
+	}
+	&.grid9 {
+		display: grid;
+		grid-template-columns: (100%/3) (100%/3) (100%/3);
+		grid-template-rows: (100%/3) (100%/3) (100%/3);
+		grid-template-areas: 
+			"v1 v2 v3"
+			"v4 v5 v6"
+			"v7 v8 v9"
+	}
+	// muss drin bleiben für Swicther und Reloader Section in Overlay
+	&.grid16 {
 		display: grid;
 		grid-template-columns: 25% 25% 25% 25%;
 		grid-template-rows: 25% 25% 25% 25%;
