@@ -57,62 +57,62 @@ var dictCurConfig = {
 			type: 'video',
 			volume: 0.0,
 		},
-		{ // 1
-			name: 'o1-SV0hBTFg',
-			platform: 'youtube',
-			type: 'video',
-			volume: 1.0,
-		},
-		{ // 2
-			name: 'debitorlp',
+		{
+			name: 'gronkh',
 			platform: 'twitch',
 			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 3
-			name: 'tobinatorlp',
+		{
+			name: 'xpandorya',
 			platform: 'twitch',
 			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 4
+		{
 			name: 'royalphunk',
 			platform: 'twitch',
 			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 5
-			name: '',
-			platform: 'other',
-			type: 'video',
+		{
+			name: 'pietsmiet',
+			platform: 'twitch',
+			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 6
-			name: '',
-			platform: 'other',
-			type: 'video',
+		{
+			name: 'heidergeil',
+			platform: 'twitch',
+			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 7
-			name: '',
-			platform: 'other',
-			type: 'video',
+		{
+			name: 'fishc0p',
+			platform: 'twitch',
+			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 8
-			name: '',
-			platform: 'other',
-			type: 'video',
+		{
+			name: 'eosandy',
+			platform: 'twitch',
+			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 9
-			name: '',
-			platform: 'other',
-			type: 'video',
+		{
+			name: 'mrmoregame',
+			platform: 'twitch',
+			type: 'stream',
 			volume: 0.0,
 		},
-		{ // 10
-			name: '',
+		{
+			name: 'nancywenzmakeup',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'https://friendlyfi.re/',
 			platform: 'other',
 			type: 'video',
 			volume: 0.0,
