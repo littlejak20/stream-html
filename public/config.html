@@ -8,6 +8,17 @@
 </head>
 <body>	
 	<div class="overlay">
+		<form id="formProfile" style="margin-bottom: 15px;">
+			<input type="text" name="name" style="min-width: 300px;">
+			<select name="select" style="min-width: 300px;">
+				<option>(Letztes Profil)</option>
+				<option value="fdjf45dsfsd">Ein Test Profil</option>
+				<option value="dfg54dfg564">Ein weiteres Test Profil</option>
+			</select>
+			<a id="profileWithAllSourcesSave" href="#" style="display: inline-block; padding: 15px; background-color: #fff; border: 1px solid orange; color: #000;">Speichern</a>
+			<a id="profileWithAllSourcesLoad" href="#" style="display: inline-block; padding: 15px; background-color: #fff; border: 1px solid orange; color: #000;">Laden</a>
+		</form>
+
 		<div class="form" id="formSources">
 			<form data-id="1">
 				<select name="platform">
@@ -159,8 +170,6 @@
 				<input type="checkbox" name="muted">
 				<input type="range" name="volume" min="0" max="1" step="0.001" value="0">
 			</form>
-			<br>
-			<a id="allSourcesSave" href="#" style="display: inline-block; padding: 15px; background-color: #fff; border: 1px solid orange; color: #000;">Speichern</a>
 		</div>
 
 		<div class="mode">

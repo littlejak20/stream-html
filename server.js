@@ -135,7 +135,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 			const collection = db.collection(collectionName);
 
 			collection.insertMany(docs, options, (error, result) => {
-				callbackFunc(result, error);
+				if (functionCheck(callbackFunc)) callbackFunc(result, error);
 				client.close();
 			});
 		});
@@ -148,7 +148,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 			const collection = db.collection(collectionName);
 
 			collection.find(query, options).toArray((error, docs) => {
-				callbackFunc(docs, error);
+				if (functionCheck(callbackFunc)) callbackFunc(docs, error);
 				client.close();
 			});
 		});
@@ -161,27 +161,35 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 			const collection = db.collection(collectionName);
 
 			collection.updateMany(filter, { $set: update }, options, (error, result) => {
-				callbackFunc(result, error);
+				if (functionCheck(callbackFunc)) callbackFunc(result, error);
 				client.close();
 			});
 		});
 	}
 
-	const lastConfigUpdateInsert = () => {
-		delete dictLastConfig['_id'];
-		dictLastConfig['date'] = new Date();
+	const configUpdateInsert = (strConfigName) => {
+		var dictNewConfig = {
+			name: strConfigName,
+			modeName: dictLastConfig.modeName,
+			date: new Date(),
+			sources: dictLastConfig.sources,
+		};
 
-		findDocuments('configs', { name: lastConfigName }, {}, (data, error) => {
+		findDocuments('configs', { name: strConfigName }, {}, (data, error) => {
 			if (data.length > 0) {
-				updateDocuments('configs', { name: lastConfigName }, dictLastConfig, {}, (data, error) => {
+				updateDocuments('configs', { name: strConfigName }, dictNewConfig, {}, (data, error) => {
 					console.log('update config');
 				});
 			} else {
-				insertDocuments('configs', [dictLastConfig], {}, (data, error) => {
+				insertDocuments('configs', [dictNewConfig], {}, (data, error) => {
 					console.log('insert config');
 				});
 			}
 		});
+	}
+	const configFormSave = () => {
+		configUpdateInsert(lastConfigName);
+		configUpdateInsert(dictLastConfig.name);
 	}
 // Database - END
 
@@ -212,15 +220,16 @@ io.on('connection', (socket) => {
 		console.log('mode click', strModeName);
 		dictLastConfig.modeName = strModeName;
 		
-		lastConfigUpdateInsert();
+		configFormSave();
 		io.emit('config reload', dictLastConfig);
 	});
 
-	socket.on('formSources submit', (arrayTmpSources) => {
-		console.log('formSources submit', arrayTmpSources);
-		if (arrayCheck(arrayTmpSources)) {
-			dictLastConfig.sources = arrayTmpSources;
-			lastConfigUpdateInsert();
+	socket.on('formSources submit', (dictForms) => {
+		console.log('formSources submit', dictForms);
+		if (dictCheck(dictForms)) {
+			if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
+			if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
+			configFormSave();
 		}
 		io.emit('config reload', dictLastConfig);
 	});
@@ -233,7 +242,7 @@ io.on('connection', (socket) => {
 		dictLastConfig.sources[arrVideoIds[0]] = dictSource1;
 		dictLastConfig.sources[arrVideoIds[1]] = dictSource0;
 
-		lastConfigUpdateInsert();
+		configFormSave();
 		io.emit('video switcher', arrVideoIds);
 	});
 	socket.on('video switcher finish', (arrVideoIds) => {

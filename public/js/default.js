@@ -4,8 +4,10 @@ var socket = io();
 
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
+var strFormProfileClass = 'form#formProfile';
 var strFormSourcesClass = '#formSources form';
-var strFormSaveButtonClass = '#allSourcesSave';
+var strFormSaveButtonClass = '#profileWithAllSourcesSave';
+var strFormLoadButtonClass = '#profileWithAllSourcesLoad';
 var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 
 var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' };
@@ -13,17 +15,21 @@ var youtubePlayerIndex = 0;
 var dictClientConfig = {};
 
 // Helpers - START
-	function objectsAreEqual(obj1, obj2) {
-		//console.log('objectsAreEqual', (JSON.stringify(obj1) === JSON.stringify(obj2)), JSON.stringify(obj1), JSON.stringify(obj2));
+	const objectsAreEqual = (obj1, obj2) => {
 		return (JSON.stringify(obj1) === JSON.stringify(obj2));
 	}
 	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
-	function dictCheck(object, strObjectName) {
+	const dictCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && typeof object==='object' && !(object instanceof Array) && !(object instanceof Date)) return true;
 		return false;
 	}
-	function arrayCheck(object, strObjectName) {
+	const arrayCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && typeof object==='object' && object instanceof Array) return true;
+		return false;
+	}
+	const functionCheck = (object, strObjectName) => {
+		if (object!==undefined && object!==null && object instanceof Function) return true;
+		if (boolApiCheckCanUse) requiredError(strObjectName);
 		return false;
 	}
 // Helpers - END
@@ -53,6 +59,12 @@ socket.on('config reload', function(dictServerConfig) {
 	 * If yes, then end the function here.
 	 */
 	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
+	
+	if (dictServerConfig.modeName != dictClientConfig.modeName) {
+		var formProfile = $(strFormProfileClass);
+		formProfile.find('[name="name"]').val(dictServerConfig.name);
+		//formProfile.find('[name="select"]').val(dictServerConfig.name);
+	}
 
 	// for site view/config - mode
 	if (dictServerConfig.modeName != dictClientConfig.modeName) {
@@ -179,10 +191,17 @@ $(strOverlayClass+' .mode a').on('click', function(e) {
 });
 
 $(strFormSaveButtonClass).on('click', function(e) { emitFormSourcesSubmit(e); });
-$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
+//$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
 function emitFormSourcesSubmit(e) {
 	console.log('formSources submit ==>', e);
 	//e.preventDefault();
+
+	var formProfile = $(strFormProfileClass);
+	var dictFormProfile = {
+		name: formProfile.find('[name="name"]').val(),
+		select: formProfile.find('[name="select"]').val(),		
+	};
+	console.log(dictFormProfile);
 
 	var arrayTmpSources = [
 		{ // 0 attention: not set 
@@ -212,7 +231,10 @@ function emitFormSourcesSubmit(e) {
 		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
 	});
 
-	socket.emit('formSources submit', arrayTmpSources);
+	socket.emit('formSources submit', {
+		formProfile: dictFormProfile,
+		arraySources: arrayTmpSources
+	});
 }
 
 var videoId0 = -1;
