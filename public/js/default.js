@@ -13,6 +13,7 @@ var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' };
 var youtubePlayerIndex = 0;
 var dictClientConfig = {};
+var arrayClientProfileNames = [];
 
 // Helpers - START
 	const objectsAreEqual = (obj1, obj2) => {
@@ -60,10 +61,9 @@ socket.on('config reload', function(dictServerConfig) {
 	 */
 	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
 	
-	if (dictServerConfig.modeName != dictClientConfig.modeName) {
+	if (dictServerConfig.name != dictClientConfig.name) {
 		var formProfile = $(strFormProfileClass);
 		formProfile.find('[name="name"]').val(dictServerConfig.name);
-		//formProfile.find('[name="select"]').val(dictServerConfig.name);
 	}
 
 	// for site view/config - mode
@@ -183,6 +183,22 @@ socket.on('config reload', function(dictServerConfig) {
 });
 socket.on('config onlyset', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
+});
+
+socket.on('profileName reload', function(arrayServerProfileNames) {	
+	//if (objectsAreEqual(arrayServerProfileNames, arrayClientProfileNames)) return false;
+	
+	var formProfile = $(strFormProfileClass);
+	var strSelectOptions = '';
+	$.each(arrayServerProfileNames, function(index, profile) {
+		strSelectOptions += '<option name="'+profile.name+'">'+profile.name+'</option>';
+	});
+	formProfile.find('[name="select"]').html(strSelectOptions);
+
+	arrayClientProfileNames = arrayServerProfileNames;
+});
+socket.on('profileName onlyset', function(arrayServerProfileNames) {
+	arrayClientProfileNames = arrayServerProfileNames;
 });
 
 $(strOverlayClass+' .mode a').on('click', function(e) {

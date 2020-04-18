@@ -1,10 +1,9 @@
-var serverPort = 80;
+var serverPort = 3000;
 var userCount = 0;
 var lastConfigName = 'lastConfig';
 var dictLastConfig = {
 	name: lastConfigName,
 	modeName: 'container top',
-	date: new Date(),
 	sources: [ 
 		{ // 0 attention: not set 
 			name: '',
@@ -74,6 +73,7 @@ var dictLastConfig = {
 		},
 	]
 };
+var arrayProfileNames = [];
 
 var express = require('express');
 var fs = require('fs')
@@ -166,34 +166,43 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 			});
 		});
 	}
-
-	const configUpdateInsert = (strConfigName) => {
-		var dictNewConfig = {
-			name: strConfigName,
-			modeName: dictLastConfig.modeName,
-			date: new Date(),
-			sources: dictLastConfig.sources,
-		};
-
-		findDocuments('configs', { name: strConfigName }, {}, (data, error) => {
-			if (data.length > 0) {
-				updateDocuments('configs', { name: strConfigName }, dictNewConfig, {}, (data, error) => {
-					console.log('update config');
-				});
-			} else {
-				insertDocuments('configs', [dictNewConfig], {}, (data, error) => {
-					console.log('insert config');
-				});
-			}
-		});
-	}
-	const configFormSave = () => {
-		configUpdateInsert(lastConfigName);
-		configUpdateInsert(dictLastConfig.name);
-	}
 // Database - END
 
-findDocuments('configs', { name: 'lastConfig' }, {}, (data, error) => {
+const loadAllProfileNames = () => {
+	findDocuments('configs', {}, {}, (data, error) => {
+		if (data.length <= 0) return false;
+		arrayProfileNames = data;
+		try { io.emit('profileName reload', data); } catch { console.log('123'); }
+	});
+}
+const configUpdateInsert = (strConfigName) => {
+	var dictNewConfig = {
+		name: strConfigName,
+		modeName: dictLastConfig.modeName,
+		sources: dictLastConfig.sources,
+	};
+
+	findDocuments('configs', { name: strConfigName }, {}, (data, error) => {
+		if (data.length > 0) {
+			updateDocuments('configs', { name: strConfigName }, dictNewConfig, {}, (data, error) => {
+				console.log('update config');
+			});
+		} else {
+			insertDocuments('configs', [dictNewConfig], {}, (data, error) => {
+				console.log('insert config');
+			});
+		}
+	});
+}
+const configFormSaveAndUpdatePage = () => {
+	configUpdateInsert(lastConfigName);
+	configUpdateInsert(dictLastConfig.name);
+	loadAllProfileNames();
+	try { io.emit('config reload', dictLastConfig); } catch { console.log('456'); }
+}
+
+loadAllProfileNames();
+findDocuments('configs', { name: lastConfigName }, {}, (data, error) => {
 	if (data.length > 0) {
 		dictLastConfig = data[0];
 	} else {
@@ -215,13 +224,13 @@ io.on('connection', (socket) => {
 	});
 
 	socket.emit('config reload', dictLastConfig);
+	socket.emit('profileName reload', arrayProfileNames);
 
 	socket.on('mode click', (strModeName) => {
 		console.log('mode click', strModeName);
 		dictLastConfig.modeName = strModeName;
 		
-		configFormSave();
-		io.emit('config reload', dictLastConfig);
+		configFormSaveAndUpdatePage();
 	});
 
 	socket.on('formSources submit', (dictForms) => {
@@ -229,9 +238,8 @@ io.on('connection', (socket) => {
 		if (dictCheck(dictForms)) {
 			if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
 			if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
-			configFormSave();
+			configFormSaveAndUpdatePage();
 		}
-		io.emit('config reload', dictLastConfig);
 	});
 
 	socket.on('video switcher', (arrVideoIds) => {
@@ -242,11 +250,10 @@ io.on('connection', (socket) => {
 		dictLastConfig.sources[arrVideoIds[0]] = dictSource1;
 		dictLastConfig.sources[arrVideoIds[1]] = dictSource0;
 
-		configFormSave();
 		io.emit('video switcher', arrVideoIds);
 	});
-	socket.on('video switcher finish', (arrVideoIds) => {
-		io.emit('config reload', dictLastConfig);
+	socket.on('video switcher finish', (arrVideoIds) => {		
+		configFormSaveAndUpdatePage();
 	});
 
 	/*socket.on('video reloader', (intVideoId) => {
