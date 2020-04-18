@@ -1,3 +1,79 @@
+var userCount = 0;
+var lastConfigName = 'lastConfig';
+var dictLastConfig = {
+	name: lastConfigName,
+	modeName: 'container top',
+	date: new Date(),
+	sources: [ 
+		{ // 0 attention: not set 
+			name: '',
+			platform: 'other',
+			type: 'video',
+			volume: 0.0,
+		},
+		{
+			name: 'gronkh',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 1.0,
+		},
+		{
+			name: 'xpandorya',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'royalphunk',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'pietsmiet',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'heidergeil',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'fishc0p',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'eosandy',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'mrmoregame',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'nancywenzmakeup',
+			platform: 'twitch',
+			type: 'stream',
+			volume: 0.0,
+		},
+		{
+			name: 'https://friendlyfi.re/',
+			platform: 'other',
+			type: 'video',
+			volume: 0.0,
+		},
+	]
+};
+
 var express = require('express');
 var fs = require('fs')
 var http = require('http');
@@ -98,16 +174,16 @@ server.listen(3000, () => {
 	}
 
 	const lastConfigUpdateInsert = () => {
-		delete dictCurConfig['_id'];
-		dictCurConfig['date'] = new Date();
+		delete dictLastConfig['_id'];
+		dictLastConfig['date'] = new Date();
 
 		findDocuments('configs', { name: lastConfigName }, {}, (data, error) => {
 			if (data.length > 0) {
-				updateDocuments('configs', { name: lastConfigName }, dictCurConfig, {}, (data, error) => {
+				updateDocuments('configs', { name: lastConfigName }, dictLastConfig, {}, (data, error) => {
 					console.log('update config');
 				});
 			} else {
-				insertDocuments('configs', [dictCurConfig], {}, (data, error) => {
+				insertDocuments('configs', [dictLastConfig], {}, (data, error) => {
 					console.log('insert config');
 				});
 			}
@@ -115,86 +191,11 @@ server.listen(3000, () => {
 	}
 // Database - END
 
-var userCount = 0;
-var lastConfigName = 'lastConfig';
-var dictCurConfig = {
-	name: lastConfigName,
-	modeName: 'container top',
-	date: new Date(),
-	sources: [ 
-		{ // 0 attention: not set 
-			name: '',
-			platform: 'other',
-			type: 'video',
-			volume: 0.0,
-		},
-		{
-			name: 'gronkh',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 1.0,
-		},
-		{
-			name: 'xpandorya',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'royalphunk',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'pietsmiet',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'heidergeil',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'fishc0p',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'eosandy',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'mrmoregame',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'nancywenzmakeup',
-			platform: 'twitch',
-			type: 'stream',
-			volume: 0.0,
-		},
-		{
-			name: 'https://friendlyfi.re/',
-			platform: 'other',
-			type: 'video',
-			volume: 0.0,
-		},
-	]
-};
 findDocuments('configs', { name: 'lastConfig' }, {}, (data, error) => {
 	if (data.length > 0) {
-		dictCurConfig = data[0];
+		dictLastConfig = data[0];
 	} else {
-		insertDocuments('configs', [dictCurConfig], {}, (data, error) => {
+		insertDocuments('configs', [dictLastConfig], {}, (data, error) => {
 			console.log('insert config');
 		});
 	}
@@ -211,43 +212,43 @@ io.on('connection', (socket) => {
 		console.log('disconnected', socket.id, userCount);	
 	});
 
-	socket.emit('config reload', dictCurConfig);
+	socket.emit('config reload', dictLastConfig);
 
 	socket.on('mode click', (strModeName) => {
 		console.log('mode click', strModeName);
-		dictCurConfig.modeName = strModeName;
+		dictLastConfig.modeName = strModeName;
 		
 		lastConfigUpdateInsert();
-		io.emit('config reload', dictCurConfig);
+		io.emit('config reload', dictLastConfig);
 	});
 
 	socket.on('formSources submit', (arrayTmpSources) => {
 		console.log('formSources submit', arrayTmpSources);
 		if (arrayCheck(arrayTmpSources)) {
-			dictCurConfig.sources = arrayTmpSources;
+			dictLastConfig.sources = arrayTmpSources;
 			lastConfigUpdateInsert();
 		}
-		io.emit('config reload', dictCurConfig);
+		io.emit('config reload', dictLastConfig);
 	});
 
 	socket.on('video switcher', (arrVideoIds) => {
 		console.log('video switcher', arrVideoIds);
 
-		var dictSource0 = dictCurConfig.sources[arrVideoIds[0]];
-		var dictSource1 = dictCurConfig.sources[arrVideoIds[1]];
-		dictCurConfig.sources[arrVideoIds[0]] = dictSource1;
-		dictCurConfig.sources[arrVideoIds[1]] = dictSource0;
+		var dictSource0 = dictLastConfig.sources[arrVideoIds[0]];
+		var dictSource1 = dictLastConfig.sources[arrVideoIds[1]];
+		dictLastConfig.sources[arrVideoIds[0]] = dictSource1;
+		dictLastConfig.sources[arrVideoIds[1]] = dictSource0;
 
 		lastConfigUpdateInsert();
 		io.emit('video switcher', arrVideoIds);
 	});
 	socket.on('video switcher finish', (arrVideoIds) => {
-		io.emit('config reload', dictCurConfig);
+		io.emit('config reload', dictLastConfig);
 	});
 
 	/*socket.on('video reloader', (intVideoId) => {
 		console.log('video reloader', intVideoId);
-		io.emit('config reload', dictCurConfig);
+		io.emit('config reload', dictLastConfig);
 	});*/
 });
 }
