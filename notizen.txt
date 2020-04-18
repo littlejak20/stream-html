@@ -32,13 +32,13 @@ X - Formeingaben in new Struktur speicher und senden
 - Reloader Funktionen wieder versuchen einzubauen
 - API der jeweiligen Dienste (Twitch, YouTube) ansprechen, um Funktione, wie Stop, lauter, leiser, nutzen zu können
 - YouTube Player Auto untersuchen, da nicht richtig reagiert
-- Volume allgemein von 1.0 auf 100 umstellen (beachte Rechnung für Twicth und YouTube)
 
 Version 3:
-- Datenbank einbauen
-- Aktuelle Config/Ansicht in ein Profil (mit Namentextfield oder Dropdownliste) in der Datenbank speichern können
-- Profil aus DB laden können
-- Auflistung aller Profile in einem Dropdown
+X - Datenbank einbauen
+X - Aktuelle Config/Ansicht in ein Profil (mit Namentextfield oder Dropdownliste) in der Datenbank speichern können
+X - Profil aus DB laden können
+X - Auflistung aller Profile in einem Dropdown
+- Switcher, Mode Profilnamen richtig mitsenden
 
 
 https://stackoverflow.com/questions/1458724/how-do-i-set-unset-a-cookie-with-jquery

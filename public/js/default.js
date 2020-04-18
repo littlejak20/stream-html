@@ -35,6 +35,51 @@ var arrayClientProfileNames = [];
 	}
 // Helpers - END
 
+function getDictFormProfile() {
+	var formProfile = $(strFormProfileClass);
+	return dictFormProfile = {
+		name: formProfile.find('[name="name"]').val(),
+		select: formProfile.find('[name="select"]').val(),
+	};
+}
+function emitFormSourcesSubmit(e) {
+	console.log('formSources submit ==>', e);
+	//e.preventDefault();
+	
+	var arrayTmpSources = [
+		{ // 0 attention: not set 
+			name: '',
+			volume: 0.0,
+		},
+	];
+
+	$(strFormSourcesClass).each(function(index, form) {
+		var formContainer = $(form);
+		var dictTmpSource = {};
+
+		$.each(arraySourceItems, function(index, fieldname) {
+		});
+		$.each(arraySourceItems, function(index, fieldname) {
+			var inputElement = formContainer.find('[name="'+fieldname+'"]');
+			var inputType = inputElement.attr('type');
+
+			if (inputType == 'checkbox') {
+				dictTmpSource[fieldname] = inputElement.is(':checked');
+			} else {
+				dictTmpSource[fieldname] = inputElement.val();
+			}
+		});
+		arrayTmpSources.push(dictTmpSource);
+
+		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
+	});
+
+	socket.emit('formSources submit', {
+		formProfile: getDictFormProfile(),
+		arraySources: arrayTmpSources
+	});
+}
+
 socket.on('config reload', function(dictServerConfig) {
 	console.log('config reload', dictServerConfig);
 
@@ -212,68 +257,18 @@ $(strOverlayClass+' .mode a').on('click', function(e) {
 
 $(strFormSaveButtonClass).on('click', function(e) { emitFormSourcesSubmit(e); });
 $(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
-function emitFormSourcesSubmit(e) {
-	console.log('formSources submit ==>', e);
-	//e.preventDefault();
-
-	var formProfile = $(strFormProfileClass);
-	var dictFormProfile = {
-		name: formProfile.find('[name="name"]').val(),
-		select: formProfile.find('[name="select"]').val(),
-	};
-
-	var arrayTmpSources = [
-		{ // 0 attention: not set 
-			name: '',
-			volume: 0.0,
-		},
-	];
-
-	$(strFormSourcesClass).each(function(index, form) {
-		var formContainer = $(form);
-		var dictTmpSource = {};
-
-		$.each(arraySourceItems, function(index, fieldname) {
-		});
-		$.each(arraySourceItems, function(index, fieldname) {
-			var inputElement = formContainer.find('[name="'+fieldname+'"]');
-			var inputType = inputElement.attr('type');
-
-			if (inputType == 'checkbox') {
-				dictTmpSource[fieldname] = inputElement.is(':checked');
-			} else {
-				dictTmpSource[fieldname] = inputElement.val();
-			}
-		});
-		arrayTmpSources.push(dictTmpSource);
-
-		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
-	});
-
-	socket.emit('formSources submit', {
-		formProfile: dictFormProfile,
-		arraySources: arrayTmpSources
-	});
-}
 
 $(strFormLoadButtonClass).on('click', function(e) {
 	console.log('strFormLoadButtonClass');
-
-	var formProfile = $(strFormProfileClass);
-	var dictFormProfile = {
-		name: formProfile.find('[name="name"]').val(),
-		select: formProfile.find('[name="select"]').val(),
-	};
-
 	socket.emit('loadProfile submit', {
-		formProfile: dictFormProfile,
+		formProfile: getDictFormProfile(),
 	});
 });
 
 var videoId0 = -1;
 var videoId1 = -1;
 $(strOverlayClass+' .js-switcher a').on('click', function(e) {
-	e.preventDefault();
+	if (e !== undefined) e.preventDefault();
 	var videoId = $(this).data('id');
 
 	if (videoId0 <= -1) {

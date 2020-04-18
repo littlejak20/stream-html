@@ -170,11 +170,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 
 const loadAllProfileNames = () => {
 	findDocuments('configs', {}, {}, (data, error) => {
-		console.log('loadAllProfileNames intern');
-		console.log(data);
-		if (data.length <= 0) return false;
-		arrayProfileNames = data;
-
+		if (data.length > 0) arrayProfileNames = data;
 		try {
 			io.emit('profileName reload', arrayProfileNames);
 		} catch {}
@@ -218,9 +214,9 @@ findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 			console.log('insert config');
 		});
 	}
+	loadAllProfileNames();
 	startIoOnConnection();
 });
-loadAllProfileNames();
 
 const startIoOnConnection = () => {
 io.on('connection', (socket) => {
@@ -237,8 +233,7 @@ io.on('connection', (socket) => {
 
 	socket.on('mode click', (strModeName) => {
 		console.log('mode click', strModeName);
-		dictLastConfig.modeName = strModeName;
-		
+		dictLastConfig.modeName = strModeName;		
 		safeAndUpdateAll();
 	});
 
@@ -250,6 +245,7 @@ io.on('connection', (socket) => {
 		if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
 		safeAndUpdateAll();
 	});
+	
 	socket.on('loadProfile submit', (dictForms) => {
 		console.log('loadProfile submit', dictForms);
 		if (!dictCheck(dictForms)) return false;
