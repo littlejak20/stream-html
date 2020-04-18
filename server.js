@@ -1,9 +1,8 @@
 var serverPort = 3000;
 var userCount = 0;
-var lastConfigName = 'lastConfig';
-var startConfigName = 'lastConfig';
+var startConfigName = 'disable';
 var dictLastConfig = {
-	name: lastConfigName,
+	name: 'setByServer',
 	modeName: 'container top',
 	sources: [ 
 		{ // 0 attention: not set 
@@ -205,14 +204,12 @@ const configUpdateInsert = (strConfigName) => {
 		} catch {}
 	});
 }
-const configFormSaveAndUpdatePage = () => {
-	configUpdateInsert(lastConfigName);
+const safeAndUpdateAll = () => {
 	configUpdateInsert(dictLastConfig.name);
 }
 
 
 // Start
-loadAllProfileNames();
 findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 	if (data.length > 0) {
 		dictLastConfig = data[0];
@@ -223,6 +220,7 @@ findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 	}
 	startIoOnConnection();
 });
+loadAllProfileNames();
 
 const startIoOnConnection = () => {
 io.on('connection', (socket) => {
@@ -241,7 +239,7 @@ io.on('connection', (socket) => {
 		console.log('mode click', strModeName);
 		dictLastConfig.modeName = strModeName;
 		
-		configFormSaveAndUpdatePage();
+		safeAndUpdateAll();
 	});
 
 	socket.on('formSources submit', (dictForms) => {
@@ -250,7 +248,7 @@ io.on('connection', (socket) => {
 
 		if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
 		if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
-		configFormSaveAndUpdatePage();
+		safeAndUpdateAll();
 	});
 	socket.on('loadProfile submit', (dictForms) => {
 		console.log('loadProfile submit', dictForms);
@@ -276,7 +274,7 @@ io.on('connection', (socket) => {
 		io.emit('video switcher', arrVideoIds);
 	});
 	socket.on('video switcher finish', (arrVideoIds) => {		
-		configFormSaveAndUpdatePage();
+		safeAndUpdateAll();
 	});
 
 	/*socket.on('video reloader', (intVideoId) => {
