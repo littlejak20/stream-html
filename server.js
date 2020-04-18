@@ -1,3 +1,4 @@
+var serverPort = 80;
 var userCount = 0;
 var lastConfigName = 'lastConfig';
 var dictLastConfig = {
@@ -93,20 +94,13 @@ var filePath = __dirname + '/files';
 
 app.use(express.static(publicPath));
 app.use(express.static(filePath));
+app.get('/', (req, res) => { res.sendFile(publicPath + '/view.html'); });
+app.get('/v', (req, res) => { res.sendFile(publicPath + '/view.html'); });
+app.get('/view', (req, res) => { res.sendFile(publicPath + '/view.html'); });
+app.get('/c', (req, res) => { res.sendFile(publicPath + '/config.html'); });
+app.get('/config', (req, res) => { res.sendFile(publicPath + '/config.html'); });
 
-app.get('/', (req, res) => {
-	res.sendFile(publicPath + '/view.html');
-});
-app.get('/view', (req, res) => {
-	res.sendFile(publicPath + '/view.html');
-});
-app.get('/config', (req, res) => {
-	res.sendFile(publicPath + '/config.html');
-});
-
-server.listen(3000, () => {
-  console.log('Listening port 3000')
-});
+server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'!'; });
 
 // Helpers - START
 	const objectsAreEqual = (obj1, obj2) => {
