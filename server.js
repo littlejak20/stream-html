@@ -246,11 +246,23 @@ io.on('connection', (socket) => {
 
 	socket.on('formSources submit', (dictForms) => {
 		console.log('formSources submit', dictForms);
-		if (dictCheck(dictForms)) {
-			if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
-			if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
-			configFormSaveAndUpdatePage();
-		}
+		if (!dictCheck(dictForms)) return false;
+
+		if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
+		if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
+		configFormSaveAndUpdatePage();
+	});
+	socket.on('loadProfile submit', (dictForms) => {
+		console.log('loadProfile submit', dictForms);
+		if (!dictCheck(dictForms)) return false;
+		if (dictForms.formProfile.select.length <= 0) return false;
+
+		findDocuments('configs', { name: dictForms.formProfile.select }, {}, (data, error) => {
+			console.log('loadProfile submit --> findDocuments');
+			if (data.length > 0) dictLastConfig = data[0];
+			io.emit('config reload', dictLastConfig);
+			io.emit('profileName reload', arrayProfileNames);
+		});
 	});
 
 	socket.on('video switcher', (arrVideoIds) => {

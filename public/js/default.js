@@ -117,7 +117,7 @@ socket.on('config reload', function(dictServerConfig) {
 									channel: dictServerSource.name,
 									parent: ["https://twicth.tv"],
 								});
-								waitTimeMsec = 1000;
+								waitTimeMsec = 2000;
 								boolChangeVolume = true;
 							}
 						}
@@ -148,7 +148,7 @@ socket.on('config reload', function(dictServerConfig) {
 										'origin': 'https://www.youtube.com',
 									},
 								});
-								waitTimeMsec = 1000;
+								waitTimeMsec = 2000;
 								boolChangeVolume = true;
 							}
 						}
@@ -192,7 +192,10 @@ socket.on('profileName reload', function(arrayServerProfileNames) {
 	var formProfile = $(strFormProfileClass);
 	var strSelectOptions = '';
 	$.each(arrayServerProfileNames, function(index, profile) {
-		strSelectOptions += '<option name="'+profile.name+'">'+profile.name+'</option>';
+		strSelectOptions += 
+			'<option name="'+profile.name+'"'+
+			(profile.name == dictClientConfig.name ? ' selected' : '')+
+			'>'+profile.name+'</option>';
 	});
 	formProfile.find('[name="select"]').html(strSelectOptions);
 
@@ -216,9 +219,8 @@ function emitFormSourcesSubmit(e) {
 	var formProfile = $(strFormProfileClass);
 	var dictFormProfile = {
 		name: formProfile.find('[name="name"]').val(),
-		select: formProfile.find('[name="select"]').val(),		
+		select: formProfile.find('[name="select"]').val(),
 	};
-	console.log(dictFormProfile);
 
 	var arrayTmpSources = [
 		{ // 0 attention: not set 
@@ -253,6 +255,20 @@ function emitFormSourcesSubmit(e) {
 		arraySources: arrayTmpSources
 	});
 }
+
+$(strFormLoadButtonClass).on('click', function(e) {
+	console.log('strFormLoadButtonClass');
+
+	var formProfile = $(strFormProfileClass);
+	var dictFormProfile = {
+		name: formProfile.find('[name="name"]').val(),
+		select: formProfile.find('[name="select"]').val(),
+	};
+
+	socket.emit('loadProfile submit', {
+		formProfile: dictFormProfile,
+	});
+});
 
 var videoId0 = -1;
 var videoId1 = -1;
