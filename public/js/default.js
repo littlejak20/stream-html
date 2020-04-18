@@ -185,7 +185,8 @@ socket.on('config onlyset', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
 });
 
-socket.on('profileName reload', function(arrayServerProfileNames) {	
+socket.on('profileName reload', function(arrayServerProfileNames) {
+	console.log('profileName reload', arrayServerProfileNames);
 	//if (objectsAreEqual(arrayServerProfileNames, arrayClientProfileNames)) return false;
 	
 	var formProfile = $(strFormProfileClass);
@@ -207,7 +208,7 @@ $(strOverlayClass+' .mode a').on('click', function(e) {
 });
 
 $(strFormSaveButtonClass).on('click', function(e) { emitFormSourcesSubmit(e); });
-//$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
+$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
 function emitFormSourcesSubmit(e) {
 	console.log('formSources submit ==>', e);
 	//e.preventDefault();

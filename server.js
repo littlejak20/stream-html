@@ -1,6 +1,7 @@
 var serverPort = 3000;
 var userCount = 0;
 var lastConfigName = 'lastConfig';
+var startConfigName = 'lastConfig';
 var dictLastConfig = {
 	name: lastConfigName,
 	modeName: 'container top',
@@ -170,9 +171,14 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 
 const loadAllProfileNames = () => {
 	findDocuments('configs', {}, {}, (data, error) => {
+		console.log('loadAllProfileNames intern');
+		console.log(data);
 		if (data.length <= 0) return false;
 		arrayProfileNames = data;
-		try { io.emit('profileName reload', data); } catch { console.log('123'); }
+
+		try {
+			io.emit('profileName reload', arrayProfileNames);
+		} catch {}
 	});
 }
 const configUpdateInsert = (strConfigName) => {
@@ -192,17 +198,22 @@ const configUpdateInsert = (strConfigName) => {
 				console.log('insert config');
 			});
 		}
+
+		loadAllProfileNames();
+		try {
+			io.emit('config reload', dictLastConfig);
+		} catch {}
 	});
 }
 const configFormSaveAndUpdatePage = () => {
 	configUpdateInsert(lastConfigName);
 	configUpdateInsert(dictLastConfig.name);
-	loadAllProfileNames();
-	try { io.emit('config reload', dictLastConfig); } catch { console.log('456'); }
 }
 
+
+// Start
 loadAllProfileNames();
-findDocuments('configs', { name: lastConfigName }, {}, (data, error) => {
+findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 	if (data.length > 0) {
 		dictLastConfig = data[0];
 	} else {
