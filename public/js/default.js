@@ -1,4 +1,4 @@
-function startRenderView(strPageName) {
+function startRenderPage(strPageName) {
 
 var socket = io();
 
@@ -265,7 +265,7 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 
 }
 
-// Fullscreen Functions - START
+// Fullscreen - START
 	var fullElem = document.documentElement;
 
 	/* View in fullscreen */
@@ -295,16 +295,16 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 			document.msExitFullscreen();
 		}
 	}
-// Fullscreen Functions - END
 
-var boolIsFullscreen = false;
-$('#fullscreenall').on('click', function(e) {
-	e.preventDefault();
-	console.log('click fullscreen');
-	if (!boolIsFullscreen) {
-		openFullscreen();
-	} else {
-		closeFullscreen();
-	}
-	boolIsFullscreen = !boolIsFullscreen;
-});
+	var boolIsFullscreen = false;
+	$('.fullscreenall').on('click', function(e) {
+		e.preventDefault();
+		console.log('click fullscreen');
+		if (!boolIsFullscreen) {
+			openFullscreen();
+		} else {
+			closeFullscreen();
+		}
+		boolIsFullscreen = !boolIsFullscreen;
+	});
+// Fullscreen - END

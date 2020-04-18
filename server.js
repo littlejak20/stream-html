@@ -18,76 +18,109 @@ var filePath = __dirname + '/files';
 app.use(express.static(publicPath));
 app.use(express.static(filePath));
 
-app.get('/', function(req, res) {
+app.get('/', (req, res) => {
 	res.sendFile(publicPath + '/view.html');
 });
-app.get('/view', function(req, res) {
+app.get('/view', (req, res) => {
 	res.sendFile(publicPath + '/view.html');
 });
-app.get('/config', function(req, res) {
+app.get('/config', (req, res) => {
 	res.sendFile(publicPath + '/config.html');
 });
 
-server.listen(3000, function () {
+server.listen(3000, () => {
   console.log('Listening port 3000')
 });
 
-// database - START
+// Helpers - START
+	const objectsAreEqual = (obj1, obj2) => {
+		return (JSON.stringify(obj1) === JSON.stringify(obj2));
+	}
+	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
+	const dictCheck = (object, strObjectName) => {
+		if (object!==undefined && object!==null && typeof object==='object' && !(object instanceof Array) && !(object instanceof Date)) return true;
+		return false;
+	}
+	const arrayCheck = (object, strObjectName) => {
+		if (object!==undefined && object!==null && typeof object==='object' && object instanceof Array) return true;
+		return false;
+	}
+	const functionCheck = (object, strObjectName) => {
+		if (object!==undefined && object!==null && object instanceof Function) return true;
+		if (boolApiCheckCanUse) requiredError(strObjectName);
+		return false;
+	}
+// Helpers - END
+
+// Database - START
 	const MongoClient = require('mongodb').MongoClient;
 	const assert = require('assert');
 	const url = 'mongodb://localhost:27017';
 	const dbName = 'stream-html';
 
-	const insertDocuments = function(collectionName, docs, options, callbackFunc) {
-		var client = new MongoClient(url, {useNewUrlParser: true});
-		client.connect(function(err) {
-			//console.log("Connected successfully to server");
+	const insertDocuments = (collectionName, docs, options, callbackFunc) => {
+		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
 
-			console.log('insertDocuments');
-			//console.log(docs);
-			collection.insertMany(docs, function(error, result) {
-				console.log('insertMany');
+			collection.insertMany(docs, options, (error, result) => {
 				callbackFunc(result, error);
 				client.close();
 			});
 		});
 	}
 
-	const findDocuments = function(collectionName, query, options, callbackFunc) {
-		var client = new MongoClient(url, {useNewUrlParser: true});
-		client.connect(function(err) {
-			//console.log("Connected successfully to server");
+	const findDocuments = (collectionName, query, options, callbackFunc) => {
+		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
 
-			collection.find(query).toArray(function(error, docs) {
-				callbackFunc(docs, error);			
+			collection.find(query, options).toArray((error, docs) => {
+				callbackFunc(docs, error);
 				client.close();
 			});
 		});
 	}
-// database - END
 
-// Helpers - START
-	function objectsAreEqual(obj1, obj2) {
-		return (JSON.stringify(obj1) === JSON.stringify(obj2));
+	const updateDocuments = (collectionName, filter, update, options, callbackFunc) => {
+		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		client.connect((err) => {
+			const db = client.db(dbName);
+			const collection = db.collection(collectionName);
+
+			collection.updateMany(filter, { $set: update }, options, (error, result) => {
+				callbackFunc(result, error);
+				client.close();
+			});
+		});
 	}
-	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
-	function dictCheck(object, strObjectName) {
-		if (object!==undefined && object!==null && typeof object==='object' && !(object instanceof Array) && !(object instanceof Date)) return true;
-		return false;
+
+	const lastConfigUpdateInsert = () => {
+		delete dictCurConfig['_id'];
+		dictCurConfig['date'] = new Date();
+
+		findDocuments('configs', { name: lastConfigName }, {}, (data, error) => {
+			if (data.length > 0) {
+				updateDocuments('configs', { name: lastConfigName }, dictCurConfig, {}, (data, error) => {
+					console.log('update config');
+				});
+			} else {
+				insertDocuments('configs', [dictCurConfig], {}, (data, error) => {
+					console.log('insert config');
+				});
+			}
+		});
 	}
-	function arrayCheck(object, strObjectName) {
-		if (object!==undefined && object!==null && typeof object==='object' && object instanceof Array) return true;
-		return false;
-	}
-// Helpers - END
+// Database - END
 
 var userCount = 0;
+var lastConfigName = 'lastConfig';
 var dictCurConfig = {
+	name: lastConfigName,
 	modeName: 'container top',
+	date: new Date(),
 	sources: [ 
 		{ // 0 attention: not set 
 			name: '',
@@ -157,45 +190,47 @@ var dictCurConfig = {
 		},
 	]
 };
+findDocuments('configs', { name: 'lastConfig' }, {}, (data, error) => {
+	if (data.length > 0) {
+		dictCurConfig = data[0];
+	} else {
+		insertDocuments('configs', [dictCurConfig], {}, (data, error) => {
+			console.log('insert config');
+		});
+	}
+	startIoOnConnection();
+});
 
-io.on('connection', function(socket) {
+const startIoOnConnection = () => {
+io.on('connection', (socket) => {
 	userCount++;
 	console.log('connected', socket.id, userCount);
 
-	socket.on('disconnect', function() {
+	socket.on('disconnect', () => {
 		userCount--;
-		console.log('disconnected', socket.id, userCount);
+		console.log('disconnected', socket.id, userCount);	
 	});
 
 	socket.emit('config reload', dictCurConfig);
 
-	socket.on('mode click', function(strModeName) {
+	socket.on('mode click', (strModeName) => {
 		console.log('mode click', strModeName);
 		dictCurConfig.modeName = strModeName;
+		
+		lastConfigUpdateInsert();
 		io.emit('config reload', dictCurConfig);
 	});
 
-	socket.on('formSources submit', function(arrayTmpSources) {
+	socket.on('formSources submit', (arrayTmpSources) => {
 		console.log('formSources submit', arrayTmpSources);
 		if (arrayCheck(arrayTmpSources)) {
-
 			dictCurConfig.sources = arrayTmpSources;
-
-			delete dictCurConfig['_id'];
-			insertDocuments('configs', [dictCurConfig], {}, function(data, error) {
-				//console.log(data);
-			});
-			/*findDocuments('configs', {}, {}, function(data, error) {
-				console.log('find');
-				console.log(data);
-			});*/
-
+			lastConfigUpdateInsert();
 		}
-
 		io.emit('config reload', dictCurConfig);
 	});
 
-	socket.on('video switcher', function(arrVideoIds) {
+	socket.on('video switcher', (arrVideoIds) => {
 		console.log('video switcher', arrVideoIds);
 
 		var dictSource0 = dictCurConfig.sources[arrVideoIds[0]];
@@ -203,14 +238,16 @@ io.on('connection', function(socket) {
 		dictCurConfig.sources[arrVideoIds[0]] = dictSource1;
 		dictCurConfig.sources[arrVideoIds[1]] = dictSource0;
 
+		lastConfigUpdateInsert();
 		io.emit('video switcher', arrVideoIds);
 	});
-	socket.on('video switcher finish', function(arrVideoIds) {
+	socket.on('video switcher finish', (arrVideoIds) => {
 		io.emit('config reload', dictCurConfig);
 	});
 
-	socket.on('video reloader', function(intVideoId) {
+	/*socket.on('video reloader', (intVideoId) => {
 		console.log('video reloader', intVideoId);
 		io.emit('config reload', dictCurConfig);
-	});
+	});*/
 });
+}
