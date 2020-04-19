@@ -4,10 +4,13 @@ var socket = io();
 
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
+
 var strFormProfileClass = 'form#formProfile';
 var strFormSourcesClass = '#formSources form';
-var strFormSaveButtonClass = '#profileWithAllSourcesSave';
-var strFormLoadButtonClass = '#profileWithAllSourcesLoad';
+var strFormAddButtonClass = '#profileAdd';
+var strFormLoadButtonClass = '#profileLoad';
+var strFormSaveButtonClass = '#profileSave';
+
 var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 
 var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' };
@@ -42,17 +45,13 @@ function getDictFormProfile() {
 		select: formProfile.find('[name="select"]').val(),
 	};
 }
-function emitFormSourcesSubmit(e) {
-	console.log('formSources submit ==>', e);
-	//e.preventDefault();
-	
+function getArrayFormSources() {
 	var arrayTmpSources = [
 		{ // 0 attention: not set 
 			name: '',
 			volume: 0.0,
 		},
 	];
-
 	$(strFormSourcesClass).each(function(index, form) {
 		var formContainer = $(form);
 		var dictTmpSource = {};
@@ -73,11 +72,13 @@ function emitFormSourcesSubmit(e) {
 
 		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
 	});
-
-	socket.emit('formSources submit', {
+	return arrayTmpSources;
+}
+function getDictAllFormData() {
+	return {
 		formProfile: getDictFormProfile(),
-		arraySources: arrayTmpSources
-	});
+		arraySources: getArrayFormSources(),
+	};
 }
 
 socket.on('config reload', function(dictServerConfig) {
@@ -255,14 +256,26 @@ $(strOverlayClass+' .mode a').on('click', function(e) {
 	socket.emit('mode click', $(this).attr('class'));
 });
 
-$(strFormSaveButtonClass).on('click', function(e) { emitFormSourcesSubmit(e); });
-$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
+$(strFormAddButtonClass).on('click', function(e) {
+	console.log('strFormLoadButtonClass');
+	socket.emit('loadProfile submit', getDictAllFormData());
+});
 
 $(strFormLoadButtonClass).on('click', function(e) {
 	console.log('strFormLoadButtonClass');
-	socket.emit('loadProfile submit', {
-		formProfile: getDictFormProfile(),
-	});
+	socket.emit('loadProfile submit', getDictAllFormData());
+});
+
+$(strFormSaveButtonClass).on('click', function(e) {
+	console.log('saveProfile submit');
+	e.preventDefault();
+	socket.emit('saveProfile submit', getDictAllFormData());
+});
+
+$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) {
+	console.log('saveProfile submit');
+	e.preventDefault();
+	socket.emit('saveProfile submit', getDictAllFormData());
 });
 
 var videoId0 = -1;

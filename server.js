@@ -237,11 +237,11 @@ io.on('connection', (socket) => {
 		safeAndUpdateAll();
 	});
 
-	socket.on('formSources submit', (dictForms) => {
-		console.log('formSources submit', dictForms);
+	socket.on('saveProfile submit', (dictForms) => {
+		console.log('saveProfile submit', dictForms);
 		if (!dictCheck(dictForms)) return false;
 
-		if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
+		if (dictForms.formProfile.select.length > 0) dictLastConfig.name = dictForms.formProfile.select;
 		if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
 		safeAndUpdateAll();
 	});
