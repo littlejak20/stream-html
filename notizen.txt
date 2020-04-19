@@ -38,7 +38,20 @@ X - Datenbank einbauen
 X - Aktuelle Config/Ansicht in ein Profil (mit Namentextfield oder Dropdownliste) in der Datenbank speichern können
 X - Profil aus DB laden können
 X - Auflistung aller Profile in einem Dropdown
-- Switcher, Mode Profilnamen richtig mitsenden
+- Bei Switcher, Mode Profilnamen richtig mitsenden
+	--> könnte wegfallen, wenn die Profil Idee umgesetzt wird
+- Profile (Idee)
+	--> Textfeld nur zum anlegen eines neum Profils nutzen
+		--> blankes Profil nutzen
+		--> Nach anlegen als aktuelles Profil im dropdown anzeigen undladen
+		--> Button "Hinzufügen" hinzufügen
+	--> Aktuelles Dropdownprofil
+		--> zum Speichern nutzen
+		--> "Speichern" Button zum Dropdown verschieben
+		--> "Laden" Button so lassen
+		--> "Name Editieren" Button hinzufügen
+		--> "Löschen" Button hinzufügen
+	--> Aktuelles Profil
 
 
 https://stackoverflow.com/questions/1458724/how-do-i-set-unset-a-cookie-with-jquery
