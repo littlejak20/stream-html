@@ -1,32 +1,84 @@
-function startRenderView(strPageName) {
+function startRenderPage(strPageName) {
 
 var socket = io();
 
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
+var strFormProfileClass = 'form#formProfile';
 var strFormSourcesClass = '#formSources form';
-var strFormSaveButtonClass = '#allSourcesSave';
+var strFormSaveButtonClass = '#profileWithAllSourcesSave';
+var strFormLoadButtonClass = '#profileWithAllSourcesLoad';
 var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 
 var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' };
 var youtubePlayerIndex = 0;
 var dictClientConfig = {};
+var arrayClientProfileNames = [];
 
 // Helpers - START
-	function objectsAreEqual(obj1, obj2) {
-		//console.log('objectsAreEqual', (JSON.stringify(obj1) === JSON.stringify(obj2)), JSON.stringify(obj1), JSON.stringify(obj2));
+	const objectsAreEqual = (obj1, obj2) => {
 		return (JSON.stringify(obj1) === JSON.stringify(obj2));
 	}
 	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
-	function dictCheck(object, strObjectName) {
+	const dictCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && typeof object==='object' && !(object instanceof Array) && !(object instanceof Date)) return true;
 		return false;
 	}
-	function arrayCheck(object, strObjectName) {
+	const arrayCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && typeof object==='object' && object instanceof Array) return true;
 		return false;
 	}
+	const functionCheck = (object, strObjectName) => {
+		if (object!==undefined && object!==null && object instanceof Function) return true;
+		if (boolApiCheckCanUse) requiredError(strObjectName);
+		return false;
+	}
 // Helpers - END
+
+function getDictFormProfile() {
+	var formProfile = $(strFormProfileClass);
+	return dictFormProfile = {
+		name: formProfile.find('[name="name"]').val(),
+		select: formProfile.find('[name="select"]').val(),
+	};
+}
+function emitFormSourcesSubmit(e) {
+	console.log('formSources submit ==>', e);
+	//e.preventDefault();
+	
+	var arrayTmpSources = [
+		{ // 0 attention: not set 
+			name: '',
+			volume: 0.0,
+		},
+	];
+
+	$(strFormSourcesClass).each(function(index, form) {
+		var formContainer = $(form);
+		var dictTmpSource = {};
+
+		$.each(arraySourceItems, function(index, fieldname) {
+		});
+		$.each(arraySourceItems, function(index, fieldname) {
+			var inputElement = formContainer.find('[name="'+fieldname+'"]');
+			var inputType = inputElement.attr('type');
+
+			if (inputType == 'checkbox') {
+				dictTmpSource[fieldname] = inputElement.is(':checked');
+			} else {
+				dictTmpSource[fieldname] = inputElement.val();
+			}
+		});
+		arrayTmpSources.push(dictTmpSource);
+
+		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
+	});
+
+	socket.emit('formSources submit', {
+		formProfile: getDictFormProfile(),
+		arraySources: arrayTmpSources
+	});
+}
 
 socket.on('config reload', function(dictServerConfig) {
 	console.log('config reload', dictServerConfig);
@@ -53,6 +105,11 @@ socket.on('config reload', function(dictServerConfig) {
 	 * If yes, then end the function here.
 	 */
 	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
+	
+	if (dictServerConfig.name != dictClientConfig.name) {
+		var formProfile = $(strFormProfileClass);
+		formProfile.find('[name="name"]').val(dictServerConfig.name);
+	}
 
 	// for site view/config - mode
 	if (dictServerConfig.modeName != dictClientConfig.modeName) {
@@ -105,7 +162,7 @@ socket.on('config reload', function(dictServerConfig) {
 									channel: dictServerSource.name,
 									parent: ["https://twicth.tv"],
 								});
-								waitTimeMsec = 1000;
+								waitTimeMsec = 2000;
 								boolChangeVolume = true;
 							}
 						}
@@ -136,7 +193,7 @@ socket.on('config reload', function(dictServerConfig) {
 										'origin': 'https://www.youtube.com',
 									},
 								});
-								waitTimeMsec = 1000;
+								waitTimeMsec = 2000;
 								boolChangeVolume = true;
 							}
 						}
@@ -173,6 +230,26 @@ socket.on('config onlyset', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
 });
 
+socket.on('profileName reload', function(arrayServerProfileNames) {
+	console.log('profileName reload', arrayServerProfileNames);
+	//if (objectsAreEqual(arrayServerProfileNames, arrayClientProfileNames)) return false;
+	
+	var formProfile = $(strFormProfileClass);
+	var strSelectOptions = '';
+	$.each(arrayServerProfileNames, function(index, profile) {
+		strSelectOptions += 
+			'<option name="'+profile.name+'"'+
+			(profile.name == dictClientConfig.name ? ' selected' : '')+
+			'>'+profile.name+'</option>';
+	});
+	formProfile.find('[name="select"]').html(strSelectOptions);
+
+	arrayClientProfileNames = arrayServerProfileNames;
+});
+socket.on('profileName onlyset', function(arrayServerProfileNames) {
+	arrayClientProfileNames = arrayServerProfileNames;
+});
+
 $(strOverlayClass+' .mode a').on('click', function(e) {
 	e.preventDefault();
 	socket.emit('mode click', $(this).attr('class'));
@@ -180,45 +257,18 @@ $(strOverlayClass+' .mode a').on('click', function(e) {
 
 $(strFormSaveButtonClass).on('click', function(e) { emitFormSourcesSubmit(e); });
 $(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) { emitFormSourcesSubmit(e); });
-function emitFormSourcesSubmit(e) {
-	console.log('formSources submit ==>', e);
-	//e.preventDefault();
 
-	var arrayTmpSources = [
-		{ // 0 attention: not set 
-			name: '',
-			volume: 0.0,
-		},
-	];
-
-	$(strFormSourcesClass).each(function(index, form) {
-		var formContainer = $(form);
-		var dictTmpSource = {};
-
-		$.each(arraySourceItems, function(index, fieldname) {
-		});
-		$.each(arraySourceItems, function(index, fieldname) {
-			var inputElement = formContainer.find('[name="'+fieldname+'"]');
-			var inputType = inputElement.attr('type');
-
-			if (inputType == 'checkbox') {
-				dictTmpSource[fieldname] = inputElement.is(':checked');
-			} else {
-				dictTmpSource[fieldname] = inputElement.val();
-			}
-		});
-		arrayTmpSources.push(dictTmpSource);
-
-		//if (dictServerSource.name.indexOf('http') > 0 || dictServerSource.name.indexOf('https') > 0) {}
+$(strFormLoadButtonClass).on('click', function(e) {
+	console.log('strFormLoadButtonClass');
+	socket.emit('loadProfile submit', {
+		formProfile: getDictFormProfile(),
 	});
-
-	socket.emit('formSources submit', arrayTmpSources);
-}
+});
 
 var videoId0 = -1;
 var videoId1 = -1;
 $(strOverlayClass+' .js-switcher a').on('click', function(e) {
-	e.preventDefault();
+	if (e !== undefined) e.preventDefault();
 	var videoId = $(this).data('id');
 
 	if (videoId0 <= -1) {
@@ -265,7 +315,7 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 
 }
 
-// Fullscreen Functions - START
+// Fullscreen - START
 	var fullElem = document.documentElement;
 
 	/* View in fullscreen */
@@ -295,16 +345,16 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 			document.msExitFullscreen();
 		}
 	}
-// Fullscreen Functions - END
 
-var boolIsFullscreen = false;
-$('#fullscreenall').on('click', function(e) {
-	e.preventDefault();
-	console.log('click fullscreen');
-	if (!boolIsFullscreen) {
-		openFullscreen();
-	} else {
-		closeFullscreen();
-	}
-	boolIsFullscreen = !boolIsFullscreen;
-});
+	var boolIsFullscreen = false;
+	$('.fullscreenall').on('click', function(e) {
+		e.preventDefault();
+		console.log('click fullscreen');
+		if (!boolIsFullscreen) {
+			openFullscreen();
+		} else {
+			closeFullscreen();
+		}
+		boolIsFullscreen = !boolIsFullscreen;
+	});
+// Fullscreen - END

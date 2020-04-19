@@ -20,13 +20,13 @@
 		<div data-id="10" id="player10"></div>
 	</div>
 
-	<div id="fullscreenall" style="position: fixed; bottom: 50px; right: 10px; height: 20px; width: 20px; background-color: red; display: block; cursor: pointer;">X</div>
+	<!--<div class="fullscreenall" style="position: fixed; bottom: 50px; right: 10px; height: 20px; width: 20px; background-color: red; display: block; cursor: pointer;">X</div>-->
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="https://player.twitch.tv/js/embed/v1.js"></script>
 	<script src="https://www.youtube.com/iframe_api"></script>
 	<script src="/js/default.js"></script>
-	<script>function onYouTubeIframeAPIReady(){startRenderView('view');}</script>
+	<script>function onYouTubeIframeAPIReady() { startRenderPage('view'); }</script>
 </body>
 </html>
