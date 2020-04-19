@@ -1,3 +1,5 @@
+// profile and config names are the same
+
 var serverPort = 3000;
 var userCount = 0;
 var startConfigName = 'disable';
@@ -74,6 +76,7 @@ var dictLastConfig = {
 	]
 };
 var arrayProfileNames = [];
+/*var blankBlankProfile = {"_id":"name":"blank","modeName":"container top2x4-bottom-2","sources":[{"name":"","volume":{"$numberInt":0.0}},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0}]};*/
 
 var express = require('express');
 var fs = require('fs')
@@ -200,10 +203,6 @@ const configUpdateInsert = (strConfigName) => {
 		} catch {}
 	});
 }
-const safeAndUpdateAll = () => {
-	configUpdateInsert(dictLastConfig.name);
-}
-
 
 // Start
 findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
@@ -230,20 +229,12 @@ io.on('connection', (socket) => {
 
 	socket.emit('config reload', dictLastConfig);
 	socket.emit('profileName reload', arrayProfileNames);
-
-	socket.on('mode click', (strModeName) => {
-		console.log('mode click', strModeName);
-		dictLastConfig.modeName = strModeName;		
-		safeAndUpdateAll();
-	});
-
-	socket.on('saveProfile submit', (dictForms) => {
-		console.log('saveProfile submit', dictForms);
+	
+	socket.on('addProfile submit', (dictForms) => {
+		console.log('addProfile submit', dictForms);
 		if (!dictCheck(dictForms)) return false;
-
-		if (dictForms.formProfile.select.length > 0) dictLastConfig.name = dictForms.formProfile.select;
-		if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
-		safeAndUpdateAll();
+		if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
+		configUpdateInsert(dictForms.formProfile.name);
 	});
 	
 	socket.on('loadProfile submit', (dictForms) => {
@@ -259,6 +250,21 @@ io.on('connection', (socket) => {
 		});
 	});
 
+	socket.on('saveProfile submit', (dictForms) => {
+		console.log('saveProfile submit', dictForms);
+		if (!dictCheck(dictForms)) return false;
+
+		if (dictForms.formProfile.select.length > 0) dictLastConfig.name = dictForms.formProfile.select;
+		if (arrayCheck(dictForms.sources)) dictLastConfig.sources = dictForms.sources;
+		configUpdateInsert(dictLastConfig.name);
+	});
+
+	socket.on('mode click', (strModeName) => {
+		console.log('mode click', strModeName);
+		dictLastConfig.modeName = strModeName;
+		configUpdateInsert(dictLastConfig.name);
+	});
+
 	socket.on('video switcher', (arrVideoIds) => {
 		console.log('video switcher', arrVideoIds);
 
@@ -270,7 +276,7 @@ io.on('connection', (socket) => {
 		io.emit('video switcher', arrVideoIds);
 	});
 	socket.on('video switcher finish', (arrVideoIds) => {		
-		safeAndUpdateAll();
+		configUpdateInsert(dictLastConfig.name);
 	});
 
 	/*socket.on('video reloader', (intVideoId) => {

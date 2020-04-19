@@ -1,9 +1,10 @@
 function startRenderPage(strPageName) {
-
 var socket = io();
 
 var strOverlayClass = '.overlay';
 var strContainerClass = '.container';
+
+var strProfileNameShowPlaceClass = '#profileNameShowPlace';
 
 var strFormProfileClass = 'form#formProfile';
 var strFormSourcesClass = '#formSources form';
@@ -77,7 +78,7 @@ function getArrayFormSources() {
 function getDictAllFormData() {
 	return {
 		formProfile: getDictFormProfile(),
-		arraySources: getArrayFormSources(),
+		sources: getArrayFormSources(),
 	};
 }
 
@@ -100,17 +101,18 @@ socket.on('config reload', function(dictServerConfig) {
 			});
 		}
 	});
+	
+	//if (dictServerConfig.name != dictClientConfig.name) {
+		var formProfile = $(strFormProfileClass);
+		//formProfile.find('[name="name"]').val(dictServerConfig.name);
+		$(strProfileNameShowPlaceClass).html(dictServerConfig.name);
+	//}
 
 	/*
 	 * At this position it is checked whether config dict from the server and client are the same.
 	 * If yes, then end the function here.
 	 */
 	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
-	
-	if (dictServerConfig.name != dictClientConfig.name) {
-		var formProfile = $(strFormProfileClass);
-		formProfile.find('[name="name"]').val(dictServerConfig.name);
-	}
 
 	// for site view/config - mode
 	if (dictServerConfig.modeName != dictClientConfig.modeName) {
@@ -233,8 +235,7 @@ socket.on('config onlyset', function(dictServerConfig) {
 
 socket.on('profileName reload', function(arrayServerProfileNames) {
 	console.log('profileName reload', arrayServerProfileNames);
-	//if (objectsAreEqual(arrayServerProfileNames, arrayClientProfileNames)) return false;
-	
+
 	var formProfile = $(strFormProfileClass);
 	var strSelectOptions = '';
 	$.each(arrayServerProfileNames, function(index, profile) {
@@ -251,31 +252,35 @@ socket.on('profileName onlyset', function(arrayServerProfileNames) {
 	arrayClientProfileNames = arrayServerProfileNames;
 });
 
-$(strOverlayClass+' .mode a').on('click', function(e) {
-	e.preventDefault();
-	socket.emit('mode click', $(this).attr('class'));
-});
-
 $(strFormAddButtonClass).on('click', function(e) {
-	console.log('strFormLoadButtonClass');
-	socket.emit('loadProfile submit', getDictAllFormData());
+	console.log('addProfile submit -->'+strFormLoadButtonClass);
+	socket.emit('addProfile submit', $.extend({
+	}, getDictAllFormData()));
 });
 
 $(strFormLoadButtonClass).on('click', function(e) {
-	console.log('strFormLoadButtonClass');
-	socket.emit('loadProfile submit', getDictAllFormData());
+	console.log('loadProfile submit --> '+strFormLoadButtonClass);
+	socket.emit('loadProfile submit', $.extend({
+	}, getDictAllFormData()));
 });
 
 $(strFormSaveButtonClass).on('click', function(e) {
-	console.log('saveProfile submit');
+	console.log('saveProfile submit --> '+strFormSaveButtonClass);
 	e.preventDefault();
-	socket.emit('saveProfile submit', getDictAllFormData());
+	socket.emit('saveProfile submit', $.extend({
+	}, getDictAllFormData()));
 });
 
 $(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) {
-	console.log('saveProfile submit');
+	console.log('saveProfile submit --> '+strFormSourcesClass+' [name="volume"]');
 	e.preventDefault();
-	socket.emit('saveProfile submit', getDictAllFormData());
+	socket.emit('saveProfile submit', $.extend({
+	}, getDictAllFormData()));
+});
+
+$(strOverlayClass+' .mode a').on('click', function(e) {
+	e.preventDefault();
+	socket.emit('mode click', $(this).attr('class'));
 });
 
 var videoId0 = -1;
@@ -326,7 +331,7 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 	socket.emit('video reloader', $(this).data('id'));
 });
 
-}
+
 
 // Fullscreen - START
 	var fullElem = document.documentElement;
@@ -371,3 +376,4 @@ $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 		boolIsFullscreen = !boolIsFullscreen;
 	});
 // Fullscreen - END
+}
