@@ -233,6 +233,7 @@ io.on('connection', (socket) => {
 	socket.on('addProfile submit', (dictForms) => {
 		console.log('addProfile submit', dictForms);
 		if (!dictCheck(dictForms)) return false;
+		
 		if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
 		configUpdateInsert(dictForms.formProfile.name);
 	});

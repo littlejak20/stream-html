@@ -19,6 +19,8 @@ var youtubePlayerIndex = 0;
 var dictClientConfig = {};
 var arrayClientProfileNames = [];
 
+var arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth streams
+
 // Helpers - START
 	const objectsAreEqual = (obj1, obj2) => {
 		return (JSON.stringify(obj1) === JSON.stringify(obj2));
@@ -101,18 +103,18 @@ socket.on('config reload', function(dictServerConfig) {
 			});
 		}
 	});
-	
-	//if (dictServerConfig.name != dictClientConfig.name) {
-		var formProfile = $(strFormProfileClass);
-		//formProfile.find('[name="name"]').val(dictServerConfig.name);
-		$(strProfileNameShowPlaceClass).html(dictServerConfig.name);
-	//}
 
 	/*
 	 * At this position it is checked whether config dict from the server and client are the same.
 	 * If yes, then end the function here.
 	 */
-	if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false;
+	//if (objectsAreEqual(dictServerConfig, dictClientConfig)) return false; // FOR - setQuality for twicth streams
+	
+	if (dictServerConfig.name != dictClientConfig.name) {
+		var formProfile = $(strFormProfileClass);
+		//formProfile.find('[name="name"]').val(dictServerConfig.name);
+		$(strProfileNameShowPlaceClass).html(dictServerConfig.name);
+	}
 
 	// for site view/config - mode
 	if (dictServerConfig.modeName != dictClientConfig.modeName) {
@@ -128,7 +130,7 @@ socket.on('config reload', function(dictServerConfig) {
 	}
 
 	// for site view - player
-	if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) {
+	//if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) { // FOR - setQuality for twicth streams
 		$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
 			console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
 			var dictClientSource = [];
@@ -181,6 +183,27 @@ socket.on('config reload', function(dictServerConfig) {
 						} else if (dictServerSource.type == 'video') {
 						} else if (dictServerSource.type == 'playlist') {
 						} else { boolOnlyUseIframe = true }
+
+						// setQuality for twicth streams - START
+							(async() => {
+								try {
+									var waitIndex = 1;
+									while(players['player'+indexServerSource].getQualities().length < 1 && waitIndex <= 30) {
+										waitIndex++;
+										await new Promise(resolve => setTimeout(resolve, 1000));
+									}
+
+									if (players['player'+indexServerSource].getQualities().length > 0) {
+										var twitchQualities = players['player'+indexServerSource].getQualities();
+										if (arrayPlayerForceHighestQuality.indexOf(indexServerSource) >= 0) {
+											players['player'+indexServerSource].setQuality(twitchQualities[1]['group']);
+										} else {
+											players['player'+indexServerSource].setQuality(twitchQualities[0]['group']);
+										}
+									}
+								} catch(e) {}
+							})();
+						// setQuality for twicth streams - END
 					} else if (dictServerSource.platform == 'youtube') {
 						// later move to if type video
 						if (boolChangeVideoPlayer) {
@@ -224,7 +247,7 @@ socket.on('config reload', function(dictServerConfig) {
 				}
 			}
 		});
-	}
+	//}
 
 	dictClientConfig = dictServerConfig;
 	console.log(JSON.stringify(dictClientConfig));
@@ -235,7 +258,7 @@ socket.on('config onlyset', function(dictServerConfig) {
 
 socket.on('profileName reload', function(arrayServerProfileNames) {
 	console.log('profileName reload', arrayServerProfileNames);
-
+		
 	var formProfile = $(strFormProfileClass);
 	var strSelectOptions = '';
 	$.each(arrayServerProfileNames, function(index, profile) {
