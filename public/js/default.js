@@ -36,7 +36,6 @@ var arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth strea
 	}
 	const functionCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && object instanceof Function) return true;
-		if (boolApiCheckCanUse) requiredError(strObjectName);
 		return false;
 	}
 // Helpers - END
@@ -89,7 +88,9 @@ socket.on('config reload', function(dictServerConfig) {
 
 	// for site config - source form
 	$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
-		console.log('setFormSource ==>', indexServerSource, dictServerSource);	
+		console.log('setFormSource ==>', indexServerSource, dictServerSource);
+		if (!dictCheck(dictServerSource)) return false;
+
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
 			$.each(arraySourceItems, function(index, fieldname) {
@@ -133,22 +134,27 @@ socket.on('config reload', function(dictServerConfig) {
 	//if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) { // FOR - setQuality for twicth streams
 		$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
 			console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
+			if (!dictCheck(dictServerSource)) return false;
+
 			var dictClientSource = [];
 			var waitTimeMsec = 0;
 			if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
 			//if (objectsAreEqual(dictServerSource, dictClientSource)) return false; // error?
 
+			var strServerSourceName = String(dictServerSource.name).trim();
+			var strClientSourceName = String(dictClientSource.name).trim();
+
 			var boolHasName = (dictServerSource.name.length > 0);
 			var boolChangeVideoPlayer = (
-				dictServerSource.name !== dictClientSource.name ||
+				strServerSourceName !== strClientSourceName ||
 				dictServerSource.platform !== dictClientSource.platform ||
 				dictServerSource.type !== dictClientSource.type
 			);
-			var boolChangeVolume = (
-				dictServerSource.volume !== dictClientSource.volume &&
-				boolHasName
-			);
+			var boolChangeVolume = (dictServerSource.volume !== dictClientSource.volume);
 			var boolOnlyUseIframe = false;
+
+			var dictPlayerConfig = {};
+			var tmpContainerName = '';
 			
 			var playerContainer = $(strContainerClass+'.main [data-id="'+indexServerSource+'"]');
 			if (playerContainer.length > 0) {
@@ -158,93 +164,167 @@ socket.on('config reload', function(dictServerConfig) {
 					players['player'+indexServerSource] = '';
 				}
 
-				if (dictServerSource.name.indexOf('http') <= 0 && dictServerSource.name.indexOf('https') <= 0) {
+				if (strServerSourceName.indexOf('http') <= 0) {
 					if (dictServerSource.platform == 'twitch') {
-						// later move to if type stream 
-						if (boolChangeVideoPlayer) {
-							if (boolHasName) {
-								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, {
-									channel: dictServerSource.name,
-									parent: ["https://twicth.tv"],
-								});
+
+						if (boolChangeVideoPlayer && boolHasName) {
+							dictPlayerConfig.parent = ['https://twicth.tv'];
+
+							if (dictServerSource.type == 'stream') {
+								dictPlayerConfig.channel = strServerSourceName;
+							} else if (dictServerSource.type == 'video') {
+								dictPlayerConfig.video = strServerSourceName;
+							} else if (dictServerSource.type == 'playlist') {
+								dictPlayerConfig.collection = strServerSourceName;
+							} else {
+								boolOnlyUseIframe = true;
+							}
+
+							if (!boolOnlyUseIframe) {
+								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
 								waitTimeMsec = 2000;
 								boolChangeVolume = true;
 							}
 						}
-						if (boolChangeVolume) {
-							setTimeout(function() {
-								var videoVolume = 0.0;
-								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-								players['player'+indexServerSource].setVolume(videoVolume);
-							}, waitTimeMsec);
-						}
 
-						if (dictServerSource.type == 'stream') {
-						} else if (dictServerSource.type == 'video') {
-						} else if (dictServerSource.type == 'playlist') {
-						} else { boolOnlyUseIframe = true }
-
-						// setQuality for twicth streams - START
-							(async() => {
+						if (!boolOnlyUseIframe) {
+							if (boolChangeVolume) {
+								(async() => {
 								try {
-									var waitIndex = 1;
-									while(players['player'+indexServerSource].getQualities().length < 1 && waitIndex <= 30) {
+									var waitIndex = 0;
+									while(!functionCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
 										waitIndex++;
 										await new Promise(resolve => setTimeout(resolve, 1000));
 									}
 
-									if (players['player'+indexServerSource].getQualities().length > 0) {
-										var twitchQualities = players['player'+indexServerSource].getQualities();
-										if (arrayPlayerForceHighestQuality.indexOf(indexServerSource) >= 0) {
-											players['player'+indexServerSource].setQuality(twitchQualities[1]['group']);
-										} else {
-											players['player'+indexServerSource].setQuality(twitchQualities[0]['group']);
-										}
-									}
-								} catch(e) {}
+									if (!functionCheck(players['player'+indexServerSource].setVolume)) return false;
+
+									var videoVolume = 0.0;
+									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+									players['player'+indexServerSource].setVolume(videoVolume);
+								} catch(e) { console.error('wait error ==> changeVolume', e); }
+								})();
+							}
+
+							// setQuality for twicth streams - START
+							(async() => {
+								try {
+								var waitIndex = 0;
+								while(!functionCheck(players['player'+indexServerSource].getQualities) && waitIndex <= 30) {
+									waitIndex++;
+									await new Promise(resolve => setTimeout(resolve, 1000));
+								}
+
+								if (!functionCheck(players['player'+indexServerSource].getQualities)) return false;
+
+								waitIndex = 0;
+								while(players['player'+indexServerSource].getQualities().length < 1 && waitIndex <= 30) {
+									waitIndex++;
+									await new Promise(resolve => setTimeout(resolve, 1000));
+								}
+
+								if (players['player'+indexServerSource].getQualities().length < 1) return false;
+
+								var twitchQualities = players['player'+indexServerSource].getQualities();
+								if (arrayPlayerForceHighestQuality.indexOf(indexServerSource) >= 0) {
+									players['player'+indexServerSource].setQuality(twitchQualities[1]['group']);
+								} else {
+									players['player'+indexServerSource].setQuality(twitchQualities[0]['group']);
+								}
+								} catch(e) { console.error('wait error ==> setQuality', e); }
 							})();
-						// setQuality for twicth streams - END
+							// setQuality for twicth streams - END
+						}
+
 					} else if (dictServerSource.platform == 'youtube') {
-						// later move to if type video
-						if (boolChangeVideoPlayer) {
-							var tmpContainerName = 'youtubeplayer'+(youtubePlayerIndex++);
-							playerContainer.append('<div id="'+tmpContainerName+'"></div>');
-							if (boolHasName) {
-								players['player'+indexServerSource] = new YT.Player(tmpContainerName, {
-									videoId: dictServerSource.name,
-									playerVars: {
-										'autoplay': 1,
-										'controls': 1,
-										'playsinline': 1,
-										'origin': 'https://www.youtube.com',
-									},
-								});
+
+						if (boolChangeVideoPlayer && boolHasName) {
+							dictPlayerConfig.playerVars = {
+								autoplay: 1,
+								controls: 1,
+								playsinline: 1,
+								cc_load_policy: 0,
+								iv_load_policy: 3,
+								origin: 'https://www.youtube.com',
+							};
+
+							if (dictServerSource.type == 'stream' || dictServerSource.type == 'video') {
+								if (strServerSourceName.indexOf(',') >= 0) {
+									dictPlayerConfig.playerVars.listType = 'playlist';
+									dictPlayerConfig.playerVars.playlist = strServerSourceName;
+								} else {
+									dictPlayerConfig.videoId = strServerSourceName;
+								}
+							} else if (dictServerSource.type == 'playlist') {
+								dictPlayerConfig.playerVars.listType = 'playlist';
+								if (strServerSourceName.indexOf(',') >= 0) {
+									dictPlayerConfig.playerVars.playlist = strServerSourceName;
+								} else {
+									dictPlayerConfig.playerVars.list = strServerSourceName;
+								}
+							} else {
+								boolOnlyUseIframe = true;
+							}
+
+							if (!boolOnlyUseIframe) {
+								tmpContainerName = 'youtubeplayer'+(youtubePlayerIndex++);
+								playerContainer.append('<div id="'+tmpContainerName+'"></div>');
+								
+								players['player'+indexServerSource] = new YT.Player(tmpContainerName, dictPlayerConfig);
 								waitTimeMsec = 2000;
 								boolChangeVolume = true;
+
+								// Start Video - START
+								(async() => {
+								try {
+									var waitIndex = 0;
+									while(!functionCheck(players['player'+indexServerSource].playVideo) && waitIndex <= 30) {
+										waitIndex++;
+										await new Promise(resolve => setTimeout(resolve, 1000));
+									}
+
+									if (!functionCheck(players['player'+indexServerSource].playVideo)) return false;
+
+									players['player'+indexServerSource].playVideo();
+								} catch(e) { console.error('wait error ==> changeVolume', e); }
+								})();								
+								// Start Video - END
 							}
 						}
-						if (boolChangeVolume) {
-							setTimeout(function() {
-								var videoVolume = 0;
-								if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
-								players['player'+indexServerSource].setVolume(videoVolume);
-							}, waitTimeMsec);
-						}
 
-						if (dictServerSource.type == 'stream') {
-						} else if (dictServerSource.type == 'video') {
-						} else if (dictServerSource.type == 'playlist') {
-						} else { boolOnlyUseIframe = true }
+						if (!boolOnlyUseIframe) {
+							if (boolChangeVolume) {
+								setTimeout(function() {
+									var videoVolume = 0;
+									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
+									players['player'+indexServerSource].setVolume(videoVolume);
+								}, waitTimeMsec);
+
+								(async() => {
+								try {
+									var waitIndex = 0;
+									while(!functionCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
+										waitIndex++;
+										await new Promise(resolve => setTimeout(resolve, 1000));
+									}
+
+									if (!functionCheck(players['player'+indexServerSource].setVolume)) return false;
+
+									var videoVolume = 0.0;
+									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+									players['player'+indexServerSource].setVolume(videoVolume);
+								} catch(e) { console.error('wait error ==> changeVolume', e); }
+								})();
+							}
+						}
 					} else { boolOnlyUseIframe = true }
-				} else { boolOnlyUseIframe = true }
+				} else {
+					boolOnlyUseIframe = true;
+				}
 			}
 
-			if (boolOnlyUseIframe) {
-				if (dictServerSource.name !== dictClientSource.name) {
-					if (boolHasName) {
-						playerContainer.html('<iframe data-id="'+indexServerSource+'" src="'+dictServerSource.name+'" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>');
-					}
-				}
+			if (boolOnlyUseIframe && boolChangeVideoPlayer && boolHasName) {
+				playerContainer.html('<iframe src="'+strServerSourceName+'"></iframe>');
 			}
 		});
 	//}
@@ -277,28 +357,24 @@ socket.on('profileName onlyset', function(arrayServerProfileNames) {
 
 $(strFormAddButtonClass).on('click', function(e) {
 	console.log('addProfile submit -->'+strFormLoadButtonClass);
-	socket.emit('addProfile submit', $.extend({
-	}, getDictAllFormData()));
+	socket.emit('addProfile submit', $.extend({}, getDictAllFormData()));
 });
 
 $(strFormLoadButtonClass).on('click', function(e) {
 	console.log('loadProfile submit --> '+strFormLoadButtonClass);
-	socket.emit('loadProfile submit', $.extend({
-	}, getDictAllFormData()));
+	socket.emit('loadProfile submit', $.extend({}, getDictAllFormData()));
 });
 
 $(strFormSaveButtonClass).on('click', function(e) {
 	console.log('saveProfile submit --> '+strFormSaveButtonClass);
 	e.preventDefault();
-	socket.emit('saveProfile submit', $.extend({
-	}, getDictAllFormData()));
+	socket.emit('saveProfile submit', $.extend({}, getDictAllFormData()));
 });
 
 $(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) {
 	console.log('saveProfile submit --> '+strFormSourcesClass+' [name="volume"]');
 	e.preventDefault();
-	socket.emit('saveProfile submit', $.extend({
-	}, getDictAllFormData()));
+	socket.emit('saveProfile submit', $.extend({}, getDictAllFormData()));
 });
 
 $(strOverlayClass+' .mode a').on('click', function(e) {

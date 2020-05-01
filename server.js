@@ -174,9 +174,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 const loadAllProfileNames = () => {
 	findDocuments('configs', {}, {}, (data, error) => {
 		if (data.length > 0) arrayProfileNames = data;
-		try {
-			io.emit('profileName reload', arrayProfileNames);
-		} catch {}
+		try { io.emit('profileName reload', arrayProfileNames); } catch {}
 	});
 }
 const configUpdateInsert = (strConfigName) => {
@@ -190,17 +188,16 @@ const configUpdateInsert = (strConfigName) => {
 		if (data.length > 0) {
 			updateDocuments('configs', { name: strConfigName }, dictNewConfig, {}, (data, error) => {
 				console.log('update config');
+				loadAllProfileNames();
+				try { io.emit('config reload', dictLastConfig); } catch {}
 			});
 		} else {
 			insertDocuments('configs', [dictNewConfig], {}, (data, error) => {
 				console.log('insert config');
+				loadAllProfileNames();
+				try { io.emit('config reload', dictLastConfig); } catch {}
 			});
 		}
-
-		loadAllProfileNames();
-		try {
-			io.emit('config reload', dictLastConfig);
-		} catch {}
 	});
 }
 
@@ -208,13 +205,15 @@ const configUpdateInsert = (strConfigName) => {
 findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 	if (data.length > 0) {
 		dictLastConfig = data[0];
+		loadAllProfileNames();
+		startIoOnConnection();
 	} else {
 		insertDocuments('configs', [dictLastConfig], {}, (data, error) => {
 			console.log('insert config');
+			loadAllProfileNames();
+			startIoOnConnection();
 		});
 	}
-	loadAllProfileNames();
-	startIoOnConnection();
 });
 
 const startIoOnConnection = () => {
@@ -235,6 +234,7 @@ io.on('connection', (socket) => {
 		if (!dictCheck(dictForms)) return false;
 		
 		if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
+		if (arrayCheck(dictForms.sources)) dictLastConfig.sources = dictForms.sources;
 		configUpdateInsert(dictForms.formProfile.name);
 	});
 	
