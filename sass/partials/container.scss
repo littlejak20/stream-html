@@ -131,17 +131,6 @@
 			"v4 v5 v6"
 			"v7 v8 v9"
 	}
-	// muss drin bleiben für Swicther und Reloader Section in Overlay
-	&.grid16 {
-		display: grid;
-		grid-template-columns: 25% 25% 25% 25%;
-		grid-template-rows: 25% 25% 25% 25%;
-		grid-template-areas: 
-			"v1 v2 v3 v4"
-			"v5 v6 v7 v8"
-			"v9 v10 v11 v12"
-			"v13 v14 v15 v16"
-	}
 
 	&.full, &.over {
 		display: block;

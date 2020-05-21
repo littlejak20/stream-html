@@ -53,6 +53,11 @@ X - Auflistung aller Profile in einem Dropdown
 		--> "Löschen" Button hinzufügen
 	--> Aktuelles Profil
 
+- 'profileName reload' und 'config reload' zusammenführen (Server- und Clientseitig)
+
+- experimental - setQuality for player1
+	--> Player ist bereits geladen, aber Stream startet später, dann wird die höchste Qualität nicht gesetzt
+
 
 https://stackoverflow.com/questions/1458724/how-do-i-set-unset-a-cookie-with-jquery
 https://stackoverflow.com/questions/2064850/how-to-refresh-an-iframe-using-javascript
