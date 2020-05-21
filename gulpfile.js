@@ -22,7 +22,6 @@ const browserify = require('gulp-browserify');
 const babel = require('gulp-babel');
 const jshint = require('gulp-jshint');
 const uglify = require('gulp-uglify');
-const minify = require('gulp-minify');
 const concat = require('gulp-concat');
 
 // Define Important Varaibles
@@ -68,7 +67,7 @@ const css = () => {
         // Format SASS
         .pipe(sassLint.format())
         // Start Source Map
-        .pipe(sourcemaps.init())
+        //.pipe(sourcemaps.init())
         // Compile SASS -> CSS
         .pipe(sass.sync({ outputStyle: "compressed" })).on('error', sass.logError)
         // add SUffix
@@ -76,7 +75,7 @@ const css = () => {
         // Add Autoprefixer & cssNano
         .pipe(postcss([autoprefixer(), cssnano()]))
         // Write Source Map
-        .pipe(sourcemaps.write(''))
+        //.pipe(sourcemaps.write(''))
         // Write everything to destination folder
         .pipe(gulp.dest(`${dest}/css`))
         // Reload Page
@@ -108,6 +107,7 @@ const scriptAlternative = () => {
     // Find JS
     return gulp
         .src(`${src}/js/main.js`)
+        .pipe(rename({ basename: 'main', suffix: ".min" }))
         .pipe(gulp.dest(`${dest}/js`))
 };
 
@@ -122,13 +122,37 @@ const script = () => {
             gutil.log(error.message);
         })))
         // Start useing source maps
-        .pipe(sourcemaps.init())
+        //.pipe(sourcemaps.init())
         // concat
         .pipe(concat('concat.js'))
         // Use Babel
+        /*.pipe(babel({
+          "presets": [
+            ["@babel/env", {
+              "modules": false
+            }]
+          ],
+          "plugins": [
+            [
+              "@babel/plugin-transform-runtime",
+              {
+                "absoluteRuntime": false,
+                "corejs": false,
+                "helpers": true,
+                "regenerator": true,
+                "useESModules": false,
+                "version": "7.0.0-beta.0"
+              }
+            ]
+          ]
+        }))*/        
         .pipe(babel({
-            presets: ['@babel/env']
+            presets: ['@babel/env'],
         }))
+
+        .pipe(rename({ basename: 'main', suffix: ".babel" }))
+        .pipe(gulp.dest(`${dest}/js`))      
+
         // JavaScript Lint
         .pipe(jshint())
         // Report of jslint
@@ -142,7 +166,7 @@ const script = () => {
         // add SUffix
         .pipe(rename({ basename: 'main', suffix: ".min" }))
         // Write Sourcemap
-        .pipe(sourcemaps.write(''))
+        //.pipe(sourcemaps.write(''))
         // Write everything to destination folder
         .pipe(gulp.dest(`${dest}/js`))
         // Update Browser
@@ -150,14 +174,14 @@ const script = () => {
 };
 
 // Function to watch our Changes and refreash page
-const watch = () => gulp.watch([`${src}/html/**/*.html`, `${src}/js/**/*.js`, `${src}/sass/**/*.scss`], gulp.series(css, scriptAlternative, html, reload));
+const watch = () => gulp.watch([`${src}/html/**/*.html`, `${src}/js/**/*.js`, `${src}/sass/**/*.scss`], gulp.series(css, script, html, reload));
 
 // All Tasks for this Project
 //const dev = gulp.series(css, script, html, serve, watch);
-const dev = gulp.series(css, scriptAlternative, html, watch);
+const dev = gulp.series(css, script, html, watch);
 
 // Just Build the Project
-const build = gulp.series(css, scriptAlternative, html);
+const build = gulp.series(css, script, html);
 
 // Default function (used when type gulp)
 exports.dev = dev;

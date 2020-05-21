@@ -1,4 +1,4 @@
-function startRenderPage(strPageName) {
+export function startRenderPage(strPageName) {
 var socket = io();
 
 var strOverlayClass = '.overlay';
