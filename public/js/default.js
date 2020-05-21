@@ -324,7 +324,7 @@ socket.on('config reload', function(dictServerConfig) {
 			}
 
 			if (boolOnlyUseIframe && boolChangeVideoPlayer && boolHasName) {
-				playerContainer.html('<iframe src="'+strServerSourceName+'"></iframe>');
+				playerContainer.html('<iframe src="'+strServerSourceName+'" allow="autoplay; fullscreen" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>');
 			}
 		});
 	//}
@@ -427,7 +427,13 @@ socket.on('video switcher', function(arrVideoIds) {
 
 $(strOverlayClass+' .js-reloader a').on('click', function(e) {
 	e.preventDefault();
-	socket.emit('video reloader', $(this).data('id'));
+	var videoId = $(this).data('id');
+	socket.emit('video reloader', videoId);
+});
+socket.on('video reloader', function(intVideoId) {
+	console.log('video reloader', intVideoId);
+	dictClientConfig.sources[intVideoId] = { name: '', volume: 0.0 };
+	socket.emit('video reloader finish');
 });
 
 

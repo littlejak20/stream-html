@@ -2,7 +2,7 @@
 
 var serverPort = 3000;
 var userCount = 0;
-var startConfigName = 'disable';
+var startConfigName = 'Disable';
 var dictLastConfig = {
 	name: 'setByServer',
 	modeName: 'container top',
@@ -276,13 +276,16 @@ io.on('connection', (socket) => {
 
 		io.emit('video switcher', arrVideoIds);
 	});
-	socket.on('video switcher finish', (arrVideoIds) => {		
+	socket.on('video switcher finish', () => {		
 		configUpdateInsert(dictLastConfig.name);
 	});
 
-	/*socket.on('video reloader', (intVideoId) => {
+	socket.on('video reloader', (intVideoId) => {
 		console.log('video reloader', intVideoId);
+		io.emit('video reloader', intVideoId);
+	});
+	socket.on('video reloader finish', () => {
 		io.emit('config reload', dictLastConfig);
-	});*/
+	});
 });
 }
