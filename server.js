@@ -1,6 +1,8 @@
+// profile and config names are the same
+
 var serverPort = 3000;
 var userCount = 0;
-var startConfigName = 'disable';
+var startConfigName = 'Disable';
 var dictLastConfig = {
 	name: 'setByServer',
 	modeName: 'container top',
@@ -74,6 +76,7 @@ var dictLastConfig = {
 	]
 };
 var arrayProfileNames = [];
+/*var blankBlankProfile = {"_id":"name":"blank","modeName":"container top2x4-bottom-2","sources":[{"name":"","volume":{"$numberInt":0.0}},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0}]};*/
 
 var express = require('express');
 var fs = require('fs')
@@ -171,9 +174,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 const loadAllProfileNames = () => {
 	findDocuments('configs', {}, {}, (data, error) => {
 		if (data.length > 0) arrayProfileNames = data;
-		try {
-			io.emit('profileName reload', arrayProfileNames);
-		} catch {}
+		try { io.emit('profileName reload', arrayProfileNames); } catch {}
 	});
 }
 const configUpdateInsert = (strConfigName) => {
@@ -187,35 +188,32 @@ const configUpdateInsert = (strConfigName) => {
 		if (data.length > 0) {
 			updateDocuments('configs', { name: strConfigName }, dictNewConfig, {}, (data, error) => {
 				console.log('update config');
+				loadAllProfileNames();
+				try { io.emit('config reload', dictLastConfig); } catch {}
 			});
 		} else {
 			insertDocuments('configs', [dictNewConfig], {}, (data, error) => {
 				console.log('insert config');
+				loadAllProfileNames();
+				try { io.emit('config reload', dictLastConfig); } catch {}
 			});
 		}
-
-		loadAllProfileNames();
-		try {
-			io.emit('config reload', dictLastConfig);
-		} catch {}
 	});
 }
-const safeAndUpdateAll = () => {
-	configUpdateInsert(dictLastConfig.name);
-}
-
 
 // Start
 findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 	if (data.length > 0) {
 		dictLastConfig = data[0];
+		loadAllProfileNames();
+		startIoOnConnection();
 	} else {
 		insertDocuments('configs', [dictLastConfig], {}, (data, error) => {
 			console.log('insert config');
+			loadAllProfileNames();
+			startIoOnConnection();
 		});
 	}
-	loadAllProfileNames();
-	startIoOnConnection();
 });
 
 const startIoOnConnection = () => {
@@ -230,20 +228,14 @@ io.on('connection', (socket) => {
 
 	socket.emit('config reload', dictLastConfig);
 	socket.emit('profileName reload', arrayProfileNames);
-
-	socket.on('mode click', (strModeName) => {
-		console.log('mode click', strModeName);
-		dictLastConfig.modeName = strModeName;		
-		safeAndUpdateAll();
-	});
-
-	socket.on('formSources submit', (dictForms) => {
-		console.log('formSources submit', dictForms);
+	
+	socket.on('addProfile submit', (dictForms) => {
+		console.log('addProfile submit', dictForms);
 		if (!dictCheck(dictForms)) return false;
-
+		
 		if (dictForms.formProfile.name.length > 0) dictLastConfig.name = dictForms.formProfile.name;
-		if (arrayCheck(dictForms.arraySources)) dictLastConfig.sources = dictForms.arraySources;
-		safeAndUpdateAll();
+		if (arrayCheck(dictForms.sources)) dictLastConfig.sources = dictForms.sources;
+		configUpdateInsert(dictForms.formProfile.name);
 	});
 	
 	socket.on('loadProfile submit', (dictForms) => {
@@ -259,6 +251,21 @@ io.on('connection', (socket) => {
 		});
 	});
 
+	socket.on('saveProfile submit', (dictForms) => {
+		console.log('saveProfile submit', dictForms);
+		if (!dictCheck(dictForms)) return false;
+
+		if (dictForms.formProfile.select.length > 0) dictLastConfig.name = dictForms.formProfile.select;
+		if (arrayCheck(dictForms.sources)) dictLastConfig.sources = dictForms.sources;
+		configUpdateInsert(dictLastConfig.name);
+	});
+
+	socket.on('mode click', (strModeName) => {
+		console.log('mode click', strModeName);
+		dictLastConfig.modeName = strModeName;
+		configUpdateInsert(dictLastConfig.name);
+	});
+
 	socket.on('video switcher', (arrVideoIds) => {
 		console.log('video switcher', arrVideoIds);
 
@@ -269,13 +276,16 @@ io.on('connection', (socket) => {
 
 		io.emit('video switcher', arrVideoIds);
 	});
-	socket.on('video switcher finish', (arrVideoIds) => {		
-		safeAndUpdateAll();
+	socket.on('video switcher finish', () => {		
+		configUpdateInsert(dictLastConfig.name);
 	});
 
-	/*socket.on('video reloader', (intVideoId) => {
+	socket.on('video reloader', (intVideoId) => {
 		console.log('video reloader', intVideoId);
+		io.emit('video reloader', intVideoId);
+	});
+	socket.on('video reloader finish', () => {
 		io.emit('config reload', dictLastConfig);
-	});*/
+	});
 });
 }
