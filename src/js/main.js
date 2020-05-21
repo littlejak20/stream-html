@@ -42,7 +42,7 @@ var arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth strea
 
 function getDictFormProfile() {
 	var formProfile = $(strFormProfileClass);
-	return dictFormProfile = {
+	return {
 		name: formProfile.find('[name="name"]').val(),
 		select: formProfile.find('[name="select"]').val(),
 	};

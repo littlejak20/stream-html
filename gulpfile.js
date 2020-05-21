@@ -80,7 +80,7 @@ const css = () => {
         // Write everything to destination folder
         .pipe(gulp.dest(`${dest}/css`))
         // Reload Page
-        .pipe(browserSync.stream());
+        //.pipe(browserSync.stream());
 };
 
 // Compile .html to minify .html
@@ -103,6 +103,14 @@ const html = () => {
         // Write everything to destination folder
         .pipe(gulp.dest(`${dest}`));
 };
+
+const scriptAlternative = () => {
+    // Find JS
+    return gulp
+        .src(`${src}/js/main.js`)
+        .pipe(gulp.dest(`${dest}/js`))
+};
+
 
 // Compile .js to minify .js
 const script = () => {
@@ -138,17 +146,18 @@ const script = () => {
         // Write everything to destination folder
         .pipe(gulp.dest(`${dest}/js`))
         // Update Browser
-        .pipe(browserSync.stream());
+        //.pipe(browserSync.stream());
 };
 
 // Function to watch our Changes and refreash page
-const watch = () => gulp.watch([`${src}/*.html`, `${src}/js/**/*.js`, `${src}/sass/**/*.scss`], gulp.series(css, script, html, reload));
+const watch = () => gulp.watch([`${src}/html/**/*.html`, `${src}/js/**/*.js`, `${src}/sass/**/*.scss`], gulp.series(css, scriptAlternative, html, reload));
 
 // All Tasks for this Project
-const dev = gulp.series(css, script, html, serve, watch);
+//const dev = gulp.series(css, script, html, serve, watch);
+const dev = gulp.series(css, scriptAlternative, html, watch);
 
 // Just Build the Project
-const build = gulp.series(css, script, html);
+const build = gulp.series(css, scriptAlternative, html);
 
 // Default function (used when type gulp)
 exports.dev = dev;
