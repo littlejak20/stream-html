@@ -22,6 +22,7 @@ const browserify = require('gulp-browserify');
 const babel = require('gulp-babel');
 const jshint = require('gulp-jshint');
 const uglify = require('gulp-uglify');
+const minify = require('gulp-minify');
 const concat = require('gulp-concat');
 
 // Define Important Varaibles
@@ -48,7 +49,7 @@ const serve = (done) => {
 const css = () => {
     // Find SASS
     return gulp
-        .src(`${src}/sass/framework.scss`)
+        .src(`${src}/sass/main.scss`)
         .pipe(sassGlob())
         // Init Plumber
         .pipe(plumber())
@@ -84,9 +85,9 @@ const css = () => {
 
 // Compile .html to minify .html
 const html = () => {
-    // Find SASS
+    // Find HTML
     return gulp
-        .src(`${src}/*.html`)
+        .src(`${src}/html/**/*.html`)
         // Init Plumber
         .pipe(plumber())
         // Compile SASS -> CSS
@@ -105,8 +106,9 @@ const html = () => {
 
 // Compile .js to minify .js
 const script = () => {
-    // Find SASS
-    return gulp.src(`${src}/js/**/*.js`)
+    // Find JS
+    return gulp
+        .src(`${src}/js/**/*.js`)
         // Init Plumber
         .pipe(plumber(((error) => {
             gutil.log(error.message);
@@ -116,15 +118,17 @@ const script = () => {
         // concat
         .pipe(concat('concat.js'))
         // Use Babel
-        .pipe(babel())
+        .pipe(babel({
+            presets: ['@babel/env']
+        }))
         // JavaScript Lint
         .pipe(jshint())
         // Report of jslint
         .pipe(jshint.reporter('jshint-stylish'))
         // Add browser Support
-        .pipe(browserify({
+        /*.pipe(browserify({ // not workt for me
             insertGlobals: true
-        }))
+        }))*/
         // Minify
         .pipe(uglify())
         // add SUffix
