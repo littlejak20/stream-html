@@ -1,4 +1,33 @@
-export function startRenderPage(strPageName) {
+import regeneratorRuntime from "regenerator-runtime";
+
+GLOBAL_SITE = String(GLOBAL_SITE).toLowerCase();
+console.log(GLOBAL_SITE);
+if (GLOBAL_SITE === 'view') {
+	(async() => {
+	try {
+		var waitIndex = 0;
+		while(YT.loaded <= 0 && waitIndex <= 15) {
+			waitIndex++;
+			console.log('wait YT.loaded 1: '+ waitIndex);
+			await new Promise(resolve => setTimeout(resolve, 1000));
+		}
+
+		if (YT.loaded >= 1) startRenderPage();
+	} catch(e) {}
+	})();
+} else {
+	console.log('else');
+	startRenderPage();
+}
+
+/*function onYouTubeIframeAPIReady() {
+	console.log('onYouTubeIframeAPIReady');
+	startRenderPage();
+}
+if (GLOBAL_SITE === 'config') startRenderPage();*/
+
+function startRenderPage() {
+console.log('startRenderPage');
 var socket = io();
 
 var strOverlayClass = '.overlay';

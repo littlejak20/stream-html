@@ -67,7 +67,7 @@ const css = () => {
         // Format SASS
         .pipe(sassLint.format())
         // Start Source Map
-        //.pipe(sourcemaps.init())
+        .pipe(sourcemaps.init())
         // Compile SASS -> CSS
         .pipe(sass.sync({ outputStyle: "compressed" })).on('error', sass.logError)
         // add SUffix
@@ -75,7 +75,7 @@ const css = () => {
         // Add Autoprefixer & cssNano
         .pipe(postcss([autoprefixer(), cssnano()]))
         // Write Source Map
-        //.pipe(sourcemaps.write(''))
+        .pipe(sourcemaps.write(''))
         // Write everything to destination folder
         .pipe(gulp.dest(`${dest}/css`))
         // Reload Page
@@ -103,15 +103,6 @@ const html = () => {
         .pipe(gulp.dest(`${dest}`));
 };
 
-const scriptAlternative = () => {
-    // Find JS
-    return gulp
-        .src(`${src}/js/main.js`)
-        .pipe(rename({ basename: 'main', suffix: ".min" }))
-        .pipe(gulp.dest(`${dest}/js`))
-};
-
-
 // Compile .js to minify .js
 const script = () => {
     // Find JS
@@ -122,10 +113,20 @@ const script = () => {
             gutil.log(error.message);
         })))
         // Start useing source maps
-        //.pipe(sourcemaps.init())
+        .pipe(sourcemaps.init())
         // concat
         .pipe(concat('concat.js'))
         // Use Babel
+        .pipe(babel({
+          "presets": [
+            [
+              "@babel/preset-env",
+              {
+                "useBuiltIns": "entry"
+              }
+            ]
+          ]
+        }))
         /*.pipe(babel({
           "presets": [
             ["@babel/env", {
@@ -145,28 +146,29 @@ const script = () => {
               }
             ]
           ]
-        }))*/        
-        .pipe(babel({
-            presets: ['@babel/env'],
-        }))
+        }))*/
 
-        .pipe(rename({ basename: 'main', suffix: ".babel" }))
-        .pipe(gulp.dest(`${dest}/js`))      
+        /*.pipe(rename({ basename: 'main', suffix: ".babel" }))
+        .pipe(gulp.dest(`${dest}/js`))*/
 
         // JavaScript Lint
         .pipe(jshint())
         // Report of jslint
         .pipe(jshint.reporter('jshint-stylish'))
         // Add browser Support
-        /*.pipe(browserify({ // not workt for me
+        .pipe(browserify({
             insertGlobals: true
-        }))*/
+        }))
+
+        /*.pipe(rename({ basename: 'main' }))
+        .pipe(gulp.dest(`${dest}/js`))*/
+
         // Minify
         .pipe(uglify())
         // add SUffix
         .pipe(rename({ basename: 'main', suffix: ".min" }))
         // Write Sourcemap
-        //.pipe(sourcemaps.write(''))
+        .pipe(sourcemaps.write(''))
         // Write everything to destination folder
         .pipe(gulp.dest(`${dest}/js`))
         // Update Browser
