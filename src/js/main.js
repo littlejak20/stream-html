@@ -1,4 +1,6 @@
-//import regeneratorRuntime from "regenerator-runtime";
+//https://stackoverflow.com/questions/27670401/using-jquery-this-with-es6-arrow-functions-lexical-this-binding/34199426#34199426
+
+import regeneratorRuntime from "regenerator-runtime";
 
 /*let onYouTubeIframeAPIReady = () => {
 	console.log('onYouTubeIframeAPIReady');
@@ -385,14 +387,17 @@ $(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', e => {
 
 $(strOverlayClass+' .mode a').on('click', e => {
 	e.preventDefault();
-	socket.emit('mode click', $(this).attr('class'));
+	var $this = $(e.currentTarget);
+	console.warn($($this).attr('class'));
+	socket.emit('mode click', $this.attr('class'));
 });
 
 var videoId0 = -1;
 var videoId1 = -1;
 $(strOverlayClass+' .js-switcher a').on('click', e => {
-	if (e !== undefined) e.preventDefault();
-	var videoId = $(this).data('id');
+	e.preventDefault();
+	var $this = $(e.currentTarget);
+	var videoId = $this.data('id');
 
 	if (videoId0 <= -1) {
 		videoId0 = videoId;
@@ -433,7 +438,8 @@ socket.on('video switcher', arrVideoIds => {
 
 $(strOverlayClass+' .js-reloader a').on('click', e => {
 	e.preventDefault();
-	var videoId = $(this).data('id');
+	var $this = $(e.currentTarget);
+	var videoId = $this.data('id');
 	socket.emit('video reloader', videoId);
 });
 socket.on('video reloader', intVideoId => {

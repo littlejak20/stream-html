@@ -22,6 +22,7 @@ const browserify = require('gulp-browserify');
 const babel = require('gulp-babel');
 const jshint = require('gulp-jshint');
 const uglify = require('gulp-uglify');
+const minify = require('gulp-minify');
 const concat = require('gulp-concat');
 
 // Define Important Varaibles
@@ -73,7 +74,9 @@ const css = () => {
         // add SUffix
         .pipe(rename({ basename: 'main', suffix: ".min" }))
         // Add Autoprefixer & cssNano
-        .pipe(postcss([autoprefixer(), cssnano()]))
+        .pipe(postcss([autoprefixer({
+            grid: true
+        }), cssnano()]))
         // Write Source Map
         .pipe(sourcemaps.write(''))
         // Write everything to destination folder
@@ -165,6 +168,7 @@ const script = () => {
 
         // Minify
         .pipe(uglify())
+        //.pipe(minify())
         // add SUffix
         .pipe(rename({ basename: 'main', suffix: ".min" }))
         // Write Sourcemap
