@@ -121,9 +121,9 @@ const script = () => {
           "presets": [
             [
               "@babel/preset-env",
-              {
+              /*{
                 "useBuiltIns": "entry"
-              }
+              }*/
             ]
           ]
         }))
