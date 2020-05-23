@@ -92,16 +92,16 @@ var server = http.createServer(app);
 
 var io = require('socket.io')(server);
 
-var publicPath = __dirname + '/public';
+var distPath = __dirname + '/dist';
 var filePath = __dirname + '/files';
 
-app.use(express.static(publicPath));
+app.use(express.static(distPath));
 app.use(express.static(filePath));
-app.get('/', (req, res) => { res.sendFile(publicPath + '/view.html'); });
-app.get('/v', (req, res) => { res.sendFile(publicPath + '/view.html'); });
-app.get('/view', (req, res) => { res.sendFile(publicPath + '/view.html'); });
-app.get('/c', (req, res) => { res.sendFile(publicPath + '/config.html'); });
-app.get('/config', (req, res) => { res.sendFile(publicPath + '/config.html'); });
+app.get('/', (req, res) => { res.sendFile(distPath + '/view.html'); });
+app.get('/v', (req, res) => { res.sendFile(distPath + '/view.html'); });
+app.get('/view', (req, res) => { res.sendFile(distPath + '/view.html'); });
+app.get('/c', (req, res) => { res.sendFile(distPath + '/config.html'); });
+app.get('/config', (req, res) => { res.sendFile(distPath + '/config.html'); });
 
 server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'!'; });
 
