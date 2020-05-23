@@ -1,4 +1,15 @@
-function startRenderPage(strPageName) {
+//https://stackoverflow.com/questions/27670401/using-jquery-this-with-es6-arrow-functions-lexical-this-binding/34199426#34199426
+
+import regeneratorRuntime from "regenerator-runtime";
+
+/*let onYouTubeIframeAPIReady = () => {
+	console.log('onYouTubeIframeAPIReady');
+	startRenderPage();
+}
+if (GLOBAL_SITE === 'config') startRenderPage();*/
+
+let startRenderPage = () => {
+console.log('startRenderPage');
 var socket = io();
 
 var strOverlayClass = '.overlay';
@@ -22,45 +33,43 @@ var arrayClientProfileNames = [];
 var arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth streams
 
 // Helpers - START
-	const objectsAreEqual = (obj1, obj2) => {
-		return (JSON.stringify(obj1) === JSON.stringify(obj2));
-	}
+	let objectsAreEqual = (obj1, obj2) => (JSON.stringify(obj1) === JSON.stringify(obj2));
 	// https://stackoverflow.com/questions/38304401/javascript-check-if-dictionary/39339225#39339225
-	const dictCheck = (object, strObjectName) => {
+	let dictCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && typeof object==='object' && !(object instanceof Array) && !(object instanceof Date)) return true;
 		return false;
 	}
-	const arrayCheck = (object, strObjectName) => {
+	let arrayCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && typeof object==='object' && object instanceof Array) return true;
 		return false;
 	}
-	const functionCheck = (object, strObjectName) => {
+	let funcCheck = (object, strObjectName) => {
 		if (object!==undefined && object!==null && object instanceof Function) return true;
 		return false;
 	}
 // Helpers - END
 
-function getDictFormProfile() {
+let getDictFormProfile = () => {
 	var formProfile = $(strFormProfileClass);
-	return dictFormProfile = {
+	return {
 		name: formProfile.find('[name="name"]').val(),
 		select: formProfile.find('[name="select"]').val(),
 	};
 }
-function getArrayFormSources() {
+let getArrayFormSources = () => {
 	var arrayTmpSources = [
 		{ // 0 attention: not set 
 			name: '',
 			volume: 0.0,
 		},
 	];
-	$(strFormSourcesClass).each(function(index, form) {
+	$(strFormSourcesClass).each((index, form) => {
 		var formContainer = $(form);
 		var dictTmpSource = {};
 
-		$.each(arraySourceItems, function(index, fieldname) {
+		$.each(arraySourceItems, (index, fieldname) => {
 		});
-		$.each(arraySourceItems, function(index, fieldname) {
+		$.each(arraySourceItems, (index, fieldname) => {
 			var inputElement = formContainer.find('[name="'+fieldname+'"]');
 			var inputType = inputElement.attr('type');
 
@@ -76,24 +85,24 @@ function getArrayFormSources() {
 	});
 	return arrayTmpSources;
 }
-function getDictAllFormData() {
+let getDictAllFormData = () => {
 	return {
 		formProfile: getDictFormProfile(),
 		sources: getArrayFormSources(),
 	};
 }
 
-socket.on('config reload', function(dictServerConfig) {
+socket.on('config reload', (dictServerConfig) => {
 	console.log('config reload', dictServerConfig);
 
 	// for site config - source form
-	$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
-		console.log('setFormSource ==>', indexServerSource, dictServerSource);
+	$.each(dictServerConfig.sources, (indexServerSource, dictServerSource) => {
+		console.log('setFormSource -->', indexServerSource, dictServerSource);
 		if (!dictCheck(dictServerSource)) return false;
 
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
-			$.each(arraySourceItems, function(index, fieldname) {
+			$.each(arraySourceItems, (index, fieldname) => {
 				var inputElement = formContainer.find('[name="'+fieldname+'"]');
 				var inputType = $(inputElement).attr('type');
 				if (inputType == 'checkbox') {
@@ -119,7 +128,7 @@ socket.on('config reload', function(dictServerConfig) {
 
 	// for site view/config - mode
 	if (dictServerConfig.modeName != dictClientConfig.modeName) {
-		console.log('setModeName ==>', dictServerConfig.modeName);
+		console.log('setModeName -->', dictServerConfig.modeName);
 		var objContainer = $(strContainerClass+'.main');
 		objContainer.removeAttr('class');
 		objContainer.removeAttr('style');
@@ -132,8 +141,8 @@ socket.on('config reload', function(dictServerConfig) {
 
 	// for site view - player
 	//if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) { // FOR - setQuality for twicth streams
-		$.each(dictServerConfig.sources, function(indexServerSource, dictServerSource) {
-			console.log('setPlayerContainer ==>', indexServerSource, dictServerSource);
+		$.each(dictServerConfig.sources, (indexServerSource, dictServerSource) => {
+			console.log('setPlayerContainer -->', indexServerSource, dictServerSource);
 			if (!dictCheck(dictServerSource)) return false;
 
 			var dictClientSource = [];
@@ -192,17 +201,17 @@ socket.on('config reload', function(dictServerConfig) {
 								(async() => {
 								try {
 									var waitIndex = 0;
-									while(!functionCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
+									while(!funcCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
 										waitIndex++;
 										await new Promise(resolve => setTimeout(resolve, 1000));
 									}
 
-									if (!functionCheck(players['player'+indexServerSource].setVolume)) return false;
+									if (!funcCheck(players['player'+indexServerSource].setVolume)) return false;
 
 									var videoVolume = 0.0;
 									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
 									players['player'+indexServerSource].setVolume(videoVolume);
-								} catch(e) { console.error('wait error ==> changeVolume', e); }
+								} catch(e) { console.error('wait error --> changeVolume', e); }
 								})();
 							}
 
@@ -210,12 +219,12 @@ socket.on('config reload', function(dictServerConfig) {
 							(async() => {
 								try {
 								var waitIndex = 0;
-								while(!functionCheck(players['player'+indexServerSource].getQualities) && waitIndex <= 30) {
+								while(!funcCheck(players['player'+indexServerSource].getQualities) && waitIndex <= 30) {
 									waitIndex++;
 									await new Promise(resolve => setTimeout(resolve, 1000));
 								}
 
-								if (!functionCheck(players['player'+indexServerSource].getQualities)) return false;
+								if (!funcCheck(players['player'+indexServerSource].getQualities)) return false;
 
 								waitIndex = 0;
 								while(players['player'+indexServerSource].getQualities().length < 1 && waitIndex <= 30) {
@@ -231,7 +240,7 @@ socket.on('config reload', function(dictServerConfig) {
 								} else {
 									players['player'+indexServerSource].setQuality(twitchQualities[0]['group']);
 								}
-								} catch(e) { console.error('wait error ==> setQuality', e); }
+								} catch(e) { console.error('wait error --> setQuality', e); }
 							})();
 							// setQuality for twicth streams - END
 						}
@@ -278,15 +287,15 @@ socket.on('config reload', function(dictServerConfig) {
 								(async() => {
 								try {
 									var waitIndex = 0;
-									while(!functionCheck(players['player'+indexServerSource].playVideo) && waitIndex <= 30) {
+									while(!funcCheck(players['player'+indexServerSource].playVideo) && waitIndex <= 30) {
 										waitIndex++;
 										await new Promise(resolve => setTimeout(resolve, 1000));
 									}
 
-									if (!functionCheck(players['player'+indexServerSource].playVideo)) return false;
+									if (!funcCheck(players['player'+indexServerSource].playVideo)) return false;
 
 									players['player'+indexServerSource].playVideo();
-								} catch(e) { console.error('wait error ==> changeVolume', e); }
+								} catch(e) { console.error('wait error --> changeVolume', e); }
 								})();								
 								// Start Video - END
 							}
@@ -294,7 +303,7 @@ socket.on('config reload', function(dictServerConfig) {
 
 						if (!boolOnlyUseIframe) {
 							if (boolChangeVolume) {
-								setTimeout(function() {
+								setTimeout(() => {
 									var videoVolume = 0;
 									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
 									players['player'+indexServerSource].setVolume(videoVolume);
@@ -303,17 +312,20 @@ socket.on('config reload', function(dictServerConfig) {
 								(async() => {
 								try {
 									var waitIndex = 0;
-									while(!functionCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
+									while(!funcCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
 										waitIndex++;
+										console.warn('WAIT change youtube set volume')
 										await new Promise(resolve => setTimeout(resolve, 1000));
 									}
 
-									if (!functionCheck(players['player'+indexServerSource].setVolume)) return false;
+									if (!funcCheck(players['player'+indexServerSource].setVolume)) return false;
+
+									console.warn('SET change youtube set volume')
 
 									var videoVolume = 0.0;
 									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
 									players['player'+indexServerSource].setVolume(videoVolume);
-								} catch(e) { console.error('wait error ==> changeVolume', e); }
+								} catch(e) { console.error('wait error --> changeVolume', e); }
 								})();
 							}
 						}
@@ -332,16 +344,14 @@ socket.on('config reload', function(dictServerConfig) {
 	dictClientConfig = dictServerConfig;
 	console.log(JSON.stringify(dictClientConfig));
 });
-socket.on('config onlyset', function(dictServerConfig) {
-	dictClientConfig = dictServerConfig;
-});
+socket.on('config onlyset', dictServerConfig => dictClientConfig = dictServerConfig);
 
-socket.on('profileName reload', function(arrayServerProfileNames) {
+socket.on('profileName reload', arrayServerProfileNames => {
 	console.log('profileName reload', arrayServerProfileNames);
 		
 	var formProfile = $(strFormProfileClass);
 	var strSelectOptions = '';
-	$.each(arrayServerProfileNames, function(index, profile) {
+	$.each(arrayServerProfileNames, (index, profile) => {
 		strSelectOptions += 
 			'<option name="'+profile.name+'"'+
 			(profile.name == dictClientConfig.name ? ' selected' : '')+
@@ -351,42 +361,43 @@ socket.on('profileName reload', function(arrayServerProfileNames) {
 
 	arrayClientProfileNames = arrayServerProfileNames;
 });
-socket.on('profileName onlyset', function(arrayServerProfileNames) {
-	arrayClientProfileNames = arrayServerProfileNames;
-});
+socket.on('profileName onlyset', arrayServerProfileNames => arrayClientProfileNames = arrayServerProfileNames);
 
-$(strFormAddButtonClass).on('click', function(e) {
+$(strFormAddButtonClass).on('click', e => {
 	console.log('addProfile submit -->'+strFormLoadButtonClass);
 	socket.emit('addProfile submit', $.extend({}, getDictAllFormData()));
 });
 
-$(strFormLoadButtonClass).on('click', function(e) {
+$(strFormLoadButtonClass).on('click', e => {
 	console.log('loadProfile submit --> '+strFormLoadButtonClass);
 	socket.emit('loadProfile submit', $.extend({}, getDictAllFormData()));
 });
 
-$(strFormSaveButtonClass).on('click', function(e) {
+$(strFormSaveButtonClass).on('click', e => {
 	console.log('saveProfile submit --> '+strFormSaveButtonClass);
 	e.preventDefault();
 	socket.emit('saveProfile submit', $.extend({}, getDictAllFormData()));
 });
 
-$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', function(e) {
+$(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', e => {
 	console.log('saveProfile submit --> '+strFormSourcesClass+' [name="volume"]');
 	e.preventDefault();
 	socket.emit('saveProfile submit', $.extend({}, getDictAllFormData()));
 });
 
-$(strOverlayClass+' .mode a').on('click', function(e) {
+$(strOverlayClass+' .mode a').on('click', e => {
 	e.preventDefault();
-	socket.emit('mode click', $(this).attr('class'));
+	var $this = $(e.currentTarget);
+	console.warn($($this).attr('class'));
+	socket.emit('mode click', $this.attr('class'));
 });
 
 var videoId0 = -1;
 var videoId1 = -1;
-$(strOverlayClass+' .js-switcher a').on('click', function(e) {
-	if (e !== undefined) e.preventDefault();
-	var videoId = $(this).data('id');
+$(strOverlayClass+' .js-switcher a').on('click', e => {
+	e.preventDefault();
+	var $this = $(e.currentTarget);
+	var videoId = $this.data('id');
 
 	if (videoId0 <= -1) {
 		videoId0 = videoId;
@@ -401,7 +412,7 @@ $(strOverlayClass+' .js-switcher a').on('click', function(e) {
 		videoId1 = -1;
 	}
 });
-socket.on('video switcher', function(arrVideoIds) {
+socket.on('video switcher', arrVideoIds => {
 	console.log('video switcher', arrVideoIds);
 
 	var videoContainer0 = $(strContainerClass+'.main [data-id="'+arrVideoIds[0]+'"]');
@@ -425,12 +436,13 @@ socket.on('video switcher', function(arrVideoIds) {
 	socket.emit('video switcher finish');
 });
 
-$(strOverlayClass+' .js-reloader a').on('click', function(e) {
+$(strOverlayClass+' .js-reloader a').on('click', e => {
 	e.preventDefault();
-	var videoId = $(this).data('id');
+	var $this = $(e.currentTarget);
+	var videoId = $this.data('id');
 	socket.emit('video reloader', videoId);
 });
-socket.on('video reloader', function(intVideoId) {
+socket.on('video reloader', intVideoId => {
 	console.log('video reloader', intVideoId);
 	dictClientConfig.sources[intVideoId] = { name: '', volume: 0.0 };
 	socket.emit('video reloader finish');
@@ -442,7 +454,7 @@ socket.on('video reloader', function(intVideoId) {
 	var fullElem = document.documentElement;
 
 	/* View in fullscreen */
-	function openFullscreen() {
+	let openFullscreen = () => {
 		console.log('openFullscreen');
 		if (fullElem.requestFullscreen) {
 			fullElem.requestFullscreen();
@@ -456,7 +468,7 @@ socket.on('video reloader', function(intVideoId) {
 	}
 
 	/* Close fullscreen */
-	function closeFullscreen() {
+	let closeFullscreen = () => {
 		console.log('closeFullscreen');
 		if (document.exitFullscreen) {
 			document.exitFullscreen();
@@ -470,7 +482,7 @@ socket.on('video reloader', function(intVideoId) {
 	}
 
 	var boolIsFullscreen = false;
-	$('.fullscreenall').on('click', function(e) {
+	$('.fullscreenall').on('click', e => {
 		e.preventDefault();
 		console.log('click fullscreen');
 		if (!boolIsFullscreen) {
@@ -481,4 +493,24 @@ socket.on('video reloader', function(intVideoId) {
 		boolIsFullscreen = !boolIsFullscreen;
 	});
 // Fullscreen - END
+}
+
+GLOBAL_SITE = String(GLOBAL_SITE).toLowerCase();
+console.log(GLOBAL_SITE);
+if (GLOBAL_SITE === 'view') {
+	(async() => {
+	try {
+		var waitIndex = 0;
+		while(YT.loaded <= 0 && waitIndex <= 15) {
+			waitIndex++;
+			console.log('wait YT.loaded 1: '+ waitIndex);
+			await new Promise(resolve => setTimeout(resolve, 1000));
+		}
+
+		if (YT.loaded >= 1) startRenderPage();
+	} catch(e) {}
+	})();
+} else {
+	console.log('else');
+	startRenderPage();
 }
