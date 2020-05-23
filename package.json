@@ -11,7 +11,8 @@
 	"main": "server.js",
 	"scripts": {
 		"dev": "gulp dev",
-		"build": "gulp"
+		"build": "gulp",
+		"minify-css-names": "gulp minify-css-names"
 	},
 	"repository": {
 		"type": "git",

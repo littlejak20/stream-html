@@ -179,15 +179,33 @@ const script = () => {
         //.pipe(browserSync.stream());
 };
 
+const minifyClassNames = require('./tools/minifyClassNames.js');
+gulp.task('minify-css-names', (done) => {
+    minifyClassNames([
+        { input: `dist/css/main.min.css`, output: `dist/css/main.min.cssmin.css` },
+        { input: `dist/js/main.min.js`,   output: `dist/js/main.min.cssmin.js` },
+        { input: `dist/config.html`,      output: `dist/config.cssmin.html` },
+        { input: `dist/view.html`,        output: `dist/view.cssmin.html` }
+    ]);
+
+    done();
+});
+
+
+
+
+
+
+// Just Build the Project
+const build = gulp.series(css, script, html);
+
 // Function to watch our Changes and refreash page
-const watch = () => gulp.watch([`${src}/html/**/*.html`, `${src}/js/**/*.js`, `${src}/sass/**/*.scss`], gulp.series(css, script, html, reload));
+//const watch = () => gulp.watch([`${src}/html/**/*.html`, `${src}/js/**/*.js`, `${src}/sass/**/*.scss`], gulp.series(css, script, html, reload));
+const watch = () => gulp.watch([`${src}/html/**/*.html`, `${src}/js/**/*.js`, `${src}/sass/**/*.scss`], build);
 
 // All Tasks for this Project
 //const dev = gulp.series(css, script, html, serve, watch);
 const dev = gulp.series(css, script, html, watch);
-
-// Just Build the Project
-const build = gulp.series(css, script, html);
 
 // Default function (used when type gulp)
 exports.dev = dev;
