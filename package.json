@@ -4,8 +4,11 @@
 	"description": "stream-html",
 	"dependencies": {
 		"@babel/runtime": "^7.9.6",
+		"@callowcreation/basic-twitch-oauth": "^1.0.4",
 		"express": "^4.17.1",
+		"fetch-sync": "^2.0.0",
 		"mongodb": "^3.5.6",
+		"node-fetch": "^2.6.0",
 		"socket.io": "^2.3.0"
 	},
 	"main": "server.js",

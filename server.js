@@ -78,10 +78,13 @@ var dictLastConfig = {
 var arrayProfileNames = [];
 /*var blankBlankProfile = {"_id":"name":"blank","modeName":"container top2x4-bottom-2","sources":[{"name":"","volume":{"$numberInt":0.0}},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0}]};*/
 
+const fetch = require('node-fetch');
+//const fetchSync  = require('fetch-sync');
+
 var express = require('express');
 var fs = require('fs')
 var http = require('http');
-//var https = require('https');
+var https = require('https');
 var app = express();
 
 var server = http.createServer(app);
@@ -95,8 +98,8 @@ var io = require('socket.io')(server);
 var distPath = __dirname + '/dist';
 var filePath = __dirname + '/files';
 
-app.use(express.static(distPath));
-app.use(express.static(filePath));
+//app.use(express.static(distPath));
+//app.use(express.static(filePath));
 app.get('/', (req, res) => { res.sendFile(distPath + '/view.html'); });
 app.get('/v', (req, res) => { res.sendFile(distPath + '/view.html'); });
 app.get('/view', (req, res) => { res.sendFile(distPath + '/view.html'); });
@@ -216,7 +219,7 @@ findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 	}
 });
 
-const startIoOnConnection = () => {
+let startIoOnConnection = () => {
 io.on('connection', (socket) => {
 	userCount++;
 	console.log('connected', socket.id, userCount);
@@ -289,3 +292,178 @@ io.on('connection', (socket) => {
 	});
 });
 }
+
+const twitchClientId = 'lyp62885xzi4lnwb5ijzhafgglaxvx';
+const twitchClientSecret = 'cv2mrmtsvfeh7orceaivqw6o48uv56';
+const twitchUseerId = '127816533'; // littlejak20
+let twitchHeaders = {
+	'client-ID': twitchClientId,
+	'Authorization': '',
+};
+let twitchAuthReady = false;
+
+let funcTwitchAuthReady = () => {
+	console.log(twitchClientId);
+	console.log(twitchClientSecret);
+	console.log(twitchUseerId);
+	console.log(twitchHeaders);
+	console.log(twitchAuthReady);
+	funcGetFollowedStreams()
+}
+
+let funcGetFollowedStreams = (beforeData, paginationCursor) => {
+	console.log('funcGetFollowedStreams')
+
+	fetch(`https://api.twitch.tv/helix/users/follows?first=20&from_id=${twitchUseerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
+		method: 'get',
+		headers: twitchHeaders,
+	})
+	.then(res => res.json())
+	.then(responseData => {
+		let arrayStreamItems = [];
+
+		if (beforeData !== undefined) arrayStreamItems = arrayStreamItems.concat(beforeData);
+		if (responseData !== undefined) if (responseData.data !== undefined) arrayStreamItems = arrayStreamItems.concat(responseData.data);
+
+		if (responseData.pagination !== undefined) if (responseData.pagination.cursor !== undefined) {
+			funcGetFollowedStreams(callbackFunc, arrayStreamItems, responseData.pagination.cursor);
+		} else {
+			return arrayStreamItems;
+		}
+	});
+}
+
+
+fetch('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials', {
+	method: 'post',
+})
+.then(res => res.json())
+.then(twicthAuth => {
+	twitchHeaders['Authorization'] = `Bearer ${twicthAuth['access_token']}`;
+	twitchAuthReady = true;
+	funcTwitchAuthReady();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+// ####################################################
+// #################### START #########################
+// ############### TWITCH OAUATH ######################
+// ####################################################
+
+// https://www.npmjs.com/package/@callowcreation/basic-twitch-oauth#loading-and-configuration
+
+const TwitchOAuth = require("@callowcreation/basic-twitch-oauth");
+ 
+const state = 'a-Unique-ID-98765432-For_Security';
+ 
+const twitchOAuth = new TwitchOAuth({
+	client_id: 'lyp62885xzi4lnwb5ijzhafgglaxvx',
+	client_secret: 'cv2mrmtsvfeh7orceaivqw6o48uv56',
+	redirect_uri: 'http://127.0.0.1:3000/auth/twitch/callback',
+	scopes: [
+		//'user:edit:broadcast'
+	]
+}, state);
+ 
+//const express = require('express');
+//const app = express();
+ 
+app.get('/c', (req, res) => {
+	res.redirect(twitchOAuth.authorizeUrl);
+});
+ 
+// redirect_uri ends up here
+app.get('/auth/twitch/callback', (req, res) => {
+	const qs = require('querystring');
+	const req_data = qs.parse(req.url.split('?')[1]);
+	const code = req_data['code'];
+	const state = req_data['state'];
+ 
+	if (twitchOAuth.confirmState(state) === true) {
+		twitchOAuth.fetchToken(code).then(json => {
+			if (json.success === true) {
+				console.log('authenticated');
+				res.redirect('/c-start');
+			} else {
+				console.log('error');
+				res.redirect('/c-start');
+			}
+		}).catch(err => console.error(err));
+	} else {
+		console.log('error');
+		res.redirect('/c-start');
+	}
+});
+
+app.get('/user', (req, res) => {
+	const url = `https://api.twitch.tv/helix/users/extensions?user_id=101223367`;
+	twitchOAuth.getEndpoint(url)
+		.then(json => res.status(200).json(json));
+});
+app.get('/streams', (req, res) => {
+	const url = `https://api.twitch.tv/helix/streams`;
+	twitchOAuth.getEndpoint(url)
+		.then(json => res.status(200).json(json));
+});
+app.get('/follows', (req, res) => {
+	const url = `https://api.twitch.tv/helix/users/follows?from_id=127816533`;
+	twitchOAuth.getEndpoint(url)
+		.then(json => res.status(200).json(json));
+});
+
+// ####################################################
+// ##################### END ##########################
+// ############### TWITCH OAUATH ######################
+// ####################################################
+*/
+
+/*https.post('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials&scope=', (resp) => {
+  let data = '';
+
+  // A chunk of data has been recieved.
+  resp.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  // The whole response has been received. Print out the result.
+  resp.on('end', () => {
+    console.log(JSON.parse(data).explanation);
+  });
+
+}).on("error", (err) => {
+  console.log("Error: " + err.message);
+});*/
+
+
+/*const request = require('request')
+request.post('https://id.twitch.tv/oauth2/token', {
+	json: {
+		client_id: 'lyp62885xzi4lnwb5ijzhafgglaxvx',
+		client_secret: 'cv2mrmtsvfeh7orceaivqw6o48uv56',
+		grant_type: 'client_credentials'
+	}
+}, (error, res, body) => {
+	if (error) {
+		console.error(error)
+		return
+	}
+	console.log(`statusCode: ${res.statusCode}`)
+	console.log(body)
+})*/
