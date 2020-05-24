@@ -296,55 +296,50 @@ io.on('connection', (socket) => {
 const twitchClientId = 'lyp62885xzi4lnwb5ijzhafgglaxvx';
 const twitchClientSecret = 'cv2mrmtsvfeh7orceaivqw6o48uv56';
 const twitchUseerId = '127816533'; // littlejak20
-let twitchHeaders = {
+let twicthAuthRight = false;
+let twitchRequestHeader = {
 	'client-ID': twitchClientId,
 	'Authorization': '',
 };
-let twitchAuthReady = false;
 
-let funcTwitchAuthReady = () => {
-	console.log(twitchClientId);
-	console.log(twitchClientSecret);
-	console.log(twitchUseerId);
-	console.log(twitchHeaders);
-	console.log(twitchAuthReady);
-	funcGetFollowedStreams()
+let getTwitchRequestHeader = async () => {
+	if (twicthAuthRight) return twitchRequestHeader;
+
+	let twicthAuth = await fetch('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials', {
+		method: 'post',
+	}).then(res => res.json());
+
+	twitchRequestHeader['Authorization'] = `Bearer ${twicthAuth['access_token']}`;
+	twicthAuthRight = true;
+	return twicthAuthRight ? twitchRequestHeader : false;
 }
 
-let funcGetFollowedStreams = (beforeData, paginationCursor) => {
-	console.log('funcGetFollowedStreams')
+let funcGetFollowedStreams = async (beforeData, paginationCursor) => {
+	let header = await getTwitchRequestHeader();
+	if (!header) return;
 
-	fetch(`https://api.twitch.tv/helix/users/follows?first=20&from_id=${twitchUseerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
+	console.log('funcGetFollowedStreams');
+	let arrayStreamItems = [];
+	if (beforeData !== undefined) arrayStreamItems = beforeData;
+
+	let responseData = await fetch(`https://api.twitch.tv/helix/users/follows?first=100&from_id=${twitchUseerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
 		method: 'get',
-		headers: twitchHeaders,
-	})
-	.then(res => res.json())
-	.then(responseData => {
-		let arrayStreamItems = [];
+		headers: await getTwitchRequestHeader(),
+	}).then(res => res.json())
 
-		if (beforeData !== undefined) arrayStreamItems = arrayStreamItems.concat(beforeData);
-		if (responseData !== undefined) if (responseData.data !== undefined) arrayStreamItems = arrayStreamItems.concat(responseData.data);
+	if (responseData === undefined) return arrayStreamItems;
+	if (responseData.data === undefined || responseData.pagination === undefined) return arrayStreamItems;
+	if (responseData.pagination.cursor === undefined) return arrayStreamItems;
 
-		if (responseData.pagination !== undefined) if (responseData.pagination.cursor !== undefined) {
-			funcGetFollowedStreams(callbackFunc, arrayStreamItems, responseData.pagination.cursor);
-		} else {
-			return arrayStreamItems;
-		}
-	});
+	arrayStreamItems = arrayStreamItems.concat(responseData.data);
+	return await funcGetFollowedStreams(arrayStreamItems, responseData.pagination.cursor);
 }
 
-
-fetch('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials', {
-	method: 'post',
-})
-.then(res => res.json())
-.then(twicthAuth => {
-	twitchHeaders['Authorization'] = `Bearer ${twicthAuth['access_token']}`;
-	twitchAuthReady = true;
-	funcTwitchAuthReady();
-});
-
-
+(async () => {
+	let streamData = await funcGetFollowedStreams();
+	console.log(streamData);
+	console.log(streamData.length);
+})();
 
 
 
