@@ -3,13 +3,12 @@
 	"version": "0.1.0",
 	"description": "stream-html",
 	"dependencies": {
-		"@babel/runtime": "^7.9.6",
-		"@callowcreation/basic-twitch-oauth": "^1.0.4",
 		"express": "^4.17.1",
 		"fetch-sync": "^2.0.0",
-		"mongodb": "^3.5.6",
+		"mongodb": "^3.5.7",
 		"node-fetch": "^2.6.0",
-		"socket.io": "^2.3.0"
+		"socket.io": "^2.3.0",
+		"squirrelly": "^8.0.1"
 	},
 	"main": "server.js",
 	"scripts": {
@@ -23,9 +22,8 @@
 	},
 	"devDependencies": {
 		"@babel/core": "^7.9.6",
-		"@babel/plugin-transform-runtime": "^7.9.6",
 		"@babel/preset-env": "^7.9.6",
-		"autoprefixer": "^9.8.0",
+        "autoprefixer": "^9.8.0",
 		"babel-eslint": "^10.1.0",
 		"babel-preset-es2015": "^6.24.1",
 		"browser-sync": "^2.26.7",
@@ -49,7 +47,7 @@
 		"gulp-sourcemaps": "^2.6.5",
 		"gulp-uglify": "^3.0.2",
 		"gulp-util": "^3.0.8",
-		"jshint": "^2.11.1",
+        "jshint": "^2.11.1",
 		"rename": "^1.0.4"
 	}
 }

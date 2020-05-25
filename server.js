@@ -290,6 +290,13 @@ io.on('connection', (socket) => {
 	socket.on('video reloader finish', () => {
 		io.emit('config reload', dictLastConfig);
 	});
+
+	socket.on('twitch get channelnames', async () => {
+		console.log('twitch get channelnames');
+		const dictChannelNames = await getChannelNames();		
+		console.log(dictChannelNames.names);
+		io.emit('twitch get channelnames', dictChannelNames);
+	});
 });
 }
 
@@ -497,37 +504,3 @@ app.get('/follows', (req, res) => {
 // ############### TWITCH OAUATH ######################
 // ####################################################
 */
-
-/*https.post('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials&scope=', (resp) => {
-  let data = '';
-
-  // A chunk of data has been recieved.
-  resp.on('data', (chunk) => {
-    data += chunk;
-  });
-
-  // The whole response has been received. Print out the result.
-  resp.on('end', () => {
-    console.log(JSON.parse(data).explanation);
-  });
-
-}).on("error", (err) => {
-  console.log("Error: " + err.message);
-});*/
-
-
-/*const request = require('request')
-request.post('https://id.twitch.tv/oauth2/token', {
-	json: {
-		client_id: 'lyp62885xzi4lnwb5ijzhafgglaxvx',
-		client_secret: 'cv2mrmtsvfeh7orceaivqw6o48uv56',
-		grant_type: 'client_credentials'
-	}
-}, (error, res, body) => {
-	if (error) {
-		console.error(error)
-		return
-	}
-	console.log(`statusCode: ${res.statusCode}`)
-	console.log(body)
-})*/

@@ -1,6 +1,10 @@
 //https://stackoverflow.com/questions/27670401/using-jquery-this-with-es6-arrow-functions-lexical-this-binding/34199426#34199426
 
 import regeneratorRuntime from "regenerator-runtime";
+import * as Sqrl from 'squirrelly'
+
+GLOBAL_SITE = String(GLOBAL_SITE).toLowerCase();
+console.log(GLOBAL_SITE);
 
 /*let onYouTubeIframeAPIReady = () => {
 	console.log('onYouTubeIframeAPIReady');
@@ -22,6 +26,8 @@ var strFormSourcesClass = '#formSources form';
 var strFormAddButtonClass = '#profileAdd';
 var strFormLoadButtonClass = '#profileLoad';
 var strFormSaveButtonClass = '#profileSave';
+
+var strChannelNamesClass = '#channelNamesTarget';
 
 var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 
@@ -450,6 +456,72 @@ socket.on('video reloader', intVideoId => {
 
 
 
+let flgTwitchChannelNamesSet = false;
+let intTwitchChannelCurrentSourceId = -1;
+
+$('body').on('click', `${strFormSourcesClass} .btn-select-twitch`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+
+	if (!flgTwitchChannelNamesSet) socket.emit('twitch get channelnames');
+	flgTwitchChannelNamesSet = true;
+
+	var $this = $(e.currentTarget);
+	var formContainer = $this.parent('form');
+	intTwitchChannelCurrentSourceId = formContainer.data('id');
+
+	$(strChannelNamesClass).show();
+
+	console.log(intTwitchChannelCurrentSourceId);
+});
+
+$('body').on('click', `${strChannelNamesClass} .con-names .item`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+	var $this = $(e.currentTarget);
+
+	var channelName = $this.data('channelname');
+	var formContainer = $(`${strFormSourcesClass}[data-id='${intTwitchChannelCurrentSourceId}']`);
+
+	formContainer.find(`[name="platform"]`).val('twitch');
+	formContainer.find(`[name="type"]`).val('stream');
+	formContainer.find(`[name="name"]`).val(channelName);
+
+	intTwitchChannelCurrentSourceId = -1;
+	$(strChannelNamesClass).hide();
+
+	console.log(intTwitchChannelCurrentSourceId, formContainer, channelName);
+});
+
+$('body').on('click', `${strChannelNamesClass} .btn-close`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+	var $this = $(e.currentTarget);
+
+	intTwitchChannelCurrentSourceId = -1;
+	$(strChannelNamesClass).hide();
+});
+
+$('body').on('click', `${strChannelNamesClass} .btn-reload`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+	socket.emit('twitch get channelnames');
+});
+
+socket.on('twitch get channelnames', arrayChannelNames => {
+	console.log('twitch get channelnames', arrayChannelNames.names);
+	if (GLOBAL_SITE !== 'config') return;
+
+	let tmpHtml = '';
+	arrayChannelNames.names.forEach((channelName) => {
+		tmpHtml += `<a href="#" class="item" data-channelname="${channelName}" style="display: inline-block; margin: 10px;">${channelName}</a>`
+	});
+	$(`${strChannelNamesClass} .con-names`).html(tmpHtml);
+});
+
+
+
+
 // Fullscreen - START
 	var fullElem = document.documentElement;
 
@@ -495,8 +567,6 @@ socket.on('video reloader', intVideoId => {
 // Fullscreen - END
 }
 
-GLOBAL_SITE = String(GLOBAL_SITE).toLowerCase();
-console.log(GLOBAL_SITE);
 if (GLOBAL_SITE === 'view') {
 	(async() => {
 	try {
