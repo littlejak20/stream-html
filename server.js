@@ -98,8 +98,8 @@ var io = require('socket.io')(server);
 var distPath = __dirname + '/dist';
 var filePath = __dirname + '/files';
 
-//app.use(express.static(distPath));
-//app.use(express.static(filePath));
+app.use(express.static(distPath));
+app.use(express.static(filePath));
 app.get('/', (req, res) => { res.sendFile(distPath + '/view.html'); });
 app.get('/v', (req, res) => { res.sendFile(distPath + '/view.html'); });
 app.get('/view', (req, res) => { res.sendFile(distPath + '/view.html'); });
@@ -293,54 +293,123 @@ io.on('connection', (socket) => {
 });
 }
 
+
+
 const twitchClientId = 'lyp62885xzi4lnwb5ijzhafgglaxvx';
 const twitchClientSecret = 'cv2mrmtsvfeh7orceaivqw6o48uv56';
 const twitchUseerId = '127816533'; // littlejak20
-let twicthAuthRight = false;
+//const twitchUseerId = '12875057'; // Gronkh
+//const twitchUseerId = '23161357'; // Lirik
+const twitchMaxItemCount = 100;
+let twitchAuthRight = false;
 let twitchRequestHeader = {
 	'client-ID': twitchClientId,
 	'Authorization': '',
 };
 
-let getTwitchRequestHeader = async () => {
-	if (twicthAuthRight) return twitchRequestHeader;
+const getTwitchRequestHeader = async () => {
+	if (twitchAuthRight) return twitchRequestHeader;
 
-	let twicthAuth = await fetch('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials', {
+	const twicthAuth = await fetch('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials', {
 		method: 'post',
 	}).then(res => res.json());
 
 	twitchRequestHeader['Authorization'] = `Bearer ${twicthAuth['access_token']}`;
-	twicthAuthRight = true;
-	return twicthAuthRight ? twitchRequestHeader : false;
+	twitchAuthRight = true;
+	return twitchAuthRight ? twitchRequestHeader : false;
 }
 
-let funcGetFollowedStreams = async (beforeData, paginationCursor) => {
-	let header = await getTwitchRequestHeader();
-	if (!header) return;
+const getFollowedStreamChannels = async (beforeData, paginationCursor) => {
+	const header = await getTwitchRequestHeader();
+	if (!header) return [];
 
-	console.log('funcGetFollowedStreams');
+	console.log('getFollowedStreamChannels');
 	let arrayStreamItems = [];
 	if (beforeData !== undefined) arrayStreamItems = beforeData;
 
-	let responseData = await fetch(`https://api.twitch.tv/helix/users/follows?first=100&from_id=${twitchUseerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
+	const responseData = await fetch(`https://api.twitch.tv/helix/users/follows?first=${twitchMaxItemCount}&from_id=${twitchUseerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
 		method: 'get',
-		headers: await getTwitchRequestHeader(),
-	}).then(res => res.json())
+		headers: header,
+	}).then(res => res.json());
 
 	if (responseData === undefined) return arrayStreamItems;
 	if (responseData.data === undefined || responseData.pagination === undefined) return arrayStreamItems;
 	if (responseData.pagination.cursor === undefined) return arrayStreamItems;
 
 	arrayStreamItems = arrayStreamItems.concat(responseData.data);
-	return await funcGetFollowedStreams(arrayStreamItems, responseData.pagination.cursor);
+	return await getFollowedStreamChannels(arrayStreamItems, responseData.pagination.cursor);
 }
 
-(async () => {
-	let streamData = await funcGetFollowedStreams();
-	console.log(streamData);
-	console.log(streamData.length);
-})();
+const getChannelNames = async () => {
+	const arrayStreamItems = await getFollowedStreamChannels();
+	let tmp = { names: [], namesStack: [[]], ids: [], idsStack: [[]],  queryString: '', queryStringStack: [''] };
+	if (arrayStreamItems === undefined) return tmp;
+	if (arrayStreamItems.length <= 0) return tmp;
 
+	let stackIndex = 0;
+	let stackCount = 0;
+
+	arrayStreamItems.forEach((streamItem, index) => {
+		if (streamItem === undefined) return;
+		const channelName = streamItem['to_name'];
+		const channelId = streamItem['to_id'];
+		if (channelName === undefined || channelId === undefined) return;
+		if (channelName <= 0 || channelId <= 0) return;
+
+		if (stackIndex >= twitchMaxItemCount) {
+			stackIndex = 0;
+			stackCount++;
+
+			tmp.namesStack[stackCount] = [];
+			tmp.idsStack[stackCount] = [];
+			tmp.queryStringStack[stackCount] = '';
+		}
+
+		tmp.names.push(channelName);
+		tmp.namesStack[stackCount].push(channelName);
+
+		tmp.ids.push(channelId);
+		tmp.idsStack[stackCount].push(channelId);
+
+		tmp.queryString += `&user_id=${channelId}`;
+		tmp.queryStringStack[stackCount] += `&user_id=${channelId}`;
+
+		stackIndex++;
+	});
+
+	return tmp;
+}
+
+const getChannelLiveSate = async (queryStringStack) => {
+	const header = await getTwitchRequestHeader();
+	if (!header) return [];
+
+	console.log('getChannelLiveSate');
+
+	var arrayStreamItems = [];
+	for (const queryString of queryStringStack) {
+		const responseData = await fetch(`https://api.twitch.tv/helix/streams?first=100${queryString}`, {
+			method: 'get',
+			headers: header,
+		}).then(res => res.json());
+
+		if (responseData !== undefined) {
+			if (responseData.data !== undefined) {
+				arrayStreamItems = arrayStreamItems.concat(responseData.data);
+			}
+		}
+	};
+
+	return arrayStreamItems;
+}
+
+/*
+(async () => {
+	const dictChannelNames = await getChannelNames();
+	const arrayLiveChannels = await getChannelLiveSate(dictChannelNames.queryStringStack)	
+	console.log(arrayLiveChannels);
+})();
+*/
 
 
 
