@@ -14,30 +14,78 @@ if (GLOBAL_SITE === 'config') startRenderPage();*/
 
 let startRenderPage = () => {
 console.log('startRenderPage');
-var socket = io();
+const socket = io();
 
-var strOverlayClass = '.overlay';
-var strContainerClass = '.container';
+const strOverlayClass = '.overlay';
+const strContainerClass = '.container';
 
-var strProfileNameShowPlaceClass = '#profileNameShowPlace';
+const strProfileNameShowPlaceClass = '#profileNameShowPlace';
 
-var strFormProfileClass = 'form#formProfile';
-var strFormSourcesClass = '#formSources form';
-var strFormAddButtonClass = '#profileAdd';
-var strFormLoadButtonClass = '#profileLoad';
-var strFormSaveButtonClass = '#profileSave';
+const strFormProfileClass = 'form#formProfile';
+const strFormSourcesClass = '#formSources form';
+const strFormAddButtonClass = '#profileAdd';
+const strFormLoadButtonClass = '#profileLoad';
+const strFormSaveButtonClass = '#profileSave';
 
-var strChannelNamesClass = '#channelNamesTarget';
+const strChannelNamesClass = '#channelNamesTarget';
 
-var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
-var arraySourceFloatItems = ['volume'];
+const arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
+const arraySourceFloatItems = ['volume'];
+const arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth streams
 
-var players = { 1: '', 2: '', 3: '', 4: '', 5: '', 6: '', 7: '', 8: '', 9: '', 10: '' };
-var youtubePlayerIndex = 0;
-var dictClientConfig = {};
-var arrayClientProfileNames = [];
+let players = { 1: '', 2: '', 3: '', 4: '', 5: '', 6: '', 7: '', 8: '', 9: '', 10: '' };
+let youtubePlayerIndex = 0;
+let dictClientConfig = {};
+let arrayClientProfileNames = [];
 
-var arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth streams
+let flgTwitchChannelNamesSet = false;
+let intTwitchChannelCurrentSourceId = -1;
+
+let twitchEvents = [];
+try {
+	twitchEvents = [
+		{
+			name: Twitch.Player.ENDED,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.PAUSE,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.PLAY,
+			volumeChange: true,
+			qualityChange: true,
+		},
+		{
+			name: Twitch.Player.PLAYBACK_BLOCKED,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.PLAYING,
+			volumeChange: true,
+			qualityChange: true,
+		},
+		{
+			name: Twitch.Player.OFFLINE,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.ONLINE,
+			volumeChange: true,
+			qualityChange: true,
+		},
+		{
+			name: Twitch.Player.READY,
+			volumeChange: true,
+			qualityChange: true,
+		},
+	];
+} catch(e) { console.error(e) }
 
 // Helpers - START
 	let objectsAreEqual = (obj1, obj2) => (JSON.stringify(obj1) === JSON.stringify(obj2));
@@ -74,9 +122,7 @@ let getArrayFormSources = () => {
 		var formContainer = $(form);
 		var dictTmpSource = {};
 
-		$.each(arraySourceItems, (index, fieldname) => {
-		});
-		$.each(arraySourceItems, (index, fieldname) => {
+		arraySourceItems.forEach((fieldname, index) => {
 			var inputElement = formContainer.find('[name="'+fieldname+'"]');
 			var inputType = inputElement.attr('type');
 
@@ -105,71 +151,89 @@ let getDictAllFormData = () => {
 	};
 }
 
-let setTwitchVolume = (index, dictSource) => {
+let setTwitchVolume = (sourceIndex, dictSource) => {
 	(async () => {
 	try {
 		var waitIndex = 0;
-		while(!funcCheck(players[index].setVolume) && waitIndex <= 30) {
+		while(!funcCheck(players[sourceIndex].setVolume) && waitIndex <= 30) {
 			waitIndex++;
-			console.log('twitch volume', players[index], waitIndex);
+			console.log('twitch volume', players[sourceIndex], waitIndex);
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
 
-		if (!funcCheck(players[index].setVolume)) return false;
-		console.log('twitch volume can set', players[index]);
-
-		dictSource.volume = parseFloat(dictSource.volume);
+		if (!funcCheck(players[sourceIndex].setVolume)) return false;
 
 		if (dictSource.volume > 0.0) {
-			players[index].setVolume(dictSource.volume);
-			players[index].setMuted(false);
+			players[sourceIndex].setVolume(dictSource.volume);
+			players[sourceIndex].setMuted(false);
 		} else {
-			players[index].setMuted(true);
+			players[sourceIndex].setMuted(true);
 		}
 	} catch(e) { console.error(e); }
 	})();
 }
-
-let setTwitchQuality = (index, dictSource) => {
+let setTwitchQuality = (sourceIndex, dictSource) => {
 	(async () => {
 	try {
 		var waitIndex = 0;
-		while(!funcCheck(players[index].getQualities) && waitIndex <= 30) {
+		while(!funcCheck(players[sourceIndex].getQualities) && waitIndex <= 30) {
 			waitIndex++;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
 
-		if (!funcCheck(players[index].getQualities)) return false;
+		if (!funcCheck(players[sourceIndex].getQualities)) return false;
 
 		waitIndex = 0;
-		while(players[index].getQualities().length < 1 && waitIndex <= 30) {
+		while(players[sourceIndex].getQualities().length < 1 && waitIndex <= 30) {
 			waitIndex++;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
 
-		if (players[index].getQualities().length < 1) return false;
+		if (players[sourceIndex].getQualities().length < 1) return false;
 
-		var twitchQualities = players[index].getQualities();
-		if (arrayPlayerForceHighestQuality.indexOf(index) >= 0) {
-			players[index].setQuality(twitchQualities[1]['group']);
+		var twitchQualities = players[sourceIndex].getQualities();
+		if (arrayPlayerForceHighestQuality.indexOf(sourceIndex) >= 0) {
+			console.log('high quality');
+			players[sourceIndex].setQuality(twitchQualities[1]['group']);
 		} else {
-			players[index].setQuality(twitchQualities[0]['group']);
+			players[sourceIndex].setQuality(twitchQualities[0]['group']);
 		}
-	} catch(e) { console.error(e); }
+	} catch(e) { console.error(e) }
 	})();
 }
+let addTwitchEventListener = (sourceIndex, dictSource) => {
+	console.log('addTwitchEventListener', sourceIndex, dictSource);
+	twitchEvents.forEach((event, index) => {
+		try {
+			players[sourceIndex].addEventListener(event.name, () => {
+				console.log('TWITCH EVENT', event.name, event.volumeChange, event.qualityChange, sourceIndex);
+				if (event.volumeChange) setTwitchVolume(sourceIndex, dictSource);
+				if (event.qualityChange) setTwitchQuality(sourceIndex, dictSource);
+			});
+		} catch(e) { console.error(e) }
+	});
+}
+let removeTwitchEventListener = (sourceIndex) => {
+	console.log('removeTwitchEventListener', sourceIndex);
+	twitchEvents.forEach((event, index) => {
+		try {
+			players[sourceIndex].removeEventListener(event.name);			
+		} catch(e) { console.error(e) }
+	});
+}
+
 
 socket.on('config reload', (dictServerConfig) => {
 	console.log('config reload', dictServerConfig);
 
 	// for site config - source form
-	$.each(dictServerConfig.sources, (indexServerSource, dictServerSource) => {
+	dictServerConfig.sources.forEach((dictServerSource, indexServerSource) => {
 		console.log('setFormSource -->', indexServerSource, dictServerSource);
 		if (!dictCheck(dictServerSource)) return false;
 
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
-			$.each(arraySourceItems, (index, fieldname) => {
+			arraySourceItems.forEach((fieldname, index) => {
 				var inputElement = formContainer.find('[name="'+fieldname+'"]');
 				var inputType = $(inputElement).attr('type');
 				if (inputType == 'checkbox') {
@@ -208,7 +272,7 @@ socket.on('config reload', (dictServerConfig) => {
 
 	// for site view - player
 	//if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) { // FOR - setQuality for twicth streams
-		$.each(dictServerConfig.sources, (indexServerSource, dictServerSource) => {
+		dictServerConfig.sources.forEach((dictServerSource, indexServerSource) => {
 			console.log('setPlayerContainer -->', indexServerSource, dictServerSource);
 			if (!dictCheck(dictServerSource)) return false;
 
@@ -259,12 +323,11 @@ socket.on('config reload', (dictServerConfig) => {
 
 							if (boolChangeVideoPlayer && !boolOnlyUseIframe) {
 								players[indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
-								players[indexServerSource].addEventListener(Twitch.Player.READY, () => {
-									setTwitchVolume(indexServerSource, dictServerSource);
-									setTwitchQuality(indexServerSource, dictServerSource);
-								});
 								flgIsNoSet = true;
 							}
+						
+							removeTwitchEventListener(indexServerSource);
+							addTwitchEventListener(indexServerSource, dictServerSource);
 						}
 
 						if (!boolOnlyUseIframe && !flgIsNoSet) {
@@ -379,7 +442,7 @@ socket.on('profileName reload', arrayServerProfileNames => {
 		
 	var formProfile = $(strFormProfileClass);
 	var strSelectOptions = '';
-	$.each(arrayServerProfileNames, (index, profile) => {
+	arrayServerProfileNames.forEach((profile, index) => {
 		strSelectOptions += 
 			'<option name="'+profile.name+'"'+
 			(profile.name == dictClientConfig.name ? ' selected' : '')+
@@ -449,8 +512,8 @@ socket.on('video switcher', arrVideoIds => {
 	var idName1 = videoContainer1.attr('id');
 	var player0 = players[arrVideoIds[0]];
 	var player1 = players[arrVideoIds[1]];
-	var dictSource0 = dictClientConfig.sources[arrVideoIds[0]];
-	var dictSource1 = dictClientConfig.sources[arrVideoIds[1]];
+	var dictClientSource0 = dictClientConfig.sources[arrVideoIds[0]];
+	var dictClientSource1 = dictClientConfig.sources[arrVideoIds[1]];
 
 	videoContainer0.attr('data-id', arrVideoIds[1]);
 	videoContainer1.attr('data-id', arrVideoIds[0]);
@@ -458,8 +521,8 @@ socket.on('video switcher', arrVideoIds => {
 	videoContainer1.attr('id', idName0);
 	players[arrVideoIds[0]] = player1;
 	players[arrVideoIds[1]] = player0;
-	dictClientConfig.sources[arrVideoIds[0]] = dictSource1;
-	dictClientConfig.sources[arrVideoIds[1]] = dictSource0;
+	dictClientConfig.sources[arrVideoIds[0]] = dictClientSource1;
+	dictClientConfig.sources[arrVideoIds[1]] = dictClientSource0;
 
 	socket.emit('video switcher finish');
 });
@@ -476,10 +539,6 @@ socket.on('video reloader', intVideoId => {
 	socket.emit('video reloader finish');
 });
 
-
-
-let flgTwitchChannelNamesSet = false;
-let intTwitchChannelCurrentSourceId = -1;
 
 $('body').on('click', `${strFormSourcesClass} .btn-select-twitch`, {}, e => {
 	e.preventDefault();
