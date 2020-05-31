@@ -1,3 +1,5 @@
+const consts = require('./server/const.js');
+
 // profile and config names are the same
 
 var serverPort = 3000;
@@ -300,30 +302,16 @@ io.on('connection', (socket) => {
 });
 }
 
-
-
-const twitchClientId = 'lyp62885xzi4lnwb5ijzhafgglaxvx';
-const twitchClientSecret = 'cv2mrmtsvfeh7orceaivqw6o48uv56';
-const twitchUseerId = '127816533'; // littlejak20
-//const twitchUseerId = '12875057'; // Gronkh
-//const twitchUseerId = '23161357'; // Lirik
-const twitchMaxItemCount = 100;
-let twitchAuthRight = false;
-let twitchRequestHeader = {
-	'client-ID': twitchClientId,
-	'Authorization': '',
-};
-
 const getTwitchRequestHeader = async () => {
-	if (twitchAuthRight) return twitchRequestHeader;
+	if (consts.twitch.authRight) return consts.twitch.requestHeader;
 
-	const twicthAuth = await fetch('https://id.twitch.tv/oauth2/token?client_id=lyp62885xzi4lnwb5ijzhafgglaxvx&client_secret=cv2mrmtsvfeh7orceaivqw6o48uv56&grant_type=client_credentials', {
+	const twicthAuth = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${consts.twitch.clientId}&client_secret=${consts.twitch.clientSecret}&grant_type=client_credentials`, {
 		method: 'post',
 	}).then(res => res.json());
 
-	twitchRequestHeader['Authorization'] = `Bearer ${twicthAuth['access_token']}`;
-	twitchAuthRight = true;
-	return twitchAuthRight ? twitchRequestHeader : false;
+	consts.twitch.requestHeader['Authorization'] = `Bearer ${twicthAuth['access_token']}`;
+	consts.twitch.authRight = true;
+	return consts.twitch.authRight ? consts.twitch.requestHeader : false;
 }
 
 const getFollowedStreamChannels = async (beforeData, paginationCursor) => {
@@ -334,7 +322,7 @@ const getFollowedStreamChannels = async (beforeData, paginationCursor) => {
 	let arrayStreamItems = [];
 	if (beforeData !== undefined) arrayStreamItems = beforeData;
 
-	const responseData = await fetch(`https://api.twitch.tv/helix/users/follows?first=${twitchMaxItemCount}&from_id=${twitchUseerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
+	const responseData = await fetch(`https://api.twitch.tv/helix/users/follows?first=${consts.twitch.maxItemCount}&from_id=${consts.twitch.useerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
 		method: 'get',
 		headers: header,
 	}).then(res => res.json());
@@ -363,7 +351,7 @@ const getChannelNames = async () => {
 		if (channelName === undefined || channelId === undefined) return;
 		if (channelName <= 0 || channelId <= 0) return;
 
-		if (stackIndex >= twitchMaxItemCount) {
+		if (stackIndex >= consts.twitch.maxItemCount) {
 			stackIndex = 0;
 			stackCount++;
 
@@ -445,8 +433,8 @@ const TwitchOAuth = require("@callowcreation/basic-twitch-oauth");
 const state = 'a-Unique-ID-98765432-For_Security';
  
 const twitchOAuth = new TwitchOAuth({
-	client_id: 'lyp62885xzi4lnwb5ijzhafgglaxvx',
-	client_secret: 'cv2mrmtsvfeh7orceaivqw6o48uv56',
+	client_id: consts.twitch.clientId,
+	client_secret: consts.twitch.clientSecret,
 	redirect_uri: 'http://127.0.0.1:3000/auth/twitch/callback',
 	scopes: [
 		//'user:edit:broadcast'
