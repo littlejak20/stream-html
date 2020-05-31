@@ -32,7 +32,7 @@ var strChannelNamesClass = '#channelNamesTarget';
 var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
 var arraySourceFloatItems = ['volume'];
 
-var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' };
+var players = { 1: '', 2: '', 3: '', 4: '', 5: '', 6: '', 7: '', 8: '', 9: '', 10: '' };
 var youtubePlayerIndex = 0;
 var dictClientConfig = {};
 var arrayClientProfileNames = [];
@@ -105,53 +105,55 @@ let getDictAllFormData = () => {
 	};
 }
 
-let setTwitchVolume = (indexServerSource, dictServerSource) => {
+let setTwitchVolume = (index, dictSource) => {
 	(async () => {
 	try {
 		var waitIndex = 0;
-		while(!funcCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
+		while(!funcCheck(players[index].setVolume) && waitIndex <= 30) {
 			waitIndex++;
+			console.log('twitch volume', players[index], waitIndex);
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
 
-		if (!funcCheck(players['player'+indexServerSource].setVolume)) return false;
+		if (!funcCheck(players[index].setVolume)) return false;
+		console.log('twitch volume can set', players[index]);
 
-		dictServerSource.volume = parseFloat(dictServerSource.volume);
+		dictSource.volume = parseFloat(dictSource.volume);
 
-		if (dictServerSource.volume > 0.0) {
-			players['player'+indexServerSource].setVolume(dictServerSource.volume);
-			players['player'+indexServerSource].setMuted(false);
+		if (dictSource.volume > 0.0) {
+			players[index].setVolume(dictSource.volume);
+			players[index].setMuted(false);
 		} else {
-			players['player'+indexServerSource].setMuted(true);
+			players[index].setMuted(true);
 		}
 	} catch(e) { console.error(e); }
 	})();
 }
 
-let setTwitchQuality = (indexServerSource, dictServerSource) => {
+let setTwitchQuality = (index, dictSource) => {
 	(async () => {
 	try {
 		var waitIndex = 0;
-		while(!funcCheck(players['player'+indexServerSource].getQualities) && waitIndex <= 30) {
+		while(!funcCheck(players[index].getQualities) && waitIndex <= 30) {
 			waitIndex++;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
 
-		if (!funcCheck(players['player'+indexServerSource].getQualities)) return false;
+		if (!funcCheck(players[index].getQualities)) return false;
 
 		waitIndex = 0;
-		while(players['player'+indexServerSource].getQualities().length < 1 && waitIndex <= 30) {
+		while(players[index].getQualities().length < 1 && waitIndex <= 30) {
 			waitIndex++;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
 
-		if (players['player'+indexServerSource].getQualities().length < 1) return false;
+		if (players[index].getQualities().length < 1) return false;
 
-		var twitchQualities = players['player'+indexServerSource].getQualities();
-		if (arrayPlayerForceHighestQuality.indexOf(indexServerSource) >= 0) {
-			players['player'+indexServerSource].setQuality(twitchQualities[1]['group']);
+		var twitchQualities = players[index].getQualities();
+		if (arrayPlayerForceHighestQuality.indexOf(index) >= 0) {
+			players[index].setQuality(twitchQualities[1]['group']);
 		} else {
-			players['player'+indexServerSource].setQuality(twitchQualities[0]['group']);
+			players[index].setQuality(twitchQualities[0]['group']);
 		}
 	} catch(e) { console.error(e); }
 	})();
@@ -236,13 +238,13 @@ socket.on('config reload', (dictServerConfig) => {
 
 				if (boolChangeVideoPlayer) {
 					playerContainer.html('');
-					players['player'+indexServerSource] = '';
+					players[indexServerSource] = '';
 				}
 
 				if (strServerSourceName.indexOf('http') <= 0) {
 					if (dictServerSource.platform === 'twitch') {
 
-						if (boolChangeVideoPlayer && boolHasName) {
+						if (boolHasName) {
 							dictPlayerConfig.allowfullscreen = false;
 
 							if (dictServerSource.type === 'stream') {
@@ -255,17 +257,15 @@ socket.on('config reload', (dictServerConfig) => {
 								boolOnlyUseIframe = true;
 							}
 
-							if (!boolOnlyUseIframe) {
-								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
-								players['player'+indexServerSource].addEventListener(Twitch.Player.READY, () => {
+							if (boolChangeVideoPlayer && !boolOnlyUseIframe) {
+								players[indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
+								players[indexServerSource].addEventListener(Twitch.Player.READY, () => {
 									setTwitchVolume(indexServerSource, dictServerSource);
 									setTwitchQuality(indexServerSource, dictServerSource);
 								});
 								flgIsNoSet = true;
 							}
 						}
-
-						console.log("players['player'"+indexServerSource+"]", players['player'+indexServerSource]);
 
 						if (!boolOnlyUseIframe && !flgIsNoSet) {
 							setTwitchVolume(indexServerSource, dictServerSource);
@@ -274,7 +274,7 @@ socket.on('config reload', (dictServerConfig) => {
 
 					} else if (dictServerSource.platform === 'youtube') {
 
-						if (boolChangeVideoPlayer && boolHasName) {
+						if (boolHasName) {
 							dictPlayerConfig.playerVars = {
 								autoplay: 1,
 								controls: 1,
@@ -301,11 +301,11 @@ socket.on('config reload', (dictServerConfig) => {
 								boolOnlyUseIframe = true;
 							}
 
-							if (!boolOnlyUseIframe) {
+							if (boolChangeVideoPlayer && !boolOnlyUseIframe) {
 								tmpContainerName = 'youtubeplayer'+(youtubePlayerIndex++);
 								playerContainer.append('<div id="'+tmpContainerName+'"></div>');
 								
-								players['player'+indexServerSource] = new YT.Player(tmpContainerName, dictPlayerConfig);
+								players[indexServerSource] = new YT.Player(tmpContainerName, dictPlayerConfig);
 								waitTimeMsec = 2000;
 								boolChangeVolume = true;
 
@@ -313,14 +313,14 @@ socket.on('config reload', (dictServerConfig) => {
 								(async () => {
 								try {
 									var waitIndex = 0;
-									while(!funcCheck(players['player'+indexServerSource].playVideo) && waitIndex <= 30) {
+									while(!funcCheck(players[indexServerSource].playVideo) && waitIndex <= 30) {
 										waitIndex++;
 										await new Promise(resolve => setTimeout(resolve, 1000));
 									}
 
-									if (!funcCheck(players['player'+indexServerSource].playVideo)) return false;
+									if (!funcCheck(players[indexServerSource].playVideo)) return false;
 
-									players['player'+indexServerSource].playVideo();
+									players[indexServerSource].playVideo();
 								} catch(e) { console.error('wait error --> changeVolume', e); }
 								})();								
 								// Start Video - END
@@ -333,26 +333,26 @@ socket.on('config reload', (dictServerConfig) => {
 									var videoVolume = 0.0;
 									dictServerSource.volume = parseFloat(dictServerSource.volume);
 									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
-									players['player'+indexServerSource].setVolume(videoVolume);
+									players[indexServerSource].setVolume(videoVolume);
 								}, waitTimeMsec);
 
 								(async () => {
 									try {
 										var waitIndex = 0;
-										while(!funcCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
+										while(!funcCheck(players[indexServerSource].setVolume) && waitIndex <= 30) {
 											waitIndex++;
 											console.warn('WAIT change youtube set volume')
 											await new Promise(resolve => setTimeout(resolve, 1000));
 										}
 
-										if (!funcCheck(players['player'+indexServerSource].setVolume)) return false;
+										if (!funcCheck(players[indexServerSource].setVolume)) return false;
 
 										console.warn('SET change youtube set volume')
 
 										var videoVolume = 0.0;
 										dictServerSource.volume = parseFloat(dictServerSource.volume);
 										if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-										players['player'+indexServerSource].setVolume(videoVolume);
+										players[indexServerSource].setVolume(videoVolume);
 									} catch(e) { console.error('wait error --> changeVolume', e); }
 								})();
 							}
@@ -370,7 +370,7 @@ socket.on('config reload', (dictServerConfig) => {
 	//}
 
 	dictClientConfig = dictServerConfig;
-	console.log(JSON.stringify(dictClientConfig));
+	console.warn('players --> end', players);
 });
 socket.on('config onlyset', dictServerConfig => dictClientConfig = dictServerConfig);
 
@@ -447,8 +447,8 @@ socket.on('video switcher', arrVideoIds => {
 	var videoContainer1 = $(strContainerClass+'.main [data-id="'+arrVideoIds[1]+'"]');
 	var idName0 = videoContainer0.attr('id');
 	var idName1 = videoContainer1.attr('id');
-	var player0 = players['player'+arrVideoIds[0]];
-	var player1 = players['player'+arrVideoIds[1]];
+	var player0 = players[arrVideoIds[0]];
+	var player1 = players[arrVideoIds[1]];
 	var dictSource0 = dictClientConfig.sources[arrVideoIds[0]];
 	var dictSource1 = dictClientConfig.sources[arrVideoIds[1]];
 
@@ -456,8 +456,8 @@ socket.on('video switcher', arrVideoIds => {
 	videoContainer1.attr('data-id', arrVideoIds[0]);
 	videoContainer0.attr('id', idName1);
 	videoContainer1.attr('id', idName0);
-	players['player'+arrVideoIds[0]] = player1;
-	players['player'+arrVideoIds[1]] = player0;
+	players[arrVideoIds[0]] = player1;
+	players[arrVideoIds[1]] = player0;
 	dictClientConfig.sources[arrVideoIds[0]] = dictSource1;
 	dictClientConfig.sources[arrVideoIds[1]] = dictSource0;
 
