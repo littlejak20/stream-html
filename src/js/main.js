@@ -309,7 +309,8 @@ socket.on('config reload', (dictServerConfig) => {
 					if (dictServerSource.platform === 'twitch') {
 
 						if (boolHasName) {
-							dictPlayerConfig.allowfullscreen = false;
+							dictPlayerConfig.allowFullScreen = false;
+							//dictPlayerConfig.parent = ["10yannick041019", "loacalhost", "youtube.com"];
 
 							if (dictServerSource.type === 'stream') {
 								dictPlayerConfig.channel = strServerSourceName;
