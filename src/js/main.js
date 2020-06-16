@@ -545,7 +545,7 @@ $('body').on('click', `${strFormSourcesClass} .btn-select-twitch`, {}, e => {
 	e.preventDefault();
 	if (GLOBAL_SITE !== 'config') return;
 
-	if (!flgTwitchChannelNamesSet) socket.emit('twitch get channelnames');
+	if (!flgTwitchChannelNamesSet) socket.emit('twitch get channelInfosBig');
 	flgTwitchChannelNamesSet = true;
 
 	var $this = $(e.currentTarget);
@@ -587,16 +587,16 @@ $('body').on('click', `${strChannelNamesClass} .btn-close`, {}, e => {
 $('body').on('click', `${strChannelNamesClass} .btn-reload`, {}, e => {
 	e.preventDefault();
 	if (GLOBAL_SITE !== 'config') return;
-	socket.emit('twitch get channelnames');
+	socket.emit('twitch get channelInfosBig');
 });
 
-socket.on('twitch get channelnames', arrayChannelNames => {
-	console.log('twitch get channelnames', arrayChannelNames.names);
+socket.on('twitch get channelInfosBig', arrayChannelNames => {
+	console.log('twitch get channelInfosBig', arrayChannelNames);
 	if (GLOBAL_SITE !== 'config') return;
 
 	let tmpHtml = '';
-	arrayChannelNames.names.forEach((channelName) => {
-		tmpHtml += `<a href="#" class="item" data-channelname="${channelName}" style="display: inline-block; margin: 10px;">${channelName}</a>`
+	arrayChannelNames.forEach((channelInfo) => {
+		tmpHtml += `<a href="#" class="item" data-channelname="${channelInfo.display_name}" style="display: flex; margin: 10px; align-items: center;"><img src="${channelInfo.profile_image_url}" style="width: 30px; height: 30px"></img>&nbsp;<span>${channelInfo.display_name}${channelInfo.flgLive ? ' (LIVE)':''}</span></a>`
 	});
 	$(`${strChannelNamesClass} .con-names`).html(tmpHtml);
 });

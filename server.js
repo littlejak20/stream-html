@@ -293,11 +293,11 @@ io.on('connection', (socket) => {
 		io.emit('config reload', dictLastConfig);
 	});
 
-	socket.on('twitch get channelnames', async () => {
-		console.log('twitch get channelnames');
-		const dictChannelNames = await getChannelNames();		
-		console.log(dictChannelNames.names);
-		io.emit('twitch get channelnames', dictChannelNames);
+	socket.on('twitch get channelInfosBig', async () => {
+		console.log('twitch get channelInfosBig');
+		const dictChannelInfosBig = await getChannelInfosBig();		
+		console.log(dictChannelInfosBig);
+		io.emit('twitch get channelInfosBig', dictChannelInfosBig);
 	});
 });
 }
@@ -337,7 +337,7 @@ const getFollowedStreamChannels = async (beforeData, paginationCursor) => {
 
 const getChannelNames = async () => {
 	const arrayStreamItems = await getFollowedStreamChannels();
-	let tmp = { names: [], namesStack: [[]], ids: [], idsStack: [[]],  queryString: '', queryStringStack: [''] };
+	let tmp = { names: [], namesStack: [[]], ids: [], idsStack: [[]],  loginIdQs: '', loginIdQsStack: [''], idQs: '', idQsStack: [''] };
 	if (arrayStreamItems === undefined) return tmp;
 	if (arrayStreamItems.length <= 0) return tmp;
 
@@ -357,7 +357,8 @@ const getChannelNames = async () => {
 
 			tmp.namesStack[stackCount] = [];
 			tmp.idsStack[stackCount] = [];
-			tmp.queryStringStack[stackCount] = '';
+			tmp.loginIdQsStack[stackCount] = '';
+			tmp.idQsStack[stackCount] = '';
 		}
 
 		tmp.names.push(channelName);
@@ -366,8 +367,11 @@ const getChannelNames = async () => {
 		tmp.ids.push(channelId);
 		tmp.idsStack[stackCount].push(channelId);
 
-		tmp.queryString += `&user_id=${channelId}`;
-		tmp.queryStringStack[stackCount] += `&user_id=${channelId}`;
+		tmp.loginIdQs += `&user_id=${channelId}`;
+		tmp.loginIdQsStack[stackCount] += `&user_id=${channelId}`;
+
+		tmp.idQs += `&id=${channelId}`;
+		tmp.idQsStack[stackCount] += `&id=${channelId}`;
 
 		stackIndex++;
 	});
@@ -375,14 +379,29 @@ const getChannelNames = async () => {
 	return tmp;
 }
 
-const getChannelLiveSate = async (queryStringStack) => {
+const getChannelInfosBig = async () => {	
 	const header = await getTwitchRequestHeader();
 	if (!header) return [];
 
-	console.log('getChannelLiveSate');
+	const arrayChannelNames = await getChannelNames();
+	if (arrayChannelNames === undefined) return [];
 
-	var arrayStreamItems = [];
-	for (const queryString of queryStringStack) {
+	var arrayChannelInfo = [];
+	for (const queryString of arrayChannelNames.idQsStack) {
+		const responseData = await fetch(`https://api.twitch.tv/helix/users?${queryString.substr(1)}`, {
+			method: 'get',
+			headers: header,
+		}).then(res => res.json());
+
+		if (responseData !== undefined) {
+			if (responseData.data !== undefined) {
+				arrayChannelInfo = arrayChannelInfo.concat(responseData.data);
+			}
+		}
+	};
+
+	var arrayStreamLiveItems = [];
+	for (const queryString of arrayChannelNames.loginIdQsStack) {
 		const responseData = await fetch(`https://api.twitch.tv/helix/streams?first=100${queryString}`, {
 			method: 'get',
 			headers: header,
@@ -390,21 +409,29 @@ const getChannelLiveSate = async (queryStringStack) => {
 
 		if (responseData !== undefined) {
 			if (responseData.data !== undefined) {
-				arrayStreamItems = arrayStreamItems.concat(responseData.data);
+				arrayStreamLiveItems = arrayStreamLiveItems.concat(responseData.data);
 			}
 		}
 	};
 
-	return arrayStreamItems;
+	var arrayChannelInfoBig = [];
+	arrayChannelInfo.forEach((channelInfo, index) => {
+		const streamLive = arrayStreamLiveItems.find(o => o.user_name === channelInfo.display_name);
+		if (streamLive !== undefined) {
+			streamLive.flgLive = true;
+			arrayChannelInfoBig.push(Object.assign(channelInfo, streamLive));
+		} else {
+			arrayChannelInfoBig.push(channelInfo);
+		}
+	});
+
+	return arrayChannelInfoBig;
 }
 
-/*
-(async () => {
-	const dictChannelNames = await getChannelNames();
-	const arrayLiveChannels = await getChannelLiveSate(dictChannelNames.queryStringStack)	
-	console.log(arrayLiveChannels);
-})();
-*/
+
+/*(async () => {
+	getChannelInfosBig();
+})();*/
 
 
 
