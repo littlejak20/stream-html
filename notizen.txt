@@ -153,3 +153,35 @@ gulp sass-watch
 	--> Teile im Klassen bündeln (vielleicht)
 
 - Allgeime aufräumen
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+14.11.2020:
+- Schauen, welche Notizen angehackt werden können
+- (Idee) Streams entferenen, wenn sie nicht sichtbar sind, um Internet Trafic zu sparen
+	--> Oder herrausfinden, ob die Twitch/YouTube Apis es anbieten auf "only audio" zu stellen
+- (Idee) Videoqualität forzieren
+	=== Für jeden Player die passende Twicth/Youtube Qulitätsstuffe, anhand der Breite/Höhe des jeweiligen iframe containers, setzten
+	--> Berechnug der passenden Qulität errechnen
+	--> Twitch/YouTube Qulitätsstuffen auslesen und passende wählen
+		--> Wenn Stream/Video die errechnete Qulitätsstuffe nicht hat die nächst kleienre wählen
+- (Idee) Screencapture einbinden
+	--> Ist es möglich mehr als ein Screencaptue einzubinden
+	--> Nur möglich, über lokalen browser client
+	--> Im Kategorie Dropdown "Screencapture" aufnehmen
+	--> Wenn Kategorie "Screencapture" gewählt ist, im lokalen browser client ein Button zum anklicken in das Player div packen
+	--> Checken, ob der Screencapture auch nach switch noch zu sehen ist
+	--> Was tun, wenn Profil gewechselt wird und sich dadurch das Screencapture verschiebt
+- Neuen Look für Configpage
+	--> Noch keine Anhung wie, muss mir hier noch gedanken machen
+- (Idee) Neue/Veränderte Screenvarianten (top, bottom, .....)
+	--> Dynamisch
+		--> je nachdem, wie viele Streams hinzugefügt sind, die player passend plazieren und die größe Anpassen
+		--> also dynamisch den Platz optimal ausnutzen
+	--> Bei allen bestehenden Varianten
+		--> das grid halb oder ganz auflösen
+		--> und durch flex ersetzen, um die player mittiger setzen zu können
+		--> also in Zwilen oder Splaten aufteilen (jenachdem)
+		--> dabei darauf achten, das die Player Breite und Höhe immer fest gesetzt sind
+		--> FLEX FLEX
