@@ -62,36 +62,36 @@
 			"v3 v3 v4 v4 v5 v5"
 			"v1 v1 v1 v2 v2 v2";
 	}
-	/*&.bottom {
+	&.bottom {
 		grid-template-columns: 33.3333333333% 33.3333333333% 33.3333333333%;
 		grid-template-rows: 66.6666666666% 33.3333333333%;
 		grid-template-areas:
 			"v1 v1 v1"
 			"v2 v3 v4";
-	}*/
-	/*&.bottom3-top2 {
+	}
+	&.bottom3-top2 {
 		grid-template-columns: 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666% 16.6666666666%;
 		grid-template-rows: 66.6666666666% 33.3333333333%;
 		grid-template-areas:
 			"v1 v1 v1 v2 v2 v2"
 			"v3 v3 v4 v4 v5 v5";
-	}*/
-	/*&.left {
+	}
+	&.left {
 		grid-template-columns: 33.3333333333% 66.6666666666%;
 		grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
 		grid-template-areas:
 			"v2 v1"
 			"v3 v1"
 			"v4 v1";
-	}*/
-	/*&.right {
+	}
+	&.right {
 		grid-template-columns: 66.6666666666% 33.3333333333%;
 		grid-template-rows: 33.3333333333% 33.3333333333% 33.3333333333%;
 		grid-template-areas:
 			"v1 v2"
 			"v1 v3"
 			"v1 v4";
-	}*/
+	}
 	&.top4 {
 		grid-template-columns: 25% 25% 25% 25%;
 		grid-template-rows: 25% 75%;
@@ -130,6 +130,42 @@
 			"v1 v2 v3"
 			"v4 v5 v6"
 			"v7 v8 v9"
+	}
+	&.top-left {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 25% 25% 25%;
+		grid-template-areas:
+			"v2 v3 v4 v5"
+			"v6 v1 v1 v1"
+			"v7 v1 v1 v1"
+			"v8 v1 v1 v1";
+	}
+	&.top-right {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 25% 25% 25%;
+		grid-template-areas:
+			"v2 v3 v4 v5"
+			"v1 v1 v1 v6"
+			"v1 v1 v1 v7"
+			"v1 v1 v1 v8";
+	}
+	&.top-right {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 25% 25% 25%;
+		grid-template-areas:
+			"v2 v3 v4 v5"
+			"v1 v1 v1 v6"
+			"v1 v1 v1 v7"
+			"v1 v1 v1 v8";
+	}
+	&.experimental {
+		grid-template-columns: 25% 25% 25% 25%;
+		grid-template-rows: 25% 25% 25% 25%;
+		grid-template-areas:
+			"v2 v3 v4 v5"
+			"v13 v1 v1 v6"
+			"v12 v1 v1 v7"
+			"v11 v10 v9 v8";
 	}
 
 	&.full, &.over {

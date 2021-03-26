@@ -22,7 +22,8 @@ const strContainerClass = '.container';
 const strProfileNameShowPlaceClass = '#profileNameShowPlace';
 
 const strFormProfileClass = 'form#formProfile';
-const strFormSourcesClass = '#formSources form';
+const strFormSourcesContainerClass = '#formSources';
+const strFormSourcesClass = strFormSourcesContainerClass+' form';
 const strFormAddButtonClass = '#profileAdd';
 const strFormLoadButtonClass = '#profileLoad';
 const strFormSaveButtonClass = '#profileSave';
@@ -160,7 +161,6 @@ let setTwitchVolume = (sourceIndex, dictSource) => {
 			console.log('twitch volume', players[sourceIndex], waitIndex);
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
-
 		if (!funcCheck(players[sourceIndex].setVolume)) return false;
 
 		if (dictSource.volume > 0.0) {
@@ -206,7 +206,7 @@ let addTwitchEventListener = (sourceIndex, dictSource) => {
 	twitchEvents.forEach((event, index) => {
 		try {
 			players[sourceIndex].addEventListener(event.name, () => {
-				console.log('TWITCH EVENT', event.name, event.volumeChange, event.qualityChange, sourceIndex);
+				console.log('TWITCH EVENT', sourceIndex, event);
 				if (event.volumeChange) setTwitchVolume(sourceIndex, dictSource);
 				if (event.qualityChange) setTwitchQuality(sourceIndex, dictSource);
 			});
@@ -261,9 +261,18 @@ socket.on('config reload', (dictServerConfig) => {
 	if (dictServerConfig.modeName != dictClientConfig.modeName) {
 		console.log('setModeName -->', dictServerConfig.modeName);
 		var objContainer = $(strContainerClass+'.main');
-		objContainer.removeAttr('class');
-		objContainer.removeAttr('style');
-		objContainer.addClass(dictServerConfig.modeName+' main');
+		if (objContainer.length > 0) {
+			objContainer.removeAttr('class');
+			objContainer.removeAttr('style');
+			objContainer.addClass(dictServerConfig.modeName+' main');
+		}
+
+		var objForm = $(strFormSourcesContainerClass);
+		if (objForm.length > 0) {
+			objForm.removeAttr('class');
+			objForm.removeAttr('style');
+			objForm.addClass(dictServerConfig.modeName+' form');
+		}
 
 		console.log(dictServerConfig.modeName.split(' ')[1], $(strOverlayClass+' .mode a.'+dictServerConfig.modeName));
 		$(strOverlayClass+' .mode a').removeClass('is-active');
@@ -486,10 +495,10 @@ $(strOverlayClass+' .mode a').on('click', e => {
 
 var videoId0 = -1;
 var videoId1 = -1;
-$(strOverlayClass+' .js-switcher a').on('click', e => {
+$(`${strFormSourcesClass} a.btn-switch`).on('click', e => {
 	e.preventDefault();
 	var $this = $(e.currentTarget);
-	var videoId = $this.data('id');
+	var videoId = $this.parent().data('id');
 
 	if (videoId0 <= -1) {
 		videoId0 = videoId;
@@ -528,10 +537,10 @@ socket.on('video switcher', arrVideoIds => {
 	socket.emit('video switcher finish');
 });
 
-$(strOverlayClass+' .js-reloader a').on('click', e => {
+$(`${strFormSourcesClass} a.btn-reload`).on('click', e => {
 	e.preventDefault();
 	var $this = $(e.currentTarget);
-	var videoId = $this.data('id');
+	var videoId = $this.parent().data('id');
 	socket.emit('video reloader', videoId);
 });
 socket.on('video reloader', intVideoId => {
@@ -594,9 +603,13 @@ socket.on('twitch get channelInfosBig', arrayChannelNames => {
 	console.log('twitch get channelInfosBig', arrayChannelNames);
 	if (GLOBAL_SITE !== 'config') return;
 
+	var flgFilterLive = ($(`${strChannelNamesClass} .filter-live:checked`).length > 0);
+	console.log('twitch get channelInfosBig flgFilterLive', flgFilterLive);
+
 	let tmpHtml = '';
 	arrayChannelNames.forEach((channelInfo) => {
-		tmpHtml += `<a href="#" class="item" data-channelname="${channelInfo.display_name}" style="display: flex; margin: 10px; align-items: center;"><img src="${channelInfo.profile_image_url}" style="width: 30px; height: 30px"></img>&nbsp;<span>${channelInfo.display_name}${channelInfo.flgLive ? ' (LIVE)':''}</span></a>`
+		if (flgFilterLive && !channelInfo.flgLive) return;
+		tmpHtml += `<a href="#" class="item" data-channelname="${channelInfo.login}" style="display: flex; margin: 10px; align-items: center;"><img src="${channelInfo.profile_image_url}" style="width: 30px; height: 30px"></img>&nbsp;<span>${channelInfo.display_name}${channelInfo.flgLive ? ' (LIVE)':''}</span></a>`
 	});
 	$(`${strChannelNamesClass} .con-names`).html(tmpHtml);
 });

@@ -19,24 +19,34 @@
 		margin: 0 0 5px;
 	}
 
-	.form form {
-		display: flex;
-		+ form {
-			margin-top: 10px;
+	a.btn-input {
+		&, &:link {
+			&, &:hover, &:focus, &:active, &:visited {
+				color: #fff;
+				text-decoration: none;
+				text-transform: uppercase;
+			}
 		}
-		> * + * {
-			margin-left: 10px;
-		}
-		input[type="text"] {
-			flex-grow: 2;
-		}
-		input[type="range"] {
-			flex-grow: 1;
-		}
-		input[type="submit"] {}
 	}
 
-	.mode, .switcher {
+	.form form {
+		display: block;
+		width: 100%;
+		padding: 2%;
+		border: 1px solid #fff;
+		> * {
+			display: block;
+			width: 100%;
+			+ * {
+				margin-top: 10px;
+			}
+		}
+		&:before {
+			display: none;
+		}
+	}
+
+	.mode {
 		display: flex;
 		flex-wrap: wrap;
 
@@ -68,19 +78,8 @@
 				opacity: 0;
 				transition: opacity 0.3s;
 			}
-		}
-	}
 
-	.switcher {
-		.container {
-			.over a[data-id="2"]:after {
-				z-index: 60;
-			}
-		}
-	}
 
-	.mode, .switcher {
-		.container {
 			&:hover:before, a:hover:after {
 				background-color: rgba(255,255,255,.5);
 				opacity: 1;
@@ -89,17 +88,6 @@
 			&.is-active:before, a.is-active:after {
 				background-color: rgba(0,0,0,.7);
 				opacity: 1;
-			}
-		}
-	}
-
-	.switcher {
-		.container {
-			width: (75px * $playerRowCount);
-			height: (32px * $playerRowCount);
-			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
-				width: (125px * $playerColumnCount);
-				height: (57px * $playerColumnCount);
 			}
 		}
 	}
