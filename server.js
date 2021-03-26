@@ -4,7 +4,7 @@ const consts = require('./server/const.js');
 
 var serverPort = 3000;
 var userCount = 0;
-var startConfigName = 'Disable';
+var startConfigName = 'Twitch Stream';
 var dictLastConfig = {
 	name: 'setByServer',
 	modeName: 'container top',
@@ -133,7 +133,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 // Database - START
 	const MongoClient = require('mongodb').MongoClient;
 	const assert = require('assert');
-	const url = 'mongodb://localhost:27017';
+	const url = 'mongodb://127.0.0.1:27017';
 	const dbName = 'stream-html';
 
 	const insertDocuments = (collectionName, docs, options, callbackFunc) => {
@@ -327,12 +327,17 @@ const getFollowedStreamChannels = async (beforeData, paginationCursor) => {
 		headers: header,
 	}).then(res => res.json());
 
-	if (responseData === undefined) return arrayStreamItems;
-	if (responseData.data === undefined || responseData.pagination === undefined) return arrayStreamItems;
-	if (responseData.pagination.cursor === undefined) return arrayStreamItems;
-
-	arrayStreamItems = arrayStreamItems.concat(responseData.data);
-	return await getFollowedStreamChannels(arrayStreamItems, responseData.pagination.cursor);
+	if (responseData !== undefined) {
+		if (responseData.data !== undefined) {
+			arrayStreamItems = arrayStreamItems.concat(responseData.data);
+		}
+		if (responseData.pagination !== undefined) {
+			if (responseData.pagination.cursor !== undefined) {
+				return await getFollowedStreamChannels(arrayStreamItems, responseData.pagination.cursor);
+			}
+		}
+	}
+	return arrayStreamItems;
 }
 
 const getChannelNames = async () => {
@@ -402,7 +407,7 @@ const getChannelInfosBig = async () => {
 
 	var arrayStreamLiveItems = [];
 	for (const queryString of arrayChannelNames.loginIdQsStack) {
-		const responseData = await fetch(`https://api.twitch.tv/helix/streams?first=100${queryString}`, {
+		const responseData = await fetch(`https://api.twitch.tv/helix/streams?first=${consts.twitch.maxItemCount}${queryString}`, {
 			method: 'get',
 			headers: header,
 		}).then(res => res.json());
