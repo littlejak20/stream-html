@@ -1,7 +1,22 @@
 const consts = require('./server/const.js');
 
-// profile and config names are the same
+const path = require('path');
+let dictPath = {
+	dir: __dirname,
+	dist: path.join(__dirname, 'dist'),
+	file: path.join(__dirname, 'files'),
+	src: path.join(__dirname, 'src'),
+	html: path.join(__dirname, 'src', 'html'),
+	js: path.join(__dirname, 'src', 'js'),
+	sass: path.join(__dirname, 'src', 'sass'),
+	template: path.join(__dirname, 'src', 'template'),
+}
+let dictTemplate = {
+	view: path.join(dictPath.template, 'view.html'),
+	config: path.join(dictPath.template, 'config.html'),
+};
 
+// profile and config names are the same
 var serverPort = 3000;
 var userCount = 0;
 var startConfigName = 'Twitch Stream';
@@ -78,7 +93,43 @@ var dictLastConfig = {
 	]
 };
 var arrayProfileNames = [];
+
+var dictSqrlData = {
+	playerCount: 10,
+	viewModes: [
+		"full",
+		"over",
+		"normal",
+		//"top",
+		"top3-bottom2",
+		//"top4",
+		"top4-bottom-2",
+		//"bottom",
+		//"bottom3-top2",
+		//"left",
+		//"right",
+		//"top2x4-bottom-1",
+		"top2x4-bottom-2",
+		"grid9",
+		"top-left",
+		"top-right",
+		//"experimental",
+	]
+}
 /*var blankBlankProfile = {"_id":"name":"blank","modeName":"container top2x4-bottom-2","sources":[{"name":"","volume":{"$numberInt":0.0}},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0}]};*/
+
+const Sqrl = require('squirrelly');
+Sqrl.helpers.define("player", content => {
+  var res = "";
+  var count = content.params[0];
+  // the first param is the object we want to loop over
+  for (var i = 0; i < count; i++) {
+    res += content.exec(i+1, i);
+  }
+  return res;
+});
+Sqrl.helpers.define("ignore", () => {return ''});
+Sqrl.helpers.define("comment", () => {return ''});
 
 const fetch = require('node-fetch');
 //const fetchSync  = require('fetch-sync');
@@ -97,16 +148,27 @@ var server = http.createServer(app);
 
 var io = require('socket.io')(server);
 
-var distPath = __dirname + '/dist';
-var filePath = __dirname + '/files';
+app.use(express.static(dictPath.dist));
+app.use(express.static(dictPath.file));
 
-app.use(express.static(distPath));
-app.use(express.static(filePath));
-app.get('/', (req, res) => { res.sendFile(distPath + '/view.html'); });
-app.get('/v', (req, res) => { res.sendFile(distPath + '/view.html'); });
-app.get('/view', (req, res) => { res.sendFile(distPath + '/view.html'); });
-app.get('/c', (req, res) => { res.sendFile(distPath + '/config.html'); });
-app.get('/config', (req, res) => { res.sendFile(distPath + '/config.html'); });
+function resSqrl(path, data, req, res) {
+	Sqrl.renderFile(path, data).then(renderHtml => {
+		res.status(200);
+		res.write(renderHtml);
+		res.end();
+	});
+}
+
+function resView(req, res) { resSqrl(dictTemplate.view, dictSqrlData, req, res) };
+app.get('/', resView);
+app.get('/v', resView);
+app.get('/view', resView);
+app.get('/view.html', resView);
+
+function resConfig(req, res) { resSqrl(dictTemplate.config, dictSqrlData, req, res) };
+app.get('/c', resConfig);
+app.get('/config', resConfig);
+app.get('/config.html', resConfig);
 
 server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'!'; });
 

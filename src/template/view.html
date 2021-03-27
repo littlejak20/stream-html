@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;	charset=UTF-8">
+	<meta content="width=device-width,initial-scale=1.0,user-scalable=0" name="viewport">
+	<title>View - Stream/Video</title>
+	<link rel="stylesheet" type="text/css" href="/css/main.min.css">
+</head>
+<body>
+	<div class="main container normal">
+		{{@player(it.playerCount) => pId}}<div data-id="{{pId}}" id="player{{pId}}"></div>{{/player}}
+	</div>
+
+	<div class="fullscreenall" style="position: fixed; top: 0; right: 0; height: 44px; width: 44px; background-color: transparent; display: block; cursor: pointer;"></div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://player.twitch.tv/js/embed/v1.js"></script>
+	<script src="https://www.youtube.com/iframe_api"></script>
+	<script>var GLOBAL_SITE = 'view';</script>
+	<script src="/js/main.min.js"></script>
+</body>
+</html>
