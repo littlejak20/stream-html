@@ -16,6 +16,7 @@
  },
  "main": "server.js",
  "scripts": {
+  "start": "node server.js",
   "dev": "gulp dev",
   "build": "gulp",
   "minify-css-names": "gulp minify-css-names"

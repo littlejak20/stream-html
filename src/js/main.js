@@ -223,14 +223,14 @@ let removeTwitchEventListener = (sourceIndex) => {
 }
 
 
-socket.on('config reload', (dictServerConfig) => {
+socket.on('config reload', dictServerConfig => {
 	console.log('config reload', dictServerConfig);
 
 	// for site config - source form
 	dictServerConfig.sources.forEach((dictServerSource, indexServerSource) => {
 		console.log('setFormSource -->', indexServerSource, dictServerSource);
 		if (!dictCheck(dictServerSource)) return false;
-
+		
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
 			arraySourceItems.forEach((fieldname, index) => {
@@ -242,6 +242,15 @@ socket.on('config reload', (dictServerConfig) => {
 					inputElement.val(dictServerSource[fieldname]);
 				}
 			});
+
+			if (dictServerSource.platform === 'twitch') {
+				formContainer.css({
+					'background-image': `url('https://static-cdn.jtvnw.net/previews-ttv/live_user_${dictServerSource['name']}-1920x1080.jpg')`,
+					'background-size': 'cover',
+				});
+			} else {
+				formContainer.attr('css', '');
+			}
 		}
 	});
 
@@ -599,17 +608,18 @@ $('body').on('click', `${strChannelNamesClass} .btn-reload`, {}, e => {
 	socket.emit('twitch get channelInfosBig');
 });
 
-socket.on('twitch get channelInfosBig', arrayChannelNames => {
-	console.log('twitch get channelInfosBig', arrayChannelNames);
+socket.on('twitch get channelInfosBig', arrayChannelInfosBig => {
+	console.log('twitch get channelInfosBig', arrayChannelInfosBig);
 	if (GLOBAL_SITE !== 'config') return;
 
 	var flgFilterLive = ($(`${strChannelNamesClass} .filter-live:checked`).length > 0);
 	console.log('twitch get channelInfosBig flgFilterLive', flgFilterLive);
 
 	let tmpHtml = '';
-	arrayChannelNames.forEach((channelInfo) => {
-		if (flgFilterLive && !channelInfo.flgLive) return;
-		tmpHtml += `<a href="#" class="item" data-channelname="${channelInfo.login}" style="display: flex; margin: 10px; align-items: center;"><img src="${channelInfo.profile_image_url}" style="width: 30px; height: 30px"></img>&nbsp;<span>${channelInfo.display_name}${channelInfo.flgLive ? ' (LIVE)':''}</span></a>`
+	arrayChannelInfosBig.forEach((channel) => {
+		console.log(channel.channelInfo.login, channel);
+		if (flgFilterLive && !channel.extra.flgLive) return;
+		tmpHtml += `<a href="#" class="item" data-channelname="${channel.channelInfo.login}" style="display: flex; margin: 10px; align-items: center;"><img src="${channel.channelInfo.profile_image_url}" style="width: 30px; height: 30px"></img>&nbsp;<span>${channel.channelInfo.display_name}${channel.extra.flgLive ? ' (LIVE)':''} (${channel.streamLive.game_name})</span></a>`
 	});
 	$(`${strChannelNamesClass} .con-names`).html(tmpHtml);
 });

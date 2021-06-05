@@ -195,11 +195,17 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 // Database - START
 	const MongoClient = require('mongodb').MongoClient;
 	const assert = require('assert');
-	const url = 'mongodb://127.0.0.1:27017';
+	//const url = 'mongodb://127.0.0.1:27017';
+	const uri = 'mongodb://littlejak22:mongodb!%3F4865%5E@192.168.178.202:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false';
+	const dbClient = new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true})
 	const dbName = 'stream-html';
 
+	const getMongoClient = () => {
+		return (new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true}));
+	}
+
 	const insertDocuments = (collectionName, docs, options, callbackFunc) => {
-		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		let client = getMongoClient();
 		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
@@ -212,7 +218,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 	}
 
 	const findDocuments = (collectionName, query, options, callbackFunc) => {
-		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		let client = getMongoClient();
 		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
@@ -225,7 +231,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 	}
 
 	const updateDocuments = (collectionName, filter, update, options, callbackFunc) => {
-		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		let client = getMongoClient();
 		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
@@ -485,10 +491,24 @@ const getChannelInfosBig = async () => {
 	arrayChannelInfo.forEach((channelInfo, index) => {
 		const streamLive = arrayStreamLiveItems.find(o => o.user_name === channelInfo.display_name);
 		if (streamLive !== undefined) {
-			streamLive.flgLive = true;
-			arrayChannelInfoBig.push(Object.assign(channelInfo, streamLive));
+			//streamLive.flgLive = true;
+			//arrayChannelInfoBig.push(Object.assign(channelInfo, streamLive));
+			arrayChannelInfoBig.push({
+				channelInfo: channelInfo,
+				streamLive: streamLive,
+				extra: {
+					flgLive: true,
+				},
+			});
 		} else {
-			arrayChannelInfoBig.push(channelInfo);
+			//arrayChannelInfoBig.push(channelInfo);
+			arrayChannelInfoBig.push({
+				channelInfo: channelInfo,
+				streamLive: {},
+				extra: {
+					flgLive: false,
+				},
+			});
 		}
 	});
 
