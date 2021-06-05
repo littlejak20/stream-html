@@ -1,8 +1,25 @@
-// profile and config names are the same
+const consts = require('./server/const.js');
 
+const path = require('path');
+let dictPath = {
+	dir: __dirname,
+	dist: path.join(__dirname, 'dist'),
+	file: path.join(__dirname, 'files'),
+	src: path.join(__dirname, 'src'),
+	html: path.join(__dirname, 'src', 'html'),
+	js: path.join(__dirname, 'src', 'js'),
+	sass: path.join(__dirname, 'src', 'sass'),
+	template: path.join(__dirname, 'src', 'template'),
+}
+let dictTemplate = {
+	view: path.join(dictPath.template, 'view.html'),
+	config: path.join(dictPath.template, 'config.html'),
+};
+
+// profile and config names are the same
 var serverPort = 3000;
 var userCount = 0;
-var startConfigName = 'Disable';
+var startConfigName = 'Twitch Stream';
 var dictLastConfig = {
 	name: 'setByServer',
 	modeName: 'container top',
@@ -76,12 +93,51 @@ var dictLastConfig = {
 	]
 };
 var arrayProfileNames = [];
+
+var dictSqrlData = {
+	playerCount: 10,
+	viewModes: [
+		"full",
+		"over",
+		"normal",
+		//"top",
+		"top3-bottom2",
+		//"top4",
+		"top4-bottom-2",
+		//"bottom",
+		//"bottom3-top2",
+		//"left",
+		//"right",
+		//"top2x4-bottom-1",
+		"top2x4-bottom-2",
+		"grid9",
+		"top-left",
+		"top-right",
+		//"experimental",
+	]
+}
 /*var blankBlankProfile = {"_id":"name":"blank","modeName":"container top2x4-bottom-2","sources":[{"name":"","volume":{"$numberInt":0.0}},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0},{"name":"","platform":"other","type":"video","muted":false,"volume":0.0}]};*/
+
+const Sqrl = require('squirrelly');
+Sqrl.helpers.define("player", content => {
+  var res = "";
+  var count = content.params[0];
+  // the first param is the object we want to loop over
+  for (var i = 0; i < count; i++) {
+    res += content.exec(i+1, i);
+  }
+  return res;
+});
+Sqrl.helpers.define("ignore", () => {return ''});
+Sqrl.helpers.define("comment", () => {return ''});
+
+const fetch = require('node-fetch');
+//const fetchSync  = require('fetch-sync');
 
 var express = require('express');
 var fs = require('fs')
 var http = require('http');
-//var https = require('https');
+var https = require('https');
 var app = express();
 
 var server = http.createServer(app);
@@ -92,16 +148,27 @@ var server = http.createServer(app);
 
 var io = require('socket.io')(server);
 
-var distPath = __dirname + '/dist';
-var filePath = __dirname + '/files';
+app.use(express.static(dictPath.dist));
+app.use(express.static(dictPath.file));
 
-app.use(express.static(distPath));
-app.use(express.static(filePath));
-app.get('/', (req, res) => { res.sendFile(distPath + '/view.html'); });
-app.get('/v', (req, res) => { res.sendFile(distPath + '/view.html'); });
-app.get('/view', (req, res) => { res.sendFile(distPath + '/view.html'); });
-app.get('/c', (req, res) => { res.sendFile(distPath + '/config.html'); });
-app.get('/config', (req, res) => { res.sendFile(distPath + '/config.html'); });
+function resSqrl(path, data, req, res) {
+	Sqrl.renderFile(path, data).then(renderHtml => {
+		res.status(200);
+		res.write(renderHtml);
+		res.end();
+	});
+}
+
+function resView(req, res) { resSqrl(dictTemplate.view, dictSqrlData, req, res) };
+app.get('/', resView);
+app.get('/v', resView);
+app.get('/view', resView);
+app.get('/view.html', resView);
+
+function resConfig(req, res) { resSqrl(dictTemplate.config, dictSqrlData, req, res) };
+app.get('/c', resConfig);
+app.get('/config', resConfig);
+app.get('/config.html', resConfig);
 
 server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'!'; });
 
@@ -128,11 +195,17 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 // Database - START
 	const MongoClient = require('mongodb').MongoClient;
 	const assert = require('assert');
-	const url = 'mongodb://localhost:27017';
+	//const url = 'mongodb://127.0.0.1:27017';
+	const uri = 'mongodb://littlejak22:mongodb!%3F4865%5E@192.168.178.202:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false';
+	const dbClient = new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true})
 	const dbName = 'stream-html';
 
+	const getMongoClient = () => {
+		return (new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true}));
+	}
+
 	const insertDocuments = (collectionName, docs, options, callbackFunc) => {
-		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		let client = getMongoClient();
 		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
@@ -145,7 +218,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 	}
 
 	const findDocuments = (collectionName, query, options, callbackFunc) => {
-		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		let client = getMongoClient();
 		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
@@ -158,7 +231,7 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 	}
 
 	const updateDocuments = (collectionName, filter, update, options, callbackFunc) => {
-		var client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+		let client = getMongoClient();
 		client.connect((err) => {
 			const db = client.db(dbName);
 			const collection = db.collection(collectionName);
@@ -216,7 +289,7 @@ findDocuments('configs', { name: startConfigName }, {}, (data, error) => {
 	}
 });
 
-const startIoOnConnection = () => {
+let startIoOnConnection = () => {
 io.on('connection', (socket) => {
 	userCount++;
 	console.log('connected', socket.id, userCount);
@@ -287,5 +360,249 @@ io.on('connection', (socket) => {
 	socket.on('video reloader finish', () => {
 		io.emit('config reload', dictLastConfig);
 	});
+
+	socket.on('twitch get channelInfosBig', async () => {
+		console.log('twitch get channelInfosBig');
+		const dictChannelInfosBig = await getChannelInfosBig();		
+		console.log(dictChannelInfosBig);
+		io.emit('twitch get channelInfosBig', dictChannelInfosBig);
+	});
 });
 }
+
+const getTwitchRequestHeader = async () => {
+	if (consts.twitch.authRight) return consts.twitch.requestHeader;
+
+	const twicthAuth = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${consts.twitch.clientId}&client_secret=${consts.twitch.clientSecret}&grant_type=client_credentials`, {
+		method: 'post',
+	}).then(res => res.json());
+
+	consts.twitch.requestHeader['Authorization'] = `Bearer ${twicthAuth['access_token']}`;
+	consts.twitch.authRight = true;
+	return consts.twitch.authRight ? consts.twitch.requestHeader : false;
+}
+
+const getFollowedStreamChannels = async (beforeData, paginationCursor) => {
+	const header = await getTwitchRequestHeader();
+	if (!header) return [];
+
+	console.log('getFollowedStreamChannels');
+	let arrayStreamItems = [];
+	if (beforeData !== undefined) arrayStreamItems = beforeData;
+
+	const responseData = await fetch(`https://api.twitch.tv/helix/users/follows?first=${consts.twitch.maxItemCount}&from_id=${consts.twitch.useerId}`+(paginationCursor !== undefined ? `&after=${paginationCursor}` : ``), {
+		method: 'get',
+		headers: header,
+	}).then(res => res.json());
+
+	if (responseData !== undefined) {
+		if (responseData.data !== undefined) {
+			arrayStreamItems = arrayStreamItems.concat(responseData.data);
+		}
+		if (responseData.pagination !== undefined) {
+			if (responseData.pagination.cursor !== undefined) {
+				return await getFollowedStreamChannels(arrayStreamItems, responseData.pagination.cursor);
+			}
+		}
+	}
+	return arrayStreamItems;
+}
+
+const getChannelNames = async () => {
+	const arrayStreamItems = await getFollowedStreamChannels();
+	let tmp = { names: [], namesStack: [[]], ids: [], idsStack: [[]],  loginIdQs: '', loginIdQsStack: [''], idQs: '', idQsStack: [''] };
+	if (arrayStreamItems === undefined) return tmp;
+	if (arrayStreamItems.length <= 0) return tmp;
+
+	let stackIndex = 0;
+	let stackCount = 0;
+
+	arrayStreamItems.forEach((streamItem, index) => {
+		if (streamItem === undefined) return;
+		const channelName = streamItem['to_name'];
+		const channelId = streamItem['to_id'];
+		if (channelName === undefined || channelId === undefined) return;
+		if (channelName <= 0 || channelId <= 0) return;
+
+		if (stackIndex >= consts.twitch.maxItemCount) {
+			stackIndex = 0;
+			stackCount++;
+
+			tmp.namesStack[stackCount] = [];
+			tmp.idsStack[stackCount] = [];
+			tmp.loginIdQsStack[stackCount] = '';
+			tmp.idQsStack[stackCount] = '';
+		}
+
+		tmp.names.push(channelName);
+		tmp.namesStack[stackCount].push(channelName);
+
+		tmp.ids.push(channelId);
+		tmp.idsStack[stackCount].push(channelId);
+
+		tmp.loginIdQs += `&user_id=${channelId}`;
+		tmp.loginIdQsStack[stackCount] += `&user_id=${channelId}`;
+
+		tmp.idQs += `&id=${channelId}`;
+		tmp.idQsStack[stackCount] += `&id=${channelId}`;
+
+		stackIndex++;
+	});
+
+	return tmp;
+}
+
+const getChannelInfosBig = async () => {	
+	const header = await getTwitchRequestHeader();
+	if (!header) return [];
+
+	const arrayChannelNames = await getChannelNames();
+	if (arrayChannelNames === undefined) return [];
+
+	var arrayChannelInfo = [];
+	for (const queryString of arrayChannelNames.idQsStack) {
+		const responseData = await fetch(`https://api.twitch.tv/helix/users?${queryString.substr(1)}`, {
+			method: 'get',
+			headers: header,
+		}).then(res => res.json());
+
+		if (responseData !== undefined) {
+			if (responseData.data !== undefined) {
+				arrayChannelInfo = arrayChannelInfo.concat(responseData.data);
+			}
+		}
+	};
+
+	var arrayStreamLiveItems = [];
+	for (const queryString of arrayChannelNames.loginIdQsStack) {
+		const responseData = await fetch(`https://api.twitch.tv/helix/streams?first=${consts.twitch.maxItemCount}${queryString}`, {
+			method: 'get',
+			headers: header,
+		}).then(res => res.json());
+
+		if (responseData !== undefined) {
+			if (responseData.data !== undefined) {
+				arrayStreamLiveItems = arrayStreamLiveItems.concat(responseData.data);
+			}
+		}
+	};
+
+	var arrayChannelInfoBig = [];
+	arrayChannelInfo.forEach((channelInfo, index) => {
+		const streamLive = arrayStreamLiveItems.find(o => o.user_name === channelInfo.display_name);
+		if (streamLive !== undefined) {
+			//streamLive.flgLive = true;
+			//arrayChannelInfoBig.push(Object.assign(channelInfo, streamLive));
+			arrayChannelInfoBig.push({
+				channelInfo: channelInfo,
+				streamLive: streamLive,
+				extra: {
+					flgLive: true,
+				},
+			});
+		} else {
+			//arrayChannelInfoBig.push(channelInfo);
+			arrayChannelInfoBig.push({
+				channelInfo: channelInfo,
+				streamLive: {},
+				extra: {
+					flgLive: false,
+				},
+			});
+		}
+	});
+
+	return arrayChannelInfoBig;
+}
+
+
+/*(async () => {
+	getChannelInfosBig();
+})();*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+// ####################################################
+// #################### START #########################
+// ############### TWITCH OAUATH ######################
+// ####################################################
+
+// https://www.npmjs.com/package/@callowcreation/basic-twitch-oauth#loading-and-configuration
+
+const TwitchOAuth = require("@callowcreation/basic-twitch-oauth");
+ 
+const state = 'a-Unique-ID-98765432-For_Security';
+ 
+const twitchOAuth = new TwitchOAuth({
+	client_id: consts.twitch.clientId,
+	client_secret: consts.twitch.clientSecret,
+	redirect_uri: 'http://127.0.0.1:3000/auth/twitch/callback',
+	scopes: [
+		//'user:edit:broadcast'
+	]
+}, state);
+ 
+//const express = require('express');
+//const app = express();
+ 
+app.get('/c', (req, res) => {
+	res.redirect(twitchOAuth.authorizeUrl);
+});
+ 
+// redirect_uri ends up here
+app.get('/auth/twitch/callback', (req, res) => {
+	const qs = require('querystring');
+	const req_data = qs.parse(req.url.split('?')[1]);
+	const code = req_data['code'];
+	const state = req_data['state'];
+ 
+	if (twitchOAuth.confirmState(state) === true) {
+		twitchOAuth.fetchToken(code).then(json => {
+			if (json.success === true) {
+				console.log('authenticated');
+				res.redirect('/c-start');
+			} else {
+				console.log('error');
+				res.redirect('/c-start');
+			}
+		}).catch(err => console.error(err));
+	} else {
+		console.log('error');
+		res.redirect('/c-start');
+	}
+});
+
+app.get('/user', (req, res) => {
+	const url = `https://api.twitch.tv/helix/users/extensions?user_id=101223367`;
+	twitchOAuth.getEndpoint(url)
+		.then(json => res.status(200).json(json));
+});
+app.get('/streams', (req, res) => {
+	const url = `https://api.twitch.tv/helix/streams`;
+	twitchOAuth.getEndpoint(url)
+		.then(json => res.status(200).json(json));
+});
+app.get('/follows', (req, res) => {
+	const url = `https://api.twitch.tv/helix/users/follows?from_id=127816533`;
+	twitchOAuth.getEndpoint(url)
+		.then(json => res.status(200).json(json));
+});
+
+// ####################################################
+// ##################### END ##########################
+// ############### TWITCH OAUATH ######################
+// ####################################################
+*/

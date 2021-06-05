@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;	charset=UTF-8">
+	<meta content="width=device-width,initial-scale=1.0,user-scalable=0" name="viewport">
+	<title>Config - Stream/Video</title>
+	<link rel="stylesheet" type="text/css" href="/css/main.min.css">
+</head>
+<body>
+	<div class="overlay">
+		<div id="profileNameShowPlace" style="color: #fff"></div>
+		
+		<br>
+
+		<form id="formProfile" style="margin-bottom: 15px;">
+			<input type="text" name="name" style="min-width: 300px;">
+			<a id="profileAdd" href="#" style="display: inline-block; padding: 15px; background-color: #fff; border: 1px solid orange; color: #000;">Hinzufügen / Überschreiben</a>
+			<br>
+			<select name="select" style="min-width: 300px;">
+			</select>			
+			<a id="profileLoad" href="#" style="display: inline-block; padding: 15px; background-color: #fff; border: 1px solid orange; color: #000;">Laden</a>
+			<a id="profileSave" href="#" style="display: inline-block; padding: 15px; background-color: #fff; border: 1px solid orange; color: #000;">Speichern</a>
+		</form>
+
+		<div class="mode">
+			{{@foreach(it.viewModes) => index, modeName}}
+			<a class="container {{modeName}}" href="#">
+				{{@player(it.playerCount) => pId}}
+				<span data-id="{{pId}}"></span>
+				{{/player}}
+			</a>
+			{{/foreach}}
+		</div>
+
+		<div class="form" id="formSources">
+			{{@player(it.playerCount) => pId}}
+			<form data-id="{{pId}}">
+				<select name="platform">
+					<option value="twitch">Twitch</option>
+					<option value="youtube">YouTube</option>
+					<option value="other" selected>Andere</option>
+				</select>
+				<select name="type">
+					<option value="stream">Stream</option>
+					<option value="video">Video</option>
+					<option value="playlist">Playlist</option>
+				</select>
+				<input type="text" name="name" value="">
+				<input type="range" name="volume" min="0" max="1" step="0.001" value="0">
+				<a href="" class="btn-input btn-select-twitch">Select</a>
+				<a href="" class="btn-input btn-switch">Switch</a>
+				<a href="" class="btn-input btn-reload">Reload</a>
+			</form>
+			{{/player}}
+		</div>
+
+	</div>
+
+	<div id="channelNamesTarget" style="display: none; background-color: orange; padding: 10px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 99; height: 90%">
+		<a href="#" class="btn-close" style="display: inline-block; padding: 10px 10px 20px;">x</a>
+		<label href="#" class="" style="display: inline-block; padding: 10px 10px 20px;"><input class="filter-live" type="checkbox" checked> LIVE</label>
+		<a href="#" class="btn-reload" style="display: inline-block; padding: 10px 10px 20px;">reload</a>
+		<div style="overflow-y: auto; height: 95%;">
+			<div class="con-names"></div>
+		</div>
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>var GLOBAL_SITE = 'config';</script>
+	<script src="/js/main.min.js"></script>
+</body>
+</html>

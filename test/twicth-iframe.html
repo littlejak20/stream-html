@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Twicth Iframe Test</title>
+</head>
+<body>
+
+	<div id="twicth-player"></div>
+	
+	<script src="https://player.twitch.tv/js/embed/v1.js"></script>	
+	<script src="https://www.youtube.com/iframe_api"></script>
+	<script type="text/javascript">
+		var player = new Twitch.Player('twicth-player', {
+			allowFullScreen: false,
+			parent: ['stream.y-robot.de'],
+			channel: 'GRONKH',
+		});
+		
+		var parent_domain=[];
+		try {
+			if (window.location.ancestorOrigins.length>0){
+				for(i=0;i<window.location.ancestorOrigins.length;i++){
+					parent_domain.push(new URL(window.location.ancestorOrigins[i]).hostname);
+				}
+			}
+			console.log(parent_domain);
+		} catch(e) {
+			console.error(e);
+		}
+	</script>
+</body>
+</html>

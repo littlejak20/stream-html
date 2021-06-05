@@ -12,18 +12,23 @@ const sassGlob = require('gulp-sass-glob');
 const postcss = require("gulp-postcss");
 const autoprefixer = require("autoprefixer");
 const cssnano = require("cssnano");
-const sassLint = require('gulp-sass-lint');
+//const sassLint = require('gulp-sass-lint');
 
 // HTML
 const htmlmin = require('gulp-htmlmin');
 
 // JavaScript/TypeScript
-const browserify = require('gulp-browserify');
+const browserify = require('browserify');
 const babel = require('gulp-babel');
 const jshint = require('gulp-jshint');
 const uglify = require('gulp-uglify');
 const minify = require('gulp-minify');
 const concat = require('gulp-concat');
+
+// JavaScript / TypeScript (new)
+const terser = require('gulp-terser-js');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
 
 // Define Important Varaibles
 const src = './src';
@@ -54,7 +59,7 @@ const css = () => {
         // Init Plumber
         .pipe(plumber())
         // Lint SASS
-        .pipe(sassLint({
+        /*.pipe(sassLint({
             options: {
                 formatter: 'stylish',
             },
@@ -64,9 +69,9 @@ const css = () => {
                 'no-mergeable-selectors': 1,
                 'indentation': 0
             }
-        }))
+        }))*/
         // Format SASS
-        .pipe(sassLint.format())
+        //.pipe(sassLint.format())
         // Start Source Map
         .pipe(sourcemaps.init())
         // Compile SASS -> CSS
@@ -106,8 +111,23 @@ const html = () => {
         .pipe(gulp.dest(`${dest}`));
 };
 
-// Compile .js to minify .js
 const script = () => {
+    return browserify(`${src}/js/main.js`, { debug: true })
+        .transform('babelify', {
+            presets: ['babel-preset-env'],
+            plugins: ['babel-plugin-transform-runtime']
+        }).plugin('tinyify')
+        .bundle()
+        .pipe(source(`main.min.js`))
+        .pipe(buffer())
+        .pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(terser())
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(`${dest}/js`));
+};
+
+// Compile .js to minify .js
+const scriptOld = () => {
     // Find JS
     return gulp
         .src(`${src}/js/**/*.js`)
@@ -178,6 +198,9 @@ const script = () => {
         // Update Browser
         //.pipe(browserSync.stream());
 };
+
+
+
 
 const minifyClassNames = require('./tools/minifyClassNames.js');
 gulp.task('minify-css-names', (done) => {

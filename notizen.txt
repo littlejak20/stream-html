@@ -38,9 +38,9 @@ X - Datenbank einbauen
 X - Aktuelle Config/Ansicht in ein Profil (mit Namentextfield oder Dropdownliste) in der Datenbank speichern können
 X - Profil aus DB laden können
 X - Auflistung aller Profile in einem Dropdown
-- Bei Switcher, Mode Profilnamen richtig mitsenden
+? - Bei Switcher, Mode Profilnamen richtig mitsenden
 	--> könnte wegfallen, wenn die Profil Idee umgesetzt wird
-- Profile (Idee)
+? - Profile (Idee)
 	--> Textfeld nur zum anlegen eines neum Profils nutzen
 		--> blankes Profil nutzen
 		--> Nach anlegen als aktuelles Profil im dropdown anzeigen undladen
@@ -129,3 +129,59 @@ gulp sass-watch
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
+
+15.06.2020
+- Twitch API
+	--> erweiterte Profilinformationen über "https://api.twitch.tv/helix/users" laden
+		--> ACHTUNG: Braucht kein O-Auth. Dokumentation falsch
+	--> Livestatus über "https://api.twitch.tv/helix/streams" laden
+	--> Alle API Calls in ein Array/Dict zusammenführen
+		--> Über Type in Funktion bestimmen, welche Daten gepackt werden
+		--> ...
+
+- Profile (Idee)
+	--> Verstehen was ich damit meine (siehe oben)
+	--> Löschen Button und Funktionalität einbinden
+	--> Umbennen Button und Funktionalität einbinden
+	--> ..
+
+- main.js
+	--> YouTube
+		--> Volume fixen
+		--> first ready call function wieder einbauen
+	--> gulp so umstellen, sodass nur noch alle js Klassen gebündelt werden, aber nicht minifiziert
+	--> Teile im Klassen bündeln (vielleicht)
+
+- Allgeime aufräumen
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+14.11.2020:
+- Schauen, welche Notizen angehackt werden können
+- (Idee) Streams entferenen, wenn sie nicht sichtbar sind, um Internet Trafic zu sparen
+	--> Oder herrausfinden, ob die Twitch/YouTube Apis es anbieten auf "only audio" zu stellen
+- (Idee) Videoqualität forzieren
+	=== Für jeden Player die passende Twicth/Youtube Qulitätsstuffe, anhand der Breite/Höhe des jeweiligen iframe containers, setzten
+	--> Berechnug der passenden Qulität errechnen
+	--> Twitch/YouTube Qulitätsstuffen auslesen und passende wählen
+		--> Wenn Stream/Video die errechnete Qulitätsstuffe nicht hat die nächst kleienre wählen
+- (Idee) Screencapture einbinden
+	--> Ist es möglich mehr als ein Screencaptue einzubinden
+	--> Nur möglich, über lokalen browser client
+	--> Im Kategorie Dropdown "Screencapture" aufnehmen
+	--> Wenn Kategorie "Screencapture" gewählt ist, im lokalen browser client ein Button zum anklicken in das Player div packen
+	--> Checken, ob der Screencapture auch nach switch noch zu sehen ist
+	--> Was tun, wenn Profil gewechselt wird und sich dadurch das Screencapture verschiebt
+- Neuen Look für Configpage
+	--> Noch keine Anhung wie, muss mir hier noch gedanken machen
+- (Idee) Neue/Veränderte Screenvarianten (top, bottom, .....)
+	--> Dynamisch
+		--> je nachdem, wie viele Streams hinzugefügt sind, die player passend plazieren und die größe Anpassen
+		--> also dynamisch den Platz optimal ausnutzen
+	--> Bei allen bestehenden Varianten
+		--> das grid halb oder ganz auflösen
+		--> und durch flex ersetzen, um die player mittiger setzen zu können
+		--> also in Zwilen oder Splaten aufteilen (jenachdem)
+		--> dabei darauf achten, das die Player Breite und Höhe immer fest gesetzt sind
+		--> FLEX FLEX

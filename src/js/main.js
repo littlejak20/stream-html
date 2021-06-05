@@ -1,6 +1,10 @@
 //https://stackoverflow.com/questions/27670401/using-jquery-this-with-es6-arrow-functions-lexical-this-binding/34199426#34199426
 
 import regeneratorRuntime from "regenerator-runtime";
+import * as Sqrl from 'squirrelly'
+
+GLOBAL_SITE = String(GLOBAL_SITE).toLowerCase();
+console.log(GLOBAL_SITE);
 
 /*let onYouTubeIframeAPIReady = () => {
 	console.log('onYouTubeIframeAPIReady');
@@ -10,27 +14,79 @@ if (GLOBAL_SITE === 'config') startRenderPage();*/
 
 let startRenderPage = () => {
 console.log('startRenderPage');
-var socket = io();
+const socket = io();
 
-var strOverlayClass = '.overlay';
-var strContainerClass = '.container';
+const strOverlayClass = '.overlay';
+const strContainerClass = '.container';
 
-var strProfileNameShowPlaceClass = '#profileNameShowPlace';
+const strProfileNameShowPlaceClass = '#profileNameShowPlace';
 
-var strFormProfileClass = 'form#formProfile';
-var strFormSourcesClass = '#formSources form';
-var strFormAddButtonClass = '#profileAdd';
-var strFormLoadButtonClass = '#profileLoad';
-var strFormSaveButtonClass = '#profileSave';
+const strFormProfileClass = 'form#formProfile';
+const strFormSourcesContainerClass = '#formSources';
+const strFormSourcesClass = strFormSourcesContainerClass+' form';
+const strFormAddButtonClass = '#profileAdd';
+const strFormLoadButtonClass = '#profileLoad';
+const strFormSaveButtonClass = '#profileSave';
 
-var arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
+const strChannelNamesClass = '#channelNamesTarget';
 
-var players = { player1: '', player2: '', player3: '', player4: '', player5: '', player6: '', player7: '', player8: '', player9: '', player10: '' };
-var youtubePlayerIndex = 0;
-var dictClientConfig = {};
-var arrayClientProfileNames = [];
+const arraySourceItems = ['name', 'platform', 'type', 'muted', 'volume'];
+const arraySourceFloatItems = ['volume'];
+const arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth streams
 
-var arrayPlayerForceHighestQuality = [1,2]; // FOR - setQuality for twicth streams
+let players = { 1: '', 2: '', 3: '', 4: '', 5: '', 6: '', 7: '', 8: '', 9: '', 10: '' };
+let youtubePlayerIndex = 0;
+let dictClientConfig = {};
+let arrayClientProfileNames = [];
+
+let flgTwitchChannelNamesSet = false;
+let intTwitchChannelCurrentSourceId = -1;
+
+let twitchEvents = [];
+try {
+	twitchEvents = [
+		{
+			name: Twitch.Player.ENDED,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.PAUSE,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.PLAY,
+			volumeChange: true,
+			qualityChange: true,
+		},
+		{
+			name: Twitch.Player.PLAYBACK_BLOCKED,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.PLAYING,
+			volumeChange: true,
+			qualityChange: true,
+		},
+		{
+			name: Twitch.Player.OFFLINE,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
+			name: Twitch.Player.ONLINE,
+			volumeChange: true,
+			qualityChange: true,
+		},
+		{
+			name: Twitch.Player.READY,
+			volumeChange: true,
+			qualityChange: true,
+		},
+	];
+} catch(e) { console.error(e) }
 
 // Helpers - START
 	let objectsAreEqual = (obj1, obj2) => (JSON.stringify(obj1) === JSON.stringify(obj2));
@@ -67,16 +123,20 @@ let getArrayFormSources = () => {
 		var formContainer = $(form);
 		var dictTmpSource = {};
 
-		$.each(arraySourceItems, (index, fieldname) => {
-		});
-		$.each(arraySourceItems, (index, fieldname) => {
+		arraySourceItems.forEach((fieldname, index) => {
 			var inputElement = formContainer.find('[name="'+fieldname+'"]');
 			var inputType = inputElement.attr('type');
 
-			if (inputType == 'checkbox') {
+			if (inputType === 'checkbox') {
 				dictTmpSource[fieldname] = inputElement.is(':checked');
 			} else {
-				dictTmpSource[fieldname] = inputElement.val();
+				if (arraySourceFloatItems.indexOf(fieldname) >= 0) {
+					console.log('float value');
+					dictTmpSource[fieldname] = parseFloat(inputElement.val());
+				} else {
+					console.log('string value');
+					dictTmpSource[fieldname] = inputElement.val();
+				}
 			}
 		});
 		arrayTmpSources.push(dictTmpSource);
@@ -92,17 +152,88 @@ let getDictAllFormData = () => {
 	};
 }
 
-socket.on('config reload', (dictServerConfig) => {
+let setTwitchVolume = (sourceIndex, dictSource) => {
+	(async () => {
+	try {
+		var waitIndex = 0;
+		while(!funcCheck(players[sourceIndex].setVolume) && waitIndex <= 30) {
+			waitIndex++;
+			console.log('twitch volume', players[sourceIndex], waitIndex);
+			await new Promise(resolve => setTimeout(resolve, 1000));
+		}
+		if (!funcCheck(players[sourceIndex].setVolume)) return false;
+
+		if (dictSource.volume > 0.0) {
+			players[sourceIndex].setVolume(dictSource.volume);
+			players[sourceIndex].setMuted(false);
+		} else {
+			players[sourceIndex].setMuted(true);
+		}
+	} catch(e) { console.error(e); }
+	})();
+}
+let setTwitchQuality = (sourceIndex, dictSource) => {
+	(async () => {
+	try {
+		var waitIndex = 0;
+		while(!funcCheck(players[sourceIndex].getQualities) && waitIndex <= 30) {
+			waitIndex++;
+			await new Promise(resolve => setTimeout(resolve, 1000));
+		}
+
+		if (!funcCheck(players[sourceIndex].getQualities)) return false;
+
+		waitIndex = 0;
+		while(players[sourceIndex].getQualities().length < 1 && waitIndex <= 30) {
+			waitIndex++;
+			await new Promise(resolve => setTimeout(resolve, 1000));
+		}
+
+		if (players[sourceIndex].getQualities().length < 1) return false;
+
+		var twitchQualities = players[sourceIndex].getQualities();
+		if (arrayPlayerForceHighestQuality.indexOf(sourceIndex) >= 0) {
+			console.log('high quality');
+			players[sourceIndex].setQuality(twitchQualities[1]['group']);
+		} else {
+			players[sourceIndex].setQuality(twitchQualities[0]['group']);
+		}
+	} catch(e) { console.error(e) }
+	})();
+}
+let addTwitchEventListener = (sourceIndex, dictSource) => {
+	console.log('addTwitchEventListener', sourceIndex, dictSource);
+	twitchEvents.forEach((event, index) => {
+		try {
+			players[sourceIndex].addEventListener(event.name, () => {
+				console.log('TWITCH EVENT', sourceIndex, event);
+				if (event.volumeChange) setTwitchVolume(sourceIndex, dictSource);
+				if (event.qualityChange) setTwitchQuality(sourceIndex, dictSource);
+			});
+		} catch(e) { console.error(e) }
+	});
+}
+let removeTwitchEventListener = (sourceIndex) => {
+	console.log('removeTwitchEventListener', sourceIndex);
+	twitchEvents.forEach((event, index) => {
+		try {
+			players[sourceIndex].removeEventListener(event.name);			
+		} catch(e) { console.error(e) }
+	});
+}
+
+
+socket.on('config reload', dictServerConfig => {
 	console.log('config reload', dictServerConfig);
 
 	// for site config - source form
-	$.each(dictServerConfig.sources, (indexServerSource, dictServerSource) => {
+	dictServerConfig.sources.forEach((dictServerSource, indexServerSource) => {
 		console.log('setFormSource -->', indexServerSource, dictServerSource);
 		if (!dictCheck(dictServerSource)) return false;
-
+		
 		var formContainer = $(strFormSourcesClass+'[data-id="'+indexServerSource+'"]');
 		if (formContainer.length > 0) {
-			$.each(arraySourceItems, (index, fieldname) => {
+			arraySourceItems.forEach((fieldname, index) => {
 				var inputElement = formContainer.find('[name="'+fieldname+'"]');
 				var inputType = $(inputElement).attr('type');
 				if (inputType == 'checkbox') {
@@ -111,6 +242,15 @@ socket.on('config reload', (dictServerConfig) => {
 					inputElement.val(dictServerSource[fieldname]);
 				}
 			});
+
+			if (dictServerSource.platform === 'twitch') {
+				formContainer.css({
+					'background-image': `url('https://static-cdn.jtvnw.net/previews-ttv/live_user_${dictServerSource['name']}-1920x1080.jpg')`,
+					'background-size': 'cover',
+				});
+			} else {
+				formContainer.attr('css', '');
+			}
 		}
 	});
 
@@ -130,9 +270,18 @@ socket.on('config reload', (dictServerConfig) => {
 	if (dictServerConfig.modeName != dictClientConfig.modeName) {
 		console.log('setModeName -->', dictServerConfig.modeName);
 		var objContainer = $(strContainerClass+'.main');
-		objContainer.removeAttr('class');
-		objContainer.removeAttr('style');
-		objContainer.addClass(dictServerConfig.modeName+' main');
+		if (objContainer.length > 0) {
+			objContainer.removeAttr('class');
+			objContainer.removeAttr('style');
+			objContainer.addClass(dictServerConfig.modeName+' main');
+		}
+
+		var objForm = $(strFormSourcesContainerClass);
+		if (objForm.length > 0) {
+			objForm.removeAttr('class');
+			objForm.removeAttr('style');
+			objForm.addClass(dictServerConfig.modeName+' form');
+		}
 
 		console.log(dictServerConfig.modeName.split(' ')[1], $(strOverlayClass+' .mode a.'+dictServerConfig.modeName));
 		$(strOverlayClass+' .mode a').removeClass('is-active');
@@ -141,12 +290,13 @@ socket.on('config reload', (dictServerConfig) => {
 
 	// for site view - player
 	//if (!objectsAreEqual(dictServerConfig.sources, dictClientConfig.sources)) { // FOR - setQuality for twicth streams
-		$.each(dictServerConfig.sources, (indexServerSource, dictServerSource) => {
+		dictServerConfig.sources.forEach((dictServerSource, indexServerSource) => {
 			console.log('setPlayerContainer -->', indexServerSource, dictServerSource);
 			if (!dictCheck(dictServerSource)) return false;
 
 			var dictClientSource = [];
 			var waitTimeMsec = 0;
+			var flgIsNoSet = false;
 			if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
 			//if (objectsAreEqual(dictServerSource, dictClientSource)) return false; // error?
 
@@ -170,101 +320,59 @@ socket.on('config reload', (dictServerConfig) => {
 
 				if (boolChangeVideoPlayer) {
 					playerContainer.html('');
-					players['player'+indexServerSource] = '';
+					players[indexServerSource] = '';
 				}
 
 				if (strServerSourceName.indexOf('http') <= 0) {
-					if (dictServerSource.platform == 'twitch') {
+					if (dictServerSource.platform === 'twitch') {
 
-						if (boolChangeVideoPlayer && boolHasName) {
-							dictPlayerConfig.parent = ['https://twicth.tv'];
+						if (boolHasName) {
+							dictPlayerConfig.allowFullScreen = false;
+							//dictPlayerConfig.parent = ["10yannick041019", "loacalhost", "youtube.com"];
 
-							if (dictServerSource.type == 'stream') {
+							if (dictServerSource.type === 'stream') {
 								dictPlayerConfig.channel = strServerSourceName;
-							} else if (dictServerSource.type == 'video') {
+							} else if (dictServerSource.type === 'video') {
 								dictPlayerConfig.video = strServerSourceName;
-							} else if (dictServerSource.type == 'playlist') {
+							} else if (dictServerSource.type === 'playlist') {
 								dictPlayerConfig.collection = strServerSourceName;
 							} else {
 								boolOnlyUseIframe = true;
 							}
 
-							if (!boolOnlyUseIframe) {
-								players['player'+indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
-								waitTimeMsec = 2000;
-								boolChangeVolume = true;
+							if (boolChangeVideoPlayer && !boolOnlyUseIframe) {
+								players[indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
+								flgIsNoSet = true;
 							}
+						
+							removeTwitchEventListener(indexServerSource);
+							addTwitchEventListener(indexServerSource, dictServerSource);
 						}
 
-						if (!boolOnlyUseIframe) {
-							if (boolChangeVolume) {
-								(async() => {
-								try {
-									var waitIndex = 0;
-									while(!funcCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
-										waitIndex++;
-										await new Promise(resolve => setTimeout(resolve, 1000));
-									}
-
-									if (!funcCheck(players['player'+indexServerSource].setVolume)) return false;
-
-									var videoVolume = 0.0;
-									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-									players['player'+indexServerSource].setVolume(videoVolume);
-								} catch(e) { console.error('wait error --> changeVolume', e); }
-								})();
-							}
-
-							// setQuality for twicth streams - START
-							(async() => {
-								try {
-								var waitIndex = 0;
-								while(!funcCheck(players['player'+indexServerSource].getQualities) && waitIndex <= 30) {
-									waitIndex++;
-									await new Promise(resolve => setTimeout(resolve, 1000));
-								}
-
-								if (!funcCheck(players['player'+indexServerSource].getQualities)) return false;
-
-								waitIndex = 0;
-								while(players['player'+indexServerSource].getQualities().length < 1 && waitIndex <= 30) {
-									waitIndex++;
-									await new Promise(resolve => setTimeout(resolve, 1000));
-								}
-
-								if (players['player'+indexServerSource].getQualities().length < 1) return false;
-
-								var twitchQualities = players['player'+indexServerSource].getQualities();
-								if (arrayPlayerForceHighestQuality.indexOf(indexServerSource) >= 0) {
-									players['player'+indexServerSource].setQuality(twitchQualities[1]['group']);
-								} else {
-									players['player'+indexServerSource].setQuality(twitchQualities[0]['group']);
-								}
-								} catch(e) { console.error('wait error --> setQuality', e); }
-							})();
-							// setQuality for twicth streams - END
+						if (!boolOnlyUseIframe && !flgIsNoSet) {
+							setTwitchVolume(indexServerSource, dictServerSource);
+							setTwitchQuality(indexServerSource, dictServerSource);
 						}
 
-					} else if (dictServerSource.platform == 'youtube') {
+					} else if (dictServerSource.platform === 'youtube') {
 
-						if (boolChangeVideoPlayer && boolHasName) {
+						if (boolHasName) {
 							dictPlayerConfig.playerVars = {
 								autoplay: 1,
 								controls: 1,
 								playsinline: 1,
 								cc_load_policy: 0,
 								iv_load_policy: 3,
-								origin: 'https://www.youtube.com',
 							};
 
-							if (dictServerSource.type == 'stream' || dictServerSource.type == 'video') {
+							if (dictServerSource.type === 'stream' || dictServerSource.type === 'video') {
 								if (strServerSourceName.indexOf(',') >= 0) {
 									dictPlayerConfig.playerVars.listType = 'playlist';
 									dictPlayerConfig.playerVars.playlist = strServerSourceName;
 								} else {
 									dictPlayerConfig.videoId = strServerSourceName;
 								}
-							} else if (dictServerSource.type == 'playlist') {
+							} else if (dictServerSource.type === 'playlist') {
 								dictPlayerConfig.playerVars.listType = 'playlist';
 								if (strServerSourceName.indexOf(',') >= 0) {
 									dictPlayerConfig.playerVars.playlist = strServerSourceName;
@@ -275,26 +383,26 @@ socket.on('config reload', (dictServerConfig) => {
 								boolOnlyUseIframe = true;
 							}
 
-							if (!boolOnlyUseIframe) {
+							if (boolChangeVideoPlayer && !boolOnlyUseIframe) {
 								tmpContainerName = 'youtubeplayer'+(youtubePlayerIndex++);
 								playerContainer.append('<div id="'+tmpContainerName+'"></div>');
 								
-								players['player'+indexServerSource] = new YT.Player(tmpContainerName, dictPlayerConfig);
+								players[indexServerSource] = new YT.Player(tmpContainerName, dictPlayerConfig);
 								waitTimeMsec = 2000;
 								boolChangeVolume = true;
 
 								// Start Video - START
-								(async() => {
+								(async () => {
 								try {
 									var waitIndex = 0;
-									while(!funcCheck(players['player'+indexServerSource].playVideo) && waitIndex <= 30) {
+									while(!funcCheck(players[indexServerSource].playVideo) && waitIndex <= 30) {
 										waitIndex++;
 										await new Promise(resolve => setTimeout(resolve, 1000));
 									}
 
-									if (!funcCheck(players['player'+indexServerSource].playVideo)) return false;
+									if (!funcCheck(players[indexServerSource].playVideo)) return false;
 
-									players['player'+indexServerSource].playVideo();
+									players[indexServerSource].playVideo();
 								} catch(e) { console.error('wait error --> changeVolume', e); }
 								})();								
 								// Start Video - END
@@ -304,28 +412,30 @@ socket.on('config reload', (dictServerConfig) => {
 						if (!boolOnlyUseIframe) {
 							if (boolChangeVolume) {
 								setTimeout(() => {
-									var videoVolume = 0;
+									var videoVolume = 0.0;
+									dictServerSource.volume = parseFloat(dictServerSource.volume);
 									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume * 100;
-									players['player'+indexServerSource].setVolume(videoVolume);
+									players[indexServerSource].setVolume(videoVolume);
 								}, waitTimeMsec);
 
-								(async() => {
-								try {
-									var waitIndex = 0;
-									while(!funcCheck(players['player'+indexServerSource].setVolume) && waitIndex <= 30) {
-										waitIndex++;
-										console.warn('WAIT change youtube set volume')
-										await new Promise(resolve => setTimeout(resolve, 1000));
-									}
+								(async () => {
+									try {
+										var waitIndex = 0;
+										while(!funcCheck(players[indexServerSource].setVolume) && waitIndex <= 30) {
+											waitIndex++;
+											console.warn('WAIT change youtube set volume')
+											await new Promise(resolve => setTimeout(resolve, 1000));
+										}
 
-									if (!funcCheck(players['player'+indexServerSource].setVolume)) return false;
+										if (!funcCheck(players[indexServerSource].setVolume)) return false;
 
-									console.warn('SET change youtube set volume')
+										console.warn('SET change youtube set volume')
 
-									var videoVolume = 0.0;
-									if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
-									players['player'+indexServerSource].setVolume(videoVolume);
-								} catch(e) { console.error('wait error --> changeVolume', e); }
+										var videoVolume = 0.0;
+										dictServerSource.volume = parseFloat(dictServerSource.volume);
+										if (dictServerSource.volume > 0) videoVolume = dictServerSource.volume;
+										players[indexServerSource].setVolume(videoVolume);
+									} catch(e) { console.error('wait error --> changeVolume', e); }
 								})();
 							}
 						}
@@ -342,7 +452,7 @@ socket.on('config reload', (dictServerConfig) => {
 	//}
 
 	dictClientConfig = dictServerConfig;
-	console.log(JSON.stringify(dictClientConfig));
+	console.warn('players --> end', players);
 });
 socket.on('config onlyset', dictServerConfig => dictClientConfig = dictServerConfig);
 
@@ -351,7 +461,7 @@ socket.on('profileName reload', arrayServerProfileNames => {
 		
 	var formProfile = $(strFormProfileClass);
 	var strSelectOptions = '';
-	$.each(arrayServerProfileNames, (index, profile) => {
+	arrayServerProfileNames.forEach((profile, index) => {
 		strSelectOptions += 
 			'<option name="'+profile.name+'"'+
 			(profile.name == dictClientConfig.name ? ' selected' : '')+
@@ -394,10 +504,10 @@ $(strOverlayClass+' .mode a').on('click', e => {
 
 var videoId0 = -1;
 var videoId1 = -1;
-$(strOverlayClass+' .js-switcher a').on('click', e => {
+$(`${strFormSourcesClass} a.btn-switch`).on('click', e => {
 	e.preventDefault();
 	var $this = $(e.currentTarget);
-	var videoId = $this.data('id');
+	var videoId = $this.parent().data('id');
 
 	if (videoId0 <= -1) {
 		videoId0 = videoId;
@@ -419,27 +529,27 @@ socket.on('video switcher', arrVideoIds => {
 	var videoContainer1 = $(strContainerClass+'.main [data-id="'+arrVideoIds[1]+'"]');
 	var idName0 = videoContainer0.attr('id');
 	var idName1 = videoContainer1.attr('id');
-	var player0 = players['player'+arrVideoIds[0]];
-	var player1 = players['player'+arrVideoIds[1]];
-	var dictSource0 = dictClientConfig.sources[arrVideoIds[0]];
-	var dictSource1 = dictClientConfig.sources[arrVideoIds[1]];
+	var player0 = players[arrVideoIds[0]];
+	var player1 = players[arrVideoIds[1]];
+	var dictClientSource0 = dictClientConfig.sources[arrVideoIds[0]];
+	var dictClientSource1 = dictClientConfig.sources[arrVideoIds[1]];
 
 	videoContainer0.attr('data-id', arrVideoIds[1]);
 	videoContainer1.attr('data-id', arrVideoIds[0]);
 	videoContainer0.attr('id', idName1);
 	videoContainer1.attr('id', idName0);
-	players['player'+arrVideoIds[0]] = player1;
-	players['player'+arrVideoIds[1]] = player0;
-	dictClientConfig.sources[arrVideoIds[0]] = dictSource1;
-	dictClientConfig.sources[arrVideoIds[1]] = dictSource0;
+	players[arrVideoIds[0]] = player1;
+	players[arrVideoIds[1]] = player0;
+	dictClientConfig.sources[arrVideoIds[0]] = dictClientSource1;
+	dictClientConfig.sources[arrVideoIds[1]] = dictClientSource0;
 
 	socket.emit('video switcher finish');
 });
 
-$(strOverlayClass+' .js-reloader a').on('click', e => {
+$(`${strFormSourcesClass} a.btn-reload`).on('click', e => {
 	e.preventDefault();
 	var $this = $(e.currentTarget);
-	var videoId = $this.data('id');
+	var videoId = $this.parent().data('id');
 	socket.emit('video reloader', videoId);
 });
 socket.on('video reloader', intVideoId => {
@@ -447,6 +557,73 @@ socket.on('video reloader', intVideoId => {
 	dictClientConfig.sources[intVideoId] = { name: '', volume: 0.0 };
 	socket.emit('video reloader finish');
 });
+
+
+$('body').on('click', `${strFormSourcesClass} .btn-select-twitch`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+
+	if (!flgTwitchChannelNamesSet) socket.emit('twitch get channelInfosBig');
+	flgTwitchChannelNamesSet = true;
+
+	var $this = $(e.currentTarget);
+	var formContainer = $this.parent('form');
+	intTwitchChannelCurrentSourceId = formContainer.data('id');
+
+	$(strChannelNamesClass).show();
+
+	console.log(intTwitchChannelCurrentSourceId);
+});
+
+$('body').on('click', `${strChannelNamesClass} .con-names .item`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+	var $this = $(e.currentTarget);
+
+	var channelName = $this.data('channelname');
+	var formContainer = $(`${strFormSourcesClass}[data-id='${intTwitchChannelCurrentSourceId}']`);
+
+	formContainer.find(`[name="platform"]`).val('twitch');
+	formContainer.find(`[name="type"]`).val('stream');
+	formContainer.find(`[name="name"]`).val(channelName);
+
+	intTwitchChannelCurrentSourceId = -1;
+	$(strChannelNamesClass).hide();
+
+	console.log(intTwitchChannelCurrentSourceId, formContainer, channelName);
+});
+
+$('body').on('click', `${strChannelNamesClass} .btn-close`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+	var $this = $(e.currentTarget);
+
+	intTwitchChannelCurrentSourceId = -1;
+	$(strChannelNamesClass).hide();
+});
+
+$('body').on('click', `${strChannelNamesClass} .btn-reload`, {}, e => {
+	e.preventDefault();
+	if (GLOBAL_SITE !== 'config') return;
+	socket.emit('twitch get channelInfosBig');
+});
+
+socket.on('twitch get channelInfosBig', arrayChannelInfosBig => {
+	console.log('twitch get channelInfosBig', arrayChannelInfosBig);
+	if (GLOBAL_SITE !== 'config') return;
+
+	var flgFilterLive = ($(`${strChannelNamesClass} .filter-live:checked`).length > 0);
+	console.log('twitch get channelInfosBig flgFilterLive', flgFilterLive);
+
+	let tmpHtml = '';
+	arrayChannelInfosBig.forEach((channel) => {
+		console.log(channel.channelInfo.login, channel);
+		if (flgFilterLive && !channel.extra.flgLive) return;
+		tmpHtml += `<a href="#" class="item" data-channelname="${channel.channelInfo.login}" style="display: flex; margin: 10px; align-items: center;"><img src="${channel.channelInfo.profile_image_url}" style="width: 30px; height: 30px"></img>&nbsp;<span>${channel.channelInfo.display_name}${channel.extra.flgLive ? ' (LIVE)':''} (${channel.streamLive.game_name})</span></a>`
+	});
+	$(`${strChannelNamesClass} .con-names`).html(tmpHtml);
+});
+
 
 
 
@@ -495,11 +672,9 @@ socket.on('video reloader', intVideoId => {
 // Fullscreen - END
 }
 
-GLOBAL_SITE = String(GLOBAL_SITE).toLowerCase();
-console.log(GLOBAL_SITE);
 if (GLOBAL_SITE === 'view') {
-	(async() => {
-	try {
+	(async () => {
+	//try {
 		var waitIndex = 0;
 		while(YT.loaded <= 0 && waitIndex <= 15) {
 			waitIndex++;
@@ -508,7 +683,7 @@ if (GLOBAL_SITE === 'view') {
 		}
 
 		if (YT.loaded >= 1) startRenderPage();
-	} catch(e) {}
+	//} catch(e) {}
 	})();
 } else {
 	console.log('else');
