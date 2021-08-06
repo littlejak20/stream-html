@@ -46,6 +46,11 @@ let twitchEvents = [];
 try {
 	twitchEvents = [
 		{
+			name: Twitch.Player.CAPTIONS,
+			volumeChange: false,
+			qualityChange: false,
+		},
+		{
 			name: Twitch.Player.ENDED,
 			volumeChange: false,
 			qualityChange: false,
@@ -57,8 +62,8 @@ try {
 		},
 		{
 			name: Twitch.Player.PLAY,
-			volumeChange: true,
-			qualityChange: true,
+			volumeChange: false,
+			qualityChange: false,
 		},
 		{
 			name: Twitch.Player.PLAYBACK_BLOCKED,
@@ -67,8 +72,8 @@ try {
 		},
 		{
 			name: Twitch.Player.PLAYING,
-			volumeChange: true,
-			qualityChange: true,
+			volumeChange: false,
+			qualityChange: false,
 		},
 		{
 			name: Twitch.Player.OFFLINE,
@@ -82,8 +87,8 @@ try {
 		},
 		{
 			name: Twitch.Player.READY,
-			volumeChange: true,
-			qualityChange: true,
+			volumeChange: false,
+			qualityChange: false,
 		},
 	];
 } catch(e) { console.error(e) }

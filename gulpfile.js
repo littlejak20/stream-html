@@ -53,7 +53,7 @@ const script = () => { // only copy
 const build = gulp.series(css, script);
 
 // Function to watch our Changes and refreash page
-const watch = () => gulp.watch([`${src}/sass/**/*.scss`], build);
+const watch = () => gulp.watch([`${src}/sass/**/*.scss`, `${src}/js/**/*.js`], build);
 
 // All Tasks for this Project
 const dev = gulp.series(css, script, watch);
