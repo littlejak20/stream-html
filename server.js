@@ -132,7 +132,6 @@ Sqrl.helpers.define("ignore", () => {return ''});
 Sqrl.helpers.define("comment", () => {return ''});
 
 const fetch = require('node-fetch');
-//const fetchSync  = require('fetch-sync');
 
 var express = require('express');
 var fs = require('fs')
