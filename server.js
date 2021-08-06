@@ -132,7 +132,6 @@ Sqrl.helpers.define("ignore", () => {return ''});
 Sqrl.helpers.define("comment", () => {return ''});
 
 const fetch = require('node-fetch');
-//const fetchSync  = require('fetch-sync');
 
 var express = require('express');
 var fs = require('fs')
@@ -196,12 +195,11 @@ server.listen(serverPort, () => { console.log('Listening on port '+serverPort)+'
 	const MongoClient = require('mongodb').MongoClient;
 	const assert = require('assert');
 	//const url = 'mongodb://127.0.0.1:27017';
-	const uri = 'mongodb://littlejak22:mongodb!%3F4865%5E@192.168.178.202:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=false';
-	const dbClient = new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+	const uri = consts.mongodb.uri;
 	const dbName = 'stream-html';
 
 	const getMongoClient = () => {
-		return (new MongoClient(uri, {useNewUrlParser: true, useUnifiedTopology: true}));
+		return new MongoClient(consts.mongodb.uri, { useNewUrlParser: true, useUnifiedTopology: true });
 	}
 
 	const insertDocuments = (collectionName, docs, options, callbackFunc) => {
