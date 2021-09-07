@@ -1,14 +1,12 @@
+$config-mode-space: 10px;
+
 .overlay {
 	@extend %defaultFullContainer;
-	
+
 	color: #fff;
 	padding: 20px;
 	font-size: 18px;
 	overflow: auto;
-	@media screen and (min-width: 1921px), print and (min-width: 1921px) {
-		padding: 30px;
-		font-size: 45px;
-	}
 
 	> div + div {
 		margin-top: 15px;
@@ -19,9 +17,16 @@
 		margin: 0 0 5px;
 	}
 
-	a.btn-input {
+	a.btn-input, .btn-input {
+		padding: 10px;
+		background-color: rgba(0,0,0,.7);
+		text-align: center;
+		+ .btn-input {
+			border-left: 1px solid #fff;
+		}
 		&, &:link {
 			&, &:hover, &:focus, &:active, &:visited {
+				cursor: pointer;
 				color: #fff;
 				text-decoration: none;
 				text-transform: uppercase;
@@ -30,44 +35,47 @@
 	}
 
 	.form form {
-		display: block;
+		display: flex;
+		flex-wrap: wrap;
+		align-content: flex-start;
+		justify-content: flex-start;
 		width: 100%;
 		padding: 2%;
 		border: 1px solid #fff;
-		> * {
-			display: block;
-			width: 100%;
-			+ * {
-				margin-top: 10px;
-			}
-		}
+		background-size: cover;
 		&:before {
 			display: none;
+		}
+
+		> * {
+			margin-top: 10px;
+			font-size: 18px;
+		}
+
+		.select-platform, .select-platform {
+			flex-basis: 50%;
+		}
+		.text-name, .volume-range {
+			flex-basis: 100%;
+		}
+		.btn-input {
+			flex: 1 1 0;
 		}
 	}
 
 	.mode {
 		display: flex;
 		flex-wrap: wrap;
+		margin: -($config-mode-space);
+
+		.mode-item {
+			width: 200px;
+			margin: $config-mode-space;
+			cursor: pointer;
+		}
 
 		.container {
-			position: relative;
-			width: 100px;
-			height: 100px;
 			border: 1px solid #fff;
-			text-decoration: none;
-			@media screen and (min-width: 1921px), print and (min-width: 1921px) {
-				width: 200px;
-				height: 200px;
-			}
-
-			+ .container {
-				margin-left: 10px;
-				@media screen and (min-width: 1921px), print and (min-width: 1921px) {
-					margin-left: 30px;
-				}
-			}
-
 			&:before, a:after {
 				content: '';
 				position: absolute;
@@ -79,7 +87,6 @@
 				transition: opacity 0.3s;
 			}
 
-
 			&:hover:before, a:hover:after {
 				background-color: rgba(255,255,255,.5);
 				opacity: 1;
@@ -88,25 +95,6 @@
 			&.is-active:before, a.is-active:after {
 				background-color: rgba(0,0,0,.7);
 				opacity: 1;
-			}
-		}
-	}
-
-	.input {
-		display: inline-block;
-		label {
-			display: flex;
-			justify-content: space-between;
-			font-weight: 700;
-			+ label {
-				margin-top: 5px;
-			}
-			input {
-				margin-left: 10px;
-				@media screen and (min-width: 1921px), print and (min-width: 1921px) {
-					font-size: 45px;
-					margin-left: 30px;
-				}
 			}
 		}
 	}

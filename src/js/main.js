@@ -27,6 +27,7 @@ const strFormSourcesClass = strFormSourcesContainerClass+' form';
 const strFormAddButtonClass = '#profileAdd';
 const strFormLoadButtonClass = '#profileLoad';
 const strFormSaveButtonClass = '#profileSave';
+const strModeItemClass = strOverlayClass+' .mode .mode-item .container';
 
 const strChannelNamesClass = '#channelNamesTarget';
 
@@ -251,7 +252,6 @@ socket.on('config reload', dictServerConfig => {
 			if (dictServerSource.platform === 'twitch') {
 				formContainer.css({
 					'background-image': `url('https://static-cdn.jtvnw.net/previews-ttv/live_user_${dictServerSource['name']}-1920x1080.jpg')`,
-					'background-size': 'cover',
 				});
 			} else {
 				formContainer.attr('css', '');
@@ -288,9 +288,9 @@ socket.on('config reload', dictServerConfig => {
 			objForm.addClass(dictServerConfig.modeName+' form');
 		}
 
-		console.log(dictServerConfig.modeName.split(' ')[1], $(strOverlayClass+' .mode a.'+dictServerConfig.modeName));
-		$(strOverlayClass+' .mode a').removeClass('is-active');
-		$(strOverlayClass+' .mode a.'+dictServerConfig.modeName.split(' ')[1]).addClass('is-active');
+		console.log(dictServerConfig.modeName.split(' ')[1], $(strModeItemClass+'.'+dictServerConfig.modeName));
+		$(strModeItemClass).removeClass('is-active');
+		$(strModeItemClass+'.'+dictServerConfig.modeName.split(' ')[1]).addClass('is-active');
 	}
 
 	// for site view - player
@@ -500,7 +500,7 @@ $(strFormSourcesClass+' [name="volume"]').on('change.playerVolume', e => {
 	socket.emit('saveProfile submit', $.extend({}, getDictAllFormData()));
 });
 
-$(strOverlayClass+' .mode a').on('click', e => {
+$(strModeItemClass).on('click', e => {
 	e.preventDefault();
 	var $this = $(e.currentTarget);
 	console.warn($($this).attr('class'));
