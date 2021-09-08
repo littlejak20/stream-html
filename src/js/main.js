@@ -301,7 +301,6 @@ socket.on('config reload', dictServerConfig => {
 
 			var dictClientSource = [];
 			var waitTimeMsec = 0;
-			var flgIsNoSet = false;
 			if (arrayCheck(dictClientConfig.sources)) dictClientSource = dictClientConfig.sources[indexServerSource];
 			//if (objectsAreEqual(dictServerSource, dictClientSource)) return false; // error?
 
@@ -330,7 +329,6 @@ socket.on('config reload', dictServerConfig => {
 
 				if (strServerSourceName.indexOf('http') <= 0) {
 					if (dictServerSource.platform === 'twitch') {
-
 						if (boolHasName) {
 							dictPlayerConfig.allowFullScreen = false;
 							//dictPlayerConfig.parent = ["10yannick041019", "loacalhost", "youtube.com"];
@@ -345,20 +343,21 @@ socket.on('config reload', dictServerConfig => {
 								boolOnlyUseIframe = true;
 							}
 
-							if (boolChangeVideoPlayer && !boolOnlyUseIframe) {
-								players[indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
-								flgIsNoSet = true;
+							if (!boolOnlyUseIframe) {
+								if (boolChangeVideoPlayer) {
+									players[indexServerSource] = new Twitch.Player('player'+indexServerSource, dictPlayerConfig);
+								}
+
+								removeTwitchEventListener(indexServerSource);
+								addTwitchEventListener(indexServerSource, dictServerSource);
+
+								if (boolChangeVideoPlayer || dictClientSource.forcecUpdateQuality) {
+									setTwitchQuality(indexServerSource, dictServerSource);
+								}
+								setTwitchVolume(indexServerSource, dictServerSource);
 							}
-						
-							removeTwitchEventListener(indexServerSource);
-							addTwitchEventListener(indexServerSource, dictServerSource);
 						}
-
-						if (!boolOnlyUseIframe && !flgIsNoSet) {
-							setTwitchVolume(indexServerSource, dictServerSource);
-							setTwitchQuality(indexServerSource, dictServerSource);
-						}
-
+					// überprüfe youtube zweig. der ist anders
 					} else if (dictServerSource.platform === 'youtube') {
 
 						if (boolHasName) {
@@ -444,7 +443,9 @@ socket.on('config reload', dictServerConfig => {
 								})();
 							}
 						}
-					} else { boolOnlyUseIframe = true }
+					} else {
+						boolOnlyUseIframe = true
+					}
 				} else {
 					boolOnlyUseIframe = true;
 				}
@@ -509,7 +510,7 @@ $(strModeItemClass).on('click', e => {
 
 var videoId0 = -1;
 var videoId1 = -1;
-$(`${strFormSourcesClass} a.btn-switch`).on('click', e => {
+$(`${strFormSourcesClass} .btn-switch`).on('click', e => {
 	e.preventDefault();
 	var $this = $(e.currentTarget);
 	var videoId = $this.parent().data('id');
@@ -539,6 +540,15 @@ socket.on('video switcher', arrVideoIds => {
 	var dictClientSource0 = dictClientConfig.sources[arrVideoIds[0]];
 	var dictClientSource1 = dictClientConfig.sources[arrVideoIds[1]];
 
+	// not change quality, if is index in arrayPlayerForceHighestQuality
+	if (!(
+		arrayPlayerForceHighestQuality.indexOf(arrVideoIds[0]) >= 0 &&
+		arrayPlayerForceHighestQuality.indexOf(arrVideoIds[1]) >= 0
+	)) {
+		dictClientSource0.forcecUpdateQuality = true;
+		dictClientSource1.forcecUpdateQuality = true;
+	}
+
 	videoContainer0.attr('data-id', arrVideoIds[1]);
 	videoContainer1.attr('data-id', arrVideoIds[0]);
 	videoContainer0.attr('id', idName1);
@@ -551,7 +561,7 @@ socket.on('video switcher', arrVideoIds => {
 	socket.emit('video switcher finish');
 });
 
-$(`${strFormSourcesClass} a.btn-reload`).on('click', e => {
+$(`${strFormSourcesClass} .btn-reload`).on('click', e => {
 	e.preventDefault();
 	var $this = $(e.currentTarget);
 	var videoId = $this.parent().data('id');
