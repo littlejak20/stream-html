@@ -7,11 +7,15 @@
 	<link rel="stylesheet" type="text/css" href="/css/main.min.css">
 </head>
 <body>
-	<div class="main container normal">
-		{{@player(it.playerCount) => pId}}<div data-id="{{pId}}" id="player{{pId}}"></div>{{/player}}
+	<div class="videos-conatiner">
+		<div class="format-16-9"><div><div>
+			<div class="main container normal">
+				{{@player(it.playerCount) => pId}}<div data-id="{{pId}}" id="player{{pId}}"></div>{{/player}}
+			</div>
+		</div></div></div>
 	</div>
 
-	<div class="fullscreenall" style="position: fixed; top: 0; right: 0; height: 44px; width: 44px; background-color: transparent; display: block; cursor: pointer;"></div>
+	<div class="fullscreenall"></div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	<script src="/socket.io/socket.io.js"></script>
