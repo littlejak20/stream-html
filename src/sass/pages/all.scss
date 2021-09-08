@@ -14,6 +14,32 @@
 }
 html, body, iframe { @extend %defaultFullContainer; }
 
+.videos-conatiner {
+	@extend %defaultFullContainer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.format-16-9 {
+	width: 100%;
+	> *:first-child {
+		position: relative;
+		padding-bottom: (9/16)*100%;
+		> *:first-child {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			> *:first-child {
+				width: 100%;
+				height: 100%;
+			}
+		}
+	}
+	//aspect-ratio: 16 / 9;
+}
+
 @for $id from 1 to ($playerCount + 1) {
 	[data-id="#{$id}"] {
 		grid-area: v#{$id};
@@ -38,4 +64,15 @@ html, body, iframe { @extend %defaultFullContainer; }
 }
 @each $id in $playerColorGreenIds {
 	[data-id="#{$id}"] { @extend %playerColorGreen; }
+}
+
+.fullscreenall {
+	position: fixed;
+	top: 0;
+	right: 0;
+	height: 44px;
+	width: 44px;
+	background-color: transparent;
+	display: block;
+	cursor: pointer;
 }

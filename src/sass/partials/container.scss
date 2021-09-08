@@ -9,18 +9,6 @@
 		align-items: flex-start;
 		justify-content: center;
 	}
-	input {
-		margin-top: 20px;
-		font-size: 18px;
-		@media screen and (min-width: 1921px), print and (min-width: 1921px) {
-			font-size: 45px;
-		}
-
-		&[type=text] {
-			width: 75%;
-		}
-	}
-
 
 	> *:before { // * = data-id
 		position: absolute;
@@ -30,9 +18,6 @@
 		font-size: 18px;
 		font-weight: bold;
 		color: white;
-		@media screen and (min-width: 1921px), print and (min-width: 1921px) {
-			font-size: 35px;
-		}
 	}
 
 	&.main > * { // * = data-id
